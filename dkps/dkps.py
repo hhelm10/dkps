@@ -15,7 +15,7 @@ class DataKernelPerspectiveSpace:
             metric_cmds='euclidean',
             n_components_cmds=None,
             n_elbows_cmds=2,
-            # dissimilarity="euclidean",
+            dissimilarity="precomputed",
         ):
         
         self.response_distribution_fn   = response_distribution_fn
@@ -100,3 +100,4 @@ class DataKernelPerspectiveSpace:
 #             return {key: cmds_embds[i] for i, key in enumerate(self.keys)}
 #         else:
 #             return cmds_embds
+
