@@ -424,6 +424,16 @@ queued (judge pruned vs unpruned q20, score in matrix protocol; ~$6
 deepseek or ~$1 gpt-oss): --prune flag on judge_openrouter.py caches to
 structured-qspec-<judge>-pruned. Cf. AgentDiet (arXiv:2509.23586): 40-60%
 removable, consistent.
+ADDENDUM (truncation prevalence, 2026-09-03): 81% of q20 judge inputs
+(1742/2140) were truncated by the 40K+20K-char window; median raw render is
+133K chars (judge saw ~45%), p90 666K (~9%), max 3.0M (~2%). ALL judged
+results to date rest on partial-trace observation -- the window was
+inherited from the head/tail embedding baseline, never decided or measured.
+After pruning, 36/40 sampled FULL traces fit a 128K-token context ->
+whole-trace judging is now feasible. PRIORITY A/B when credits return
+(three arms, q20, same judge+rubrics, ~$25 deepseek): truncated (status
+quo) vs pruned+60K-window vs pruned-full-context. If full-context wins,
+current headline numbers UNDERSTATE qubric.
 
 ## 5. Negative results (do not re-run without new ideas)
 
