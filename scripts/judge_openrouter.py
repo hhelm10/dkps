@@ -122,6 +122,10 @@ def main():
     ap.add_argument('--prune', action='store_true',
                     help='prune low-information content before judging '
                          '(dkps.traces.prune); caches to a -pruned dir')
+    ap.add_argument('--full', action='store_true',
+                    help='judge FULL pruned traces (no head/tail truncation; '
+                         'requires scripts/render_full_pruned.py cache); '
+                         'caches to a -fullpruned dir')
     args = ap.parse_args()
 
     load_dotenv()
@@ -136,7 +140,8 @@ def main():
                for q in q20}
 
     safe = args.judge_model.replace('/', '_')
-    jdir = f'data/judge/structured-qspec-{safe}' + ('-pruned' if args.prune else '')
+    suffix = '-fullpruned' if args.full else ('-pruned' if args.prune else '')
+    jdir = f'data/judge/structured-qspec-{safe}' + suffix
 
     def jpath(s, q):
         return os.path.join(jdir, s, f'{q}.json')
@@ -148,8 +153,14 @@ def main():
     if not todo:
         return
 
-    texts = get_texts(args.root, sorted({s for s, _ in todo}), q20)
-    if args.prune:
+    if args.full:
+        FULL = 'data/judge/trace_texts_full_pruned'
+        texts = {s: {q: open(os.path.join(FULL, s, f'{q}.txt')).read()
+                     for q in q20}
+                 for s in sorted({s for s, _ in todo})}
+    else:
+        texts = get_texts(args.root, sorted({s for s, _ in todo}), q20)
+    if args.prune and not args.full:
         from dkps.traces.prune import prune_for_judging
         texts = {s: {q: prune_for_judging(t) for q, t in d.items()}
                  for s, d in texts.items()}
