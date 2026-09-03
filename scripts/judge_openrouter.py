@@ -119,6 +119,9 @@ def main():
     ap.add_argument('--workers', type=int, default=24)
     ap.add_argument('--limit', type=int, default=0,
                     help='only run this many calls (pilot mode)')
+    ap.add_argument('--prune', action='store_true',
+                    help='prune low-information content before judging '
+                         '(dkps.traces.prune); caches to a -pruned dir')
     args = ap.parse_args()
 
     load_dotenv()
@@ -133,7 +136,7 @@ def main():
                for q in q20}
 
     safe = args.judge_model.replace('/', '_')
-    jdir = f'data/judge/structured-qspec-{safe}'
+    jdir = f'data/judge/structured-qspec-{safe}' + ('-pruned' if args.prune else '')
 
     def jpath(s, q):
         return os.path.join(jdir, s, f'{q}.json')
@@ -146,6 +149,10 @@ def main():
         return
 
     texts = get_texts(args.root, sorted({s for s, _ in todo}), q20)
+    if args.prune:
+        from dkps.traces.prune import prune_for_judging
+        texts = {s: {q: prune_for_judging(t) for q, t in d.items()}
+                 for s, d in texts.items()}
 
     def extract(pair):
         s, q = pair

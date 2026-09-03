@@ -406,6 +406,25 @@ variant beats best-single yet; framing = recovers gap from mean toward best
 without knowing which system is best. Data: figures/routing.json;
 script: routing.py.
 
+**F28. Judge-input token pruning (2026-09-03, analysis + tooling; A/B
+pending credits).** Composition of q20 judge inputs (300-trace sample,
+~4.1M tokens): line-numbered file views 16.3%, harness state dumps 10.3%,
+listings 5.1%, format-echo duplicates 1.6% -- ~33% identifiably
+non-behavior (repo content the agent displayed, not what it did); more
+hides in the 59% prose bucket as unnumbered code dumps. Pruner
+(dkps/traces/prune.py; 6 format-agnostic rules; keeps prose, commands,
+diffs, error lines, test verdict tails): 33.9% char reduction over all
+2140 q20 texts (median 28%, p90 68%; sympy-14248 example 60K->19K with
+agent edits kept verbatim). Traces contain no gold outcomes -- no true
+cheating channel found; agent self-claims kept deliberately (rubric
+separates claimed vs observed verification). Also a QUALITY lever:
+prune-then-truncate fits more behavior in the 60K window than blind middle
+truncation. Projected q150 input cost ~$58->$38 (deepseek). Validation A/B
+queued (judge pruned vs unpruned q20, score in matrix protocol; ~$6
+deepseek or ~$1 gpt-oss): --prune flag on judge_openrouter.py caches to
+structured-qspec-<judge>-pruned. Cf. AgentDiet (arXiv:2509.23586): 40-60%
+removable, consistent.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
