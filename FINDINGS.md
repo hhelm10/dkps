@@ -483,6 +483,23 @@ where probes scarcest. Geometry arm still bare kNN (no PCA-64/PKPS/fusion,
 k not CV'd) -- blend ceiling likely understated.
 Data: figures/irt_dkps_blend_v2.json.
 
+**F31. Per-query rubrics do NOT break PKPS (2026-09-03, per HH /
+collaborator point 3).** Test: PKPS-vs-paired gain for qubric (per-query
+rubrics) vs generic-fixed rubric (same coordinate system every query) vs
+tail (rubric-free); nomic, q20, 30 draws, heuristic sigma, kNN k=3.
+Gains (paired MAE - PKPS MAE): qubric +.0014/+.0051 (m=1/5), generic
++.0040/+.0016, tail -.0029/-.0035. The fixed-rubric control shows NO
+systematic advantage over per-query rubrics (differences ~.003, within
+draw noise) -- rejecting the coordinate-incompatibility prediction.
+Surprise: PKPS HURTS the rubric-free tail -- judge-mediated reps transfer
+across queries better than raw ones (task-abstracted language + centering).
+Conceptual defenses that held: per-instance centering removes each query's
+rubric-common mode; the 6-section skeleton is query-invariant; rubric ~
+f(problem) so rubric mismatch co-varies with KQ down-weighting; residual
+writer noise measured small (F26 retest .32->.29). Caveat: all gains small
+at q20; settles the sign, not PKPS's magnitude.
+Data: figures/pkps_rubric_test.json.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
