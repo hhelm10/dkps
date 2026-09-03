@@ -435,6 +435,26 @@ whole-trace judging is now feasible. PRIORITY A/B when credits return
 quo) vs pruned+60K-window vs pruned-full-context. If full-context wins,
 current headline numbers UNDERSTATE qubric.
 
+**F29. Collaborator feedback round 1 (2026-09-03): same-n-correct baseline
++ label concentration.** Their "average y of references with the same
+n-correct on the probe set" baseline, verified under OUR protocol
+(leave-one-LLM-out, 40 draws, q20): m=1 .124, m=5 .095, m=10 .070, m=20
+.048 -- FAR stronger than raw sample score (.437 at m=1) and BEATS qubric
+geometry alone at m>=10. Qubric ensemble stays best at every m (m=1 .113,
+m=5 .082, m=10 .066, m=20 .0495) but the margin over same-n-correct is
+~.01, not the 4x the sample-score comparison suggested. REVISES F24: the
+resolution-floor claim must be stated against same-n-correct, not CAPA/raw
+sample; "one trace ~ 8-10 scored runs" is TRUE vs sample score but the
+fair statement is "trace content adds a consistent ~.01 MAE over the best
+correctness-only estimator at small m, and blending always helps"
+(mutually-beneficial-information, confirmed by their IRT+DKPS result).
+Label concentration on q20 confirmed (their point): solve rates cluster --
+3 instances <10%, 2 >90%, only 7 in 20-80%; effective discriminative
+signal much smaller than 20 -> q150 urgency. IMPLICATION FOR FRAMING:
+QUENCH-only story (their option a) is the WEAKEST claim on this evidence;
+the large unambiguous effects are the intrinsic properties (identity
+.83->.09 etc.); their own blending-washout observation says the same.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
