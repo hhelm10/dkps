@@ -472,6 +472,16 @@ differentiator to state in the paper: IRT requires GRADED probe outcomes
 the ungraded-probe regime is trace-only territory. QUENCH story for the
 paper: IRT+qubric blend as the method; qubric's increment consistent but
 small; the large effects remain the intrinsic properties.
+ADDENDUM (blend honesty audit, 2026-09-03, per HH): v0's alpha selection
+scored references with the TARGET's IRT model (in-sample) -- fixed by
+scoring each reference with its own leave-one-LLM-out model + own mask;
+bias proved immaterial (.0905 vs .0907 at m=1). Real gain: GLOBAL honest
+alpha beats per-target (shrinkage; ~100 refs too few for per-target
+alpha): m=2 .0732, m=3 .0688, m=5 .0599, m=10 .0516, m=20 .0464 -- current
+best. Fitted alpha rises .70->.82 with m: trace channel's share largest
+where probes scarcest. Geometry arm still bare kNN (no PCA-64/PKPS/fusion,
+k not CV'd) -- blend ceiling likely understated.
+Data: figures/irt_dkps_blend_v2.json.
 
 ## 5. Negative results (do not re-run without new ideas)
 
