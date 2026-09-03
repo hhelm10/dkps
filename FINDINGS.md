@@ -455,6 +455,24 @@ QUENCH-only story (their option a) is the WEAKEST claim on this evidence;
 the large unambiguous effects are the intrinsic properties (identity
 .83->.09 etc.); their own blending-washout observation says the same.
 
+**F30. IRT verified + IRT/DKPS blend is the new best pipeline
+(2026-09-03).** Collaborator's outcome_baselines.py (branch
+agentic-traces-bkj-clean) audited: per-target 2PL fit on leave-one-LLM-out
+references; informative item order from REFERENCE fit only (held-out --
+passes the F17 test); adaptive = legitimate simulated CAT. Reproduced
+locally: 2PL-informative m=1 .098 / m=5 .062 / m=20 .048 -- beats our
+qubric ensemble (random probes) at every m<20 and ties our greedy-selected
+pipeline. Blend on IDENTICAL informative probes (honest per-target alpha,
+scripts/irt_dkps_blend.py): beats IRT alone at EVERY m -- m=1 .0905, m=3
+.0697, m=5 .0613, m=20 .0468 -- new best-known numbers. Consistent ~.005-.01
+increment = the trace-content contribution beyond graded outcomes (confirms
+their mutually-beneficial observation; sharpens F24/F29). OPERATIONAL
+differentiator to state in the paper: IRT requires GRADED probe outcomes
+(run the eval harness per probe); trace-geometry needs only the trace --
+the ungraded-probe regime is trace-only territory. QUENCH story for the
+paper: IRT+qubric blend as the method; qubric's increment consistent but
+small; the large effects remain the intrinsic properties.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
