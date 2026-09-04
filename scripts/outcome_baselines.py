@@ -34,12 +34,17 @@ GRID = np.linspace(-8, 8, 801)          # ability grid for the posterior
 
 # ---------------------------------------------------------------- data ----
 def load_panel(labels_path='data/leaderboard/verified_labels.json',
-               judge_dir='data/judge/structured-qspec'):
+               judge_dir='data/judge/structured-qspec', panel=None):
     """Systems, panel tasks, true full-500 rates y, panel outcomes B (M x Q),
-    and the leave-one-LLM-out reference mask `allowed` (M x M)."""
+    and the leave-one-LLM-out reference mask `allowed` (M x M).
+    `panel`: optional JSON file with {"instances": [...]} overriding the
+    instance list derived from judge_dir."""
     labels = json.load(open(labels_path))
     systems = sorted(s for s in os.listdir(judge_dir) if 'resolved' in labels.get(s, {}))
-    q20 = sorted(f[:-5] for f in os.listdir(os.path.join(judge_dir, systems[0])))
+    if panel:
+        q20 = sorted(json.load(open(panel))['instances'])
+    else:
+        q20 = sorted(f[:-5] for f in os.listdir(os.path.join(judge_dir, systems[0])))
     y = np.array([len(labels[s]['resolved']) / 500 for s in systems])
     B = np.array([[q in set(labels[s]['resolved']) for q in q20] for s in systems], float)
 
@@ -186,9 +191,10 @@ def main():
     ap.add_argument('--draws', type=int, default=100, help='random probe draws per m (1 < m < 20)')
     ap.add_argument('--ridge-a', type=float, default=10.0, help='2PL prior precision on log-slope')
     ap.add_argument('--out', default='figures/outcome_baselines.json')
+    ap.add_argument('--panel', default=None)
     args = ap.parse_args()
 
-    systems, q20, y, B, allowed = load_panel()
+    systems, q20, y, B, allowed = load_panel(panel=args.panel)
     M, Q = B.shape
     ms = [int(x) for x in args.ms.split(',')]
     print(f'{M} systems x {Q} panel tasks; fitting {M} leave-one-LLM-out 2PL models')

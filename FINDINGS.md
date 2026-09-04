@@ -519,6 +519,16 @@ Ops notes: pinned snapshot served by one slow provider (~40-120s/call) ->
 6x12 concurrency; embed_graded local/API routing bug fixed (slashless =
 API). Data: figures/q100_eval.json; cache q100-qspec-flash0731/,
 q100_emb_openai_small.npz; scripts run_q100.py, render_full_pruned.py.
+ADDENDUM (IRT + blend on q100, 2026-09-04): 100-item pool strengthens IRT
+(informative selection has real choices): 2PL-inf m=1 .0774, m=20 .0397;
+adaptive m=20 .0320. Blend (identical informative probes, per-target
+honest-ish alpha) beats IRT at EVERY m -- m=1 .0693, m=3 .0546, m=5 .0572,
+m=10 .0438, m=20 .0376 -- new best-known at all budgets; trace increment
+.002-.008, LARGEST at small m (mirrors q20). Also: informative probes help
+geometry too (.0816 vs .1007 random at m=1). ONE graded probe + its trace
+= .069 MAE vs .44 sample score. Global-alpha shrinkage variant not yet
+applied on q100 (worth ~.001-.002). Data: q100_outcome_baselines.json,
+q100_irt_dkps_blend.json.
 
 ## 5. Negative results (do not re-run without new ideas)
 

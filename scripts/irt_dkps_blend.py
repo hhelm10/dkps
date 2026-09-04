@@ -20,12 +20,20 @@ from dkps.traces.qubric import consensus_center  # noqa: E402
 
 
 def main():
-    systems, q20, y, B, allowed = load_panel()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--panel', default=None)
+    ap.add_argument('--emb', default='data/judge/quench_emb_structured-qspec_'
+                                     'nomic-ai_nomic-embed-text-v1.5.npz')
+    ap.add_argument('--out', default='figures/irt_dkps_blend.json')
+    ap.add_argument('--global-alpha', action='store_true',
+                    help='pool the alpha selection across targets (shrinkage)')
+    args = ap.parse_args()
+    systems, q20, y, B, allowed = load_panel(panel=args.panel)
     M, Q = B.shape
     models = [ItemModel(B[allowed[i]], y[allowed[i]], 10.0) for i in range(M)]
     info_order = [m.informative_order() for m in models]
-    X = np.load('data/judge/quench_emb_structured-qspec_'
-                'nomic-ai_nomic-embed-text-v1.5.npz')['X']
+    X = np.load(args.emb)['X']
     Xc = consensus_center(X, np.tile(np.arange(Q), M)).reshape(M, Q, -1)
     alphas = np.linspace(0, 1, 11)
 
@@ -55,8 +63,8 @@ def main():
                       blend=float(np.mean(e_bl)))
         print(f'{m:2d}  irt {res[m]["irt"]:.4f}  geom {res[m]["geom"]:.4f}  '
               f'blend {res[m]["blend"]:.4f}')
-    json.dump(res, open('figures/irt_dkps_blend.json', 'w'), indent=2)
-    print('wrote figures/irt_dkps_blend.json')
+    json.dump(res, open(args.out, 'w'), indent=2)
+    print('wrote', args.out)
 
 
 if __name__ == '__main__':
