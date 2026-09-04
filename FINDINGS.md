@@ -545,6 +545,14 @@ m=3 .0518, m=5 .0539, m=10 .0407, m=20 .0372. PKPS geometry alone now
 MATCHES IRT at m=1 (.0784 vs .0774) and alpha drops to ~.56-.63 -- the
 trace arm earns near-equal weight. Data: figures/q100_pkps.json,
 q100_blend_pkps.json.
+ADDENDUM (bandwidth CV, 2026-09-04, per HH): sigma^2 and k now selected on
+pooled reference errors (honest, F17-style) from med/{1..32} x k{3,5}.
+Data chooses NARROW kernels (med/32 at m=1, med/4-8 mid) -- q20-era med/16
+pattern replicates; median heuristic never optimal. CV'd geometry improves
+at every m and BEATS IRT alone at m=1 (.0753 vs .0774) -- correctness-free
+trace prediction beats 2PL at one probe. Blend under CV'd kernel ~flat vs
+fixed-median (+/-.002; alpha compensates): new records m=3 .0516, m=20
+.0360; m=1 stays ~.066-.067. Data: figures/q100_blend_pkps_cv.json.
 
 ## 5. Negative results (do not re-run without new ideas)
 
