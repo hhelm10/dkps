@@ -554,6 +554,25 @@ trace prediction beats 2PL at one probe. Blend under CV'd kernel ~flat vs
 fixed-median (+/-.002; alpha compensates): new records m=3 .0516, m=20
 .0360; m=1 stays ~.066-.067. Data: figures/q100_blend_pkps_cv.json.
 
+**F34. Paper-grade table: per-query-set bandwidth CV + bootstrap CIs
+(2026-09-04, per HH).** Protocol: for EACH target's probe panel at each m,
+(sigma, k) selected on that target's leave-one-LLM-out references evaluated
+on the same panel; alpha likewise per-target; 95% bootstrap CIs over 107
+systems (2000 resamples); PAIRED bootstrap on blend-IRT.
+Results (MAE [95% CI]): m=1 IRT .0774[.066,.090] geom .0821[.069,.097]
+blend .0706[.059,.083]; m=3 .0615/.0643/.0520; m=5 .0645/.0671/.0539;
+m=10 .0465/.0566/.0421; m=20 .0397/.0506/.0356.
+Paired delta blend-IRT: m=1 -.0069[-.015,+.002] P(better)=.95; m=3
+-.0095[-.015,-.004] P=1.00; m=5 -.0106[-.016,-.005] P=1.00; m=10
+-.0044[-.010,+.001] P=.95; m=20 -.0040[-.009,+.000] P=.96. The trace
+increment is SIGNIFICANT at m=3,5 and suggestive (P~.95) elsewhere at 107
+systems. HONEST CAVEAT: per-query-set hyperparameter selection COSTS
+geometry accuracy vs pooled selection (m=1 .0821 vs .0753 pooled) -- F17's
+selection-noise lesson at per-target granularity; a paper should either
+pool (shrink) the kernel choice or report per-set as the deployable
+protocol. Blend is robust to this (alpha compensates).
+Script: q100_final_table.py; data: figures/q100_final_table.json.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
