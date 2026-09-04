@@ -1,10 +1,9 @@
-"""Paper-grade q100 results table: per-query-set bandwidth CV + bootstrap CIs.
+"""Paper-grade q100 results table: pooled bandwidth CV + bootstrap CIs.
 
-Per HH (2026-09-04): for each target's probe set (its informative panel at
-budget m), the PKPS bandwidth sigma and kNN k are selected on that target's
-leave-one-LLM-out references evaluated on the SAME probe set -- the
-hyperparameters a practitioner could actually choose. Alpha (blend weight)
-likewise per-target from references.
+Per HH (2026-09-04, v2): POOLED hyperparameter selection -- (sigma, k) and
+the blend weight alpha are chosen per budget by mean reference error across
+all targets (references only; leave-one-LLM-out). Per-query-set selection
+was measured ~.005 noisier (F34 v1) and retired by user decision.
 
 Uncertainty: 95% bootstrap CIs over the 107 target systems (2000 resamples),
 plus the PAIRED bootstrap CI on (blend - IRT) -- the trace-increment claim.
@@ -63,41 +62,49 @@ def main():
 
     rng = np.random.default_rng(0)
     out = {}
-    print(f'{"m":>3} {"IRT":>16} {"geom(CVed)":>16} {"blend":>16} '
-          f'{"blend-IRT delta":>20}')
+    print(f'{"m":>3} {"kernel":>10} {"IRT":>16} {"geom(pooledCV)":>16} '
+          f'{"blend":>16} {"blend-IRT delta":>20}')
     for m in MS:
-        e_irt = np.zeros(M)
-        e_geo = np.zeros(M)
-        e_bl = np.zeros(M)
-        for i in range(M):
-            cols = np.array(info_order[i][:m])
-            refs = np.where(allowed[i])[0]
-            irt_all = np.array([models[j].predict(cols, B[j, cols])
-                                for j in range(M)])
-            # per-query-set (sigma, k) selection on references
-            best = (np.inf, None, None, None)
-            for s_ in SIGS:
-                D = pkps_D(cols, s_)
-                Dref = D[:, refs].copy()
-                for r, j in enumerate(refs):
-                    Dref[j, r] = np.inf
-                Dref[i] = D[i, refs]
-                for k in KS:
+        cols_of = {i: np.array(info_order[i][:m]) for i in range(M)}
+        irt_of = {i: np.array([models[j].predict(cols_of[i], B[j, cols_of[i]])
+                               for j in range(M)]) for i in range(M)}
+        # pooled (sigma, k) selection: mean reference error across all targets
+        cand = {}
+        for s_ in SIGS:
+            Dc = {}
+            for i in range(M):
+                key = tuple(cols_of[i])
+                if key not in Dc:
+                    Dc[key] = pkps_D(cols_of[i], s_)
+            for k in KS:
+                errs, geo_store = [], {}
+                for i in range(M):
+                    D = Dc[tuple(cols_of[i])]
+                    refs = np.where(allowed[i])[0]
+                    Dref = D[:, refs].copy()
+                    for r, j in enumerate(refs):
+                        Dref[j, r] = np.inf
+                    Dref[i] = D[i, refs]
                     nn = np.argsort(Dref, 1)[:, :k]
                     w = 1 / (np.take_along_axis(Dref, nn, 1) + 1e-12)
                     geo_all = (w * y[refs][nn]).sum(1) / w.sum(1)
-                    ref_err = np.abs(geo_all[refs] - y[refs]).mean()
-                    if ref_err < best[0]:
-                        best = (ref_err, s_, k, geo_all)
-            _, s_b, k_b, geo_all = best
-            # per-target alpha on references under the chosen kernel
-            E = np.abs(ALPHAS[None] * irt_all[refs, None]
-                       + (1 - ALPHAS[None]) * geo_all[refs, None]
-                       - y[refs, None]).mean(0)
-            a = ALPHAS[int(E.argmin())]
-            e_irt[i] = abs(irt_all[i] - y[i])
-            e_geo[i] = abs(geo_all[i] - y[i])
-            e_bl[i] = abs(a * irt_all[i] + (1 - a) * geo_all[i] - y[i])
+                    geo_store[i] = geo_all
+                    errs.append(np.abs(geo_all[refs] - y[refs]).mean())
+                cand[(s_, k)] = (float(np.mean(errs)), geo_store)
+        (s_b, k_b), (_, geo_store) = min(cand.items(), key=lambda kv: kv[1][0])
+        # pooled global alpha on references under the chosen kernel
+        curves = np.zeros((M, len(ALPHAS)))
+        for i in range(M):
+            refs = np.where(allowed[i])[0]
+            curves[i] = np.abs(ALPHAS[None] * irt_of[i][refs, None]
+                               + (1 - ALPHAS[None]) * geo_store[i][refs, None]
+                               - y[refs, None]).mean(0)
+        a = ALPHAS[int(curves.mean(0).argmin())]
+        e_irt = np.zeros(M); e_geo = np.zeros(M); e_bl = np.zeros(M)
+        for i in range(M):
+            e_irt[i] = abs(irt_of[i][i] - y[i])
+            e_geo[i] = abs(geo_store[i][i] - y[i])
+            e_bl[i] = abs(a * irt_of[i][i] + (1 - a) * geo_store[i][i] - y[i])
         row = {}
         for name, e in (('irt', e_irt), ('geom', e_geo), ('blend', e_bl)):
             lo, hi = boot_ci(e, rng)
@@ -108,10 +115,11 @@ def main():
                                             frac_boot_below_zero=float(
             np.mean([d[rng.integers(0, M, M)].mean() < 0
                      for _ in range(BOOT)])))
+        row['kernel'] = dict(sigma_div=s_b, k=k_b, alpha=float(a))
         out[m] = row
         f = lambda r: f"{r['mae']:.4f} [{r['ci'][0]:.3f},{r['ci'][1]:.3f}]"  # noqa: E731
         dd = row['delta_blend_minus_irt']
-        print(f"{m:3d} {f(row['irt']):>16} {f(row['geom']):>16} "
+        print(f"{m:3d} med/{s_b:<3d}k={k_b} {f(row['irt']):>16} {f(row['geom']):>16} "
               f"{f(row['blend']):>16}  {dd['mean']:+.4f} "
               f"[{dd['ci'][0]:+.3f},{dd['ci'][1]:+.3f}]")
     json.dump(out, open('figures/q100_final_table.json', 'w'), indent=2)

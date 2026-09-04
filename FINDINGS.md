@@ -572,6 +572,13 @@ selection-noise lesson at per-target granularity; a paper should either
 pool (shrink) the kernel choice or report per-set as the deployable
 protocol. Blend is robust to this (alpha compensates).
 Script: q100_final_table.py; data: figures/q100_final_table.json.
+FINAL (pooled selection, user decision): kernel + alpha pooled per budget.
+CANONICAL TABLE: m=1 IRT .0774 / geom .0753 / blend .0670, delta -.0105
+[-.018,-.002] SIG; m=3 .0615/.0656/.0516, -.0099[-.016,-.004] SIG; m=5
+.0645/.0652/.0533, -.0111[-.017,-.005] SIG; m=10 .0465/.0557/.0421,
+-.0044[-.010,+.000] borderline; m=20 .0397/.0533/.0360, -.0037[-.008,+.001].
+Trace increment SIGNIFICANT at m=1,3,5 -- exactly the scarce-probe regime.
+Kernels chosen: med/32 k=5 (m=1) narrowing to med/4 k=3 (m>=10).
 
 ## 5. Negative results (do not re-run without new ideas)
 
