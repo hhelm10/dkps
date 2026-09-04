@@ -26,12 +26,13 @@ OUT = 'data/judge/trace_texts_full_pruned'
 
 
 def _one(args):
-    sub_dir, wanted, max_chars = args
+    sub_dir, wanted, max_chars, raw = args
     ts = lb.load_leaderboard_submission(sub_dir, labels=None)
     out = {}
     for t in ts:
         if t.query_id in wanted:
-            txt = prune_for_judging(t.steps[0].assistant_text or '')
+            txt = (t.steps[0].assistant_text or '') if raw else \
+                prune_for_judging(t.steps[0].assistant_text or '')
             if len(txt) > max_chars:
                 txt = (txt[:max_chars * 4 // 5] + '\n...[omitted]...\n'
                        + txt[-max_chars // 5:])
@@ -47,6 +48,9 @@ def main():
     ap.add_argument('--max-chars', type=int, default=500_000)
     ap.add_argument('--panel', default=None,
                     help='JSON panel file with {"instances": [...]}; default q20')
+    ap.add_argument('--raw', action='store_true',
+                    help='skip pruning (raw render; for the naive baseline); '
+                         'caches to trace_texts_full_raw/')
     args = ap.parse_args()
 
     labels = json.load(open(args.labels))
@@ -57,14 +61,17 @@ def main():
             os.path.join(args.ref_cache, sorted(os.listdir(args.ref_cache))[0])))
     systems = sorted(s for s in os.listdir(args.ref_cache)
                      if 'resolved' in labels.get(s, {}))
+    global OUT
+    if args.raw:
+        OUT = 'data/judge/trace_texts_full_raw'
     todo = [s for s in systems
             if not all(os.path.exists(os.path.join(OUT, s, f'{q}.txt'))
                        for q in q20)]
-    print(f'{len(systems)} systems; rendering {len(todo)}')
+    print(f'{len(systems)} systems; rendering {len(todo)} -> {OUT}')
     with Pool(16) as pool:
         for s, out in tqdm(pool.imap_unordered(
-                _one, [(os.path.join(args.root, s), set(q20), args.max_chars)
-                       for s in todo]), total=len(todo)):
+                _one, [(os.path.join(args.root, s), set(q20), args.max_chars,
+                        args.raw) for s in todo]), total=len(todo)):
             os.makedirs(os.path.join(OUT, s), exist_ok=True)
             for q, t in out.items():
                 open(os.path.join(OUT, s, f'{q}.txt'), 'w').write(t)
