@@ -584,6 +584,26 @@ blend .0663, delta -.0111[-.019,-.003] SIG. All budgets now interior:
 med/64 k=5 (m=1) -> med/8 (m=3) -> med/2-4 (m>=5). Bandwidth schedule is
 monotone-ish in m: one probe borrows only from near-identical problems.
 
+**F35. Probe regimes: random (B=20) + label-free geometry selection
+(2026-09-04, per HH).** Same protocol as the canonical table (pooled
+sigma/k/alpha on references, bootstrap CIs, paired deltas).
+RANDOM probes (20 draws/m, per-draw kernel selection): IRT DEGRADES badly
+without item selection (m=1 .1289 vs .0774 informative) while geometry
+barely moves (.0909 vs .0738) -> geometry beats IRT decisively at m<=10
+and the blend-IRT delta is SIGNIFICANT AT EVERY m: m=1 -.0388[-.050,-.028],
+m=3 -.0302, m=5 -.0206, m=10 -.0154, m=20 -.0065[-.009,-.004]. In the
+no-selection setting the trace channel is not an increment, it is the
+main signal. Blend: .0901/.0677/.0595/.0514/.0390.
+GEOMETRY-SELECTED probes (per-target top-m instances by dispersion of
+centered reference embeddings; label-free): deltas significant at every m
+(-.0267/-.0183/-.0101/-.0102/-.0048) but the criterion does NOT beat
+Fisher selection even for the geometry arm (geom m=1 .0958 vs .0738
+Fisher; ~= random) -- high-dispersion instances are noisy rather than
+score-discriminative; a supervised-on-references greedy criterion remains
+open. Fisher-informative selection dominates all regimes for all methods.
+Regime summary (blend): informative .0663 < random .0901 < geom-var .0931
+at m=1. Data: figures/q100_probe_regimes.json; script q100_probe_regimes.py.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
