@@ -68,27 +68,30 @@ def stage_rubrics(key, args):
 
 
 def stage_extract(key, args):
+    from concurrent.futures import ThreadPoolExecutor
     _, systems, q100 = load_panel()
     rubrics = {q: json.loads(open(f'{RUB}/{q}.json').read()) for q in q100}
-    n_done = 0
-    for s in tqdm(systems, desc='extract'):
+
+    def one_system(s):
         todo = {q: open(os.path.join(TXT, s, f'{q}.txt')).read()
                 for q in q100
                 if not os.path.exists(os.path.join(EXT, s, f'{q}.json'))
                 and os.path.exists(os.path.join(TXT, s, f'{q}.txt'))}
-        if args.limit and n_done >= args.limit:
-            break
         if args.limit:
-            todo = dict(list(todo.items())[:args.limit - n_done])
+            todo = dict(list(todo.items())[:args.limit])
         if not todo:
-            continue
+            return 0
         graded = grade_traces(rubrics, todo, key, JUDGE,
-                              task_ids={q: q for q in todo}, workers=24,
+                              task_ids={q: q for q in todo}, workers=8,
                               max_trace_chars=1_000_000, on_error='skip')
         os.makedirs(os.path.join(EXT, s), exist_ok=True)
         for q, g in graded.items():
             open(os.path.join(EXT, s, f'{q}.json'), 'w').write(json.dumps(g))
-        n_done += len(graded)
+        return len(graded)
+
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        list(tqdm(ex.map(one_system, systems), total=len(systems),
+                  desc='extract'))
     total = sum(os.path.exists(os.path.join(EXT, s, f'{q}.json'))
                 for s in systems for q in q100)
     print(f'coverage {total}/{len(systems) * len(q100)}')

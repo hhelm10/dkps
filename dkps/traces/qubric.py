@@ -76,7 +76,7 @@ def _chat(api_key, model_name, content, sections, base_url=DEFAULT_BASE_URL,
         try:
             r = requests.post(base_url.rstrip('/') + '/chat/completions', json=body,
                               headers={'Authorization': f'Bearer {api_key}'},
-                              timeout=300)
+                              timeout=(15, 120))
         except requests.RequestException:
             time.sleep(delay); delay = min(delay * 2, 60); continue
         if r.status_code == 200:
@@ -211,7 +211,7 @@ def embed_graded(graded, api_key, embedding_model_name,
                               json={'model': embedding_model_name,
                                     'input': texts[i:i + batch]},
                               headers={'Authorization': f'Bearer {api_key}'},
-                              timeout=300)
+                              timeout=(15, 120))
             r.raise_for_status()
             rows.extend(d['embedding'] for d in r.json()['data'])
         E = np.asarray(rows)
