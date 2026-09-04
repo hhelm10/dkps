@@ -50,12 +50,18 @@ def stage_embed(key):
             texts.append(enc.decode(toks[-8000:]) or ' ')
     rows = []
     for i in tqdm(range(0, len(texts), 16), desc='embed'):
-        for attempt in range(6):
-            r = requests.post('https://api.openai.com/v1/embeddings',
-                              json={'model': 'text-embedding-3-small',
-                                    'input': [t or ' ' for t in texts[i:i+16]]},
-                              headers={'Authorization': f'Bearer {key}'},
-                              timeout=120)
+        for attempt in range(8):
+            try:
+                r = requests.post('https://api.openai.com/v1/embeddings',
+                                  json={'model': 'text-embedding-3-small',
+                                        'input': [t or ' ' for t in texts[i:i+16]]},
+                                  headers={'Authorization': f'Bearer {key}'},
+                                  timeout=120)
+            except requests.RequestException as e:
+                print(f'net error at {i} (attempt {attempt}): {e}',
+                      file=sys.stderr)
+                time.sleep(5 * (attempt + 1))
+                continue
             if r.status_code == 200:
                 rows.extend(d['embedding'] for d in r.json()['data'])
                 break
@@ -63,7 +69,7 @@ def stage_embed(key):
                 raise RuntimeError(f'embed 400 at {i}: {r.text[:300]}')
             time.sleep(5 * (attempt + 1))
         else:
-            raise RuntimeError(f'embed failed at {i}: {r.text[:200]}')
+            raise RuntimeError(f'embed exhausted retries at {i}')
     E = np.asarray(rows, np.float32).reshape(len(texts) // 2, 2, -1)
     np.savez_compressed(EMB, HT=E)
     print('wrote', EMB, E.shape)
