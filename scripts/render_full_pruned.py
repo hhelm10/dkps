@@ -45,11 +45,16 @@ def main():
     ap.add_argument('--labels', default='data/leaderboard/verified_labels.json')
     ap.add_argument('--ref-cache', default='data/judge/structured-qspec')
     ap.add_argument('--max-chars', type=int, default=500_000)
+    ap.add_argument('--panel', default=None,
+                    help='JSON panel file with {"instances": [...]}; default q20')
     args = ap.parse_args()
 
     labels = json.load(open(args.labels))
-    q20 = sorted(f[:-5] for f in os.listdir(
-        os.path.join(args.ref_cache, sorted(os.listdir(args.ref_cache))[0])))
+    if args.panel:
+        q20 = sorted(json.load(open(args.panel))['instances'])
+    else:
+        q20 = sorted(f[:-5] for f in os.listdir(
+            os.path.join(args.ref_cache, sorted(os.listdir(args.ref_cache))[0])))
     systems = sorted(s for s in os.listdir(args.ref_cache)
                      if 'resolved' in labels.get(s, {}))
     todo = [s for s in systems
