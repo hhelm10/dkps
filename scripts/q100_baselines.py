@@ -26,7 +26,7 @@ sys.path.insert(0, 'scripts')
 from outcome_baselines import ItemModel, load_panel  # noqa: E402
 
 RAW = 'data/judge/trace_texts_full_raw'
-EMB = 'data/judge/q100_raw_emb_nomic.npz'
+EMB = 'data/judge/q100_raw_emb_openai_small.npz'
 SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
 KS = (3, 5)
 ALPHAS = np.linspace(0, 1, 101)
@@ -36,9 +36,7 @@ B_DRAWS = 20
 
 
 def stage_embed(key):
-    # local nomic (OpenAI quota exhausted 2026-09-04; embedder-robustness
-    # pairing: qubric sections also re-embedded with nomic separately)
-    from dkps.traces.embedder import make_sentence_transformer_embed_fn
+    import time
     systems, q100, y, B, allowed = load_panel(panel='data/judge/q100.json')
     texts = []
     for s in systems:
@@ -47,8 +45,21 @@ def stage_embed(key):
             t = open(p).read() if os.path.exists(p) else ' '
             texts.append(t[:32_000])
             texts.append(t[-32_000:])
-    embed = make_sentence_transformer_embed_fn()
-    E = np.asarray(embed(texts), np.float32).reshape(len(texts) // 2, 2, -1)
+    rows = []
+    for i in tqdm(range(0, len(texts), 16), desc='embed'):
+        for attempt in range(6):
+            r = requests.post('https://api.openai.com/v1/embeddings',
+                              json={'model': 'text-embedding-3-small',
+                                    'input': [t or ' ' for t in texts[i:i+16]]},
+                              headers={'Authorization': f'Bearer {key}'},
+                              timeout=120)
+            if r.status_code == 200:
+                rows.extend(d['embedding'] for d in r.json()['data'])
+                break
+            time.sleep(5 * (attempt + 1))
+        else:
+            raise RuntimeError(f'embed failed at {i}: {r.text[:200]}')
+    E = np.asarray(rows, np.float32).reshape(len(texts) // 2, 2, -1)
     np.savez_compressed(EMB, HT=E)
     print('wrote', EMB, E.shape)
 
