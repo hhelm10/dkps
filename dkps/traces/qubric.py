@@ -198,9 +198,8 @@ def embed_graded(graded, api_key, embedding_model_name,
         graded = list(graded.values())
     texts = [str(g.get(s, '') or ' ') for g in graded for s in sections]
 
-    local = api_key is None or '/' not in embedding_model_name \
-        or embedding_model_name.split('/')[0] in (
-            'sentence-transformers', 'nomic-ai', 'BAAI', 'intfloat', 'thenlper')
+    # HF ids carry a slash (org/name); OpenAI-style API ids do not.
+    local = api_key is None or '/' in embedding_model_name
     if local:
         from .embedder import make_sentence_transformer_embed_fn
         E = make_sentence_transformer_embed_fn(model_name=embedding_model_name)(texts)
