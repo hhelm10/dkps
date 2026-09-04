@@ -530,6 +530,22 @@ geometry too (.0816 vs .1007 random at m=1). ONE graded probe + its trace
 applied on q100 (worth ~.001-.002). Data: q100_outcome_baselines.json,
 q100_irt_dkps_blend.json.
 
+**F33. Geometry-arm levers on q100: PCA no, MDS n/a, PKPS yes
+(2026-09-04, per HH).** PCA rank sweep on the centered q100 embeddings:
+full-d .1014/.0784 (m=1/5, random probes), r=64 WORSE (.1051/.0802), r=256
+marginal (.0995/.0765) -- F18's q20-era rank-64 gain does not replicate
+under OpenAI-small + 5x panel; PCA retired as a lever here. MDS/CMDS is a
+no-op for kNN readouts (distance-preserving). PKPS (product kernel, KQ
+from PCA-64 problem statements, memory-blocked A_tr): helps at EVERY m --
+paired->PKPS .1014->.0979 (m=1), .0823->.0747 (m=3), .0784->.0707 (m=5),
+.0698->.0650 (m=10); larger gains than q20 era (100-instance reference
+coverage to exploit). BLEND UPGRADE: PKPS geometry arm + global honest
+alpha on informative probes = new best at every m: m=1 .0655, m=2 .0580,
+m=3 .0518, m=5 .0539, m=10 .0407, m=20 .0372. PKPS geometry alone now
+MATCHES IRT at m=1 (.0784 vs .0774) and alpha drops to ~.56-.63 -- the
+trace arm earns near-equal weight. Data: figures/q100_pkps.json,
+q100_blend_pkps.json.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
