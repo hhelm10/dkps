@@ -578,7 +578,11 @@ CANONICAL TABLE: m=1 IRT .0774 / geom .0753 / blend .0670, delta -.0105
 .0645/.0652/.0533, -.0111[-.017,-.005] SIG; m=10 .0465/.0557/.0421,
 -.0044[-.010,+.000] borderline; m=20 .0397/.0533/.0360, -.0037[-.008,+.001].
 Trace increment SIGNIFICANT at m=1,3,5 -- exactly the scarce-probe regime.
-Kernels chosen: med/32 k=5 (m=1) narrowing to med/4 k=3 (m>=10).
+GRID FIX (per HH): med/32 at m=1 was a boundary solution; grid extended to
+med/256. m=1 settles INTERIOR at med/64 (128/256 rejected): geom .0738,
+blend .0663, delta -.0111[-.019,-.003] SIG. All budgets now interior:
+med/64 k=5 (m=1) -> med/8 (m=3) -> med/2-4 (m>=5). Bandwidth schedule is
+monotone-ish in m: one probe borrows only from near-identical problems.
 
 ## 5. Negative results (do not re-run without new ideas)
 

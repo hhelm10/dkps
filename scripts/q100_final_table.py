@@ -20,7 +20,7 @@ sys.path.insert(0, 'scripts')
 from outcome_baselines import ItemModel, load_panel  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
 
-SIGS = (1, 2, 4, 8, 16, 32)          # sigma^2 = median / s
+SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)   # sigma^2 = median / s
 KS = (3, 5)
 ALPHAS = np.linspace(0, 1, 101)
 BOOT = 2000
