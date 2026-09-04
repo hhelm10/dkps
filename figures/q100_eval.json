@@ -1,0 +1,35 @@
+{
+  "panel": "data/judge/q100.json",
+  "judge": "deepseek/deepseek-v4-flash-0731",
+  "embedder": "text-embedding-3-small",
+  "curves": {
+    "1": {
+      "geometry": 0.10066005190649738,
+      "count_lookup": 0.1268678979170647
+    },
+    "3": {
+      "geometry": 0.08250376144469262,
+      "count_lookup": 0.10460628693999857
+    },
+    "5": {
+      "geometry": 0.07410688029625984,
+      "count_lookup": 0.08662272174402257
+    },
+    "10": {
+      "geometry": 0.07178380509579042,
+      "count_lookup": 0.07494758839316097
+    },
+    "20": {
+      "geometry": 0.0683716003229062,
+      "count_lookup": 0.056091374490753416
+    },
+    "50": {
+      "geometry": 0.06619959655724404,
+      "count_lookup": 0.03566234607552364
+    }
+  },
+  "full_panel": {
+    "knn_mae": 0.06872357692587672,
+    "knn_rho": 0.8549419787751069
+  }
+}

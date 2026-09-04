@@ -500,6 +500,26 @@ writer noise measured small (F26 retest .32->.29). Caveat: all gains small
 at q20; settles the sign, not PKPS's magnitude.
 Data: figures/pkps_rubric_test.json.
 
+**F32. q100 era: first full-scale run (2026-09-04).** Config: panel q100
+(q20 UNION rng(2)-seeded 80 from q418; data/judge/q100.json), Model 1 =
+Model 2 = deepseek/deepseek-v4-flash-0731 (reasoning disabled -- V4 hybrid
+burned completion budget reasoning at effort=low, causing length-loops),
+pruned FULL traces (median 79K chars; 677/10700 capped at 500K), embedder
+OpenAI text-embedding-3-small (access restored). Coverage 10692/10700,
+~$15 total. RESULTS (leave-one-LLM-out, 107 systems): full-panel kNN MAE
+.0687 / rho .855 -- better than the q20 era's .0784 despite 5x panel.
+Geometry vs count-lookup: m=1 .1007 vs .1269, m=3 .0825 vs .1046, m=5
+.0741 vs .0866, m=10 .0718 vs .0749 (crossover ~m=15), m=20 .0684 vs
+.0561, m=50 .0662 vs .0357. The scarce-probe advantage of trace content
+WIDENED vs q20 (m=1 margin .026 vs .007) -- with 93 non-q20 instances the
+label-concentration critique (F29) is addressed and the low-m regime is
+clearly trace-territory. Config change is deliberate era break (judge +
+inputs + embedder all moved); q20-era numbers remain for the old config.
+Ops notes: pinned snapshot served by one slow provider (~40-120s/call) ->
+6x12 concurrency; embed_graded local/API routing bug fixed (slashless =
+API). Data: figures/q100_eval.json; cache q100-qspec-flash0731/,
+q100_emb_openai_small.npz; scripts run_q100.py, render_full_pruned.py.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
