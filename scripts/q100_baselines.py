@@ -37,14 +37,17 @@ B_DRAWS = 20
 
 def stage_embed(key):
     import time
+    import tiktoken
+    enc = tiktoken.get_encoding('cl100k_base')
     systems, q100, y, B, allowed = load_panel(panel='data/judge/q100.json')
     texts = []
     for s in systems:
         for q in q100:
             p = os.path.join(RAW, s, f'{q}.txt')
             t = open(p).read() if os.path.exists(p) else ' '
-            texts.append(t[:32_000])
-            texts.append(t[-32_000:])
+            toks = enc.encode(t, disallowed_special=())
+            texts.append(enc.decode(toks[:8000]) or ' ')
+            texts.append(enc.decode(toks[-8000:]) or ' ')
     rows = []
     for i in tqdm(range(0, len(texts), 16), desc='embed'):
         for attempt in range(6):
@@ -56,6 +59,8 @@ def stage_embed(key):
             if r.status_code == 200:
                 rows.extend(d['embedding'] for d in r.json()['data'])
                 break
+            if r.status_code == 400:
+                raise RuntimeError(f'embed 400 at {i}: {r.text[:300]}')
             time.sleep(5 * (attempt + 1))
         else:
             raise RuntimeError(f'embed failed at {i}: {r.text[:200]}')
