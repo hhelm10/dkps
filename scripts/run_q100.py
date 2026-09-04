@@ -82,14 +82,14 @@ def stage_extract(key, args):
         if not todo:
             return 0
         graded = grade_traces(rubrics, todo, key, JUDGE,
-                              task_ids={q: q for q in todo}, workers=8,
+                              task_ids={q: q for q in todo}, workers=12,
                               max_trace_chars=1_000_000, on_error='skip')
         os.makedirs(os.path.join(EXT, s), exist_ok=True)
         for q, g in graded.items():
             open(os.path.join(EXT, s, f'{q}.json'), 'w').write(json.dumps(g))
         return len(graded)
 
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    with ThreadPoolExecutor(max_workers=6) as ex:
         list(tqdm(ex.map(one_system, systems), total=len(systems),
                   desc='extract'))
     total = sum(os.path.exists(os.path.join(EXT, s, f'{q}.json'))

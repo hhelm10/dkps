@@ -62,13 +62,14 @@ def _schema(sections):
 
 
 def _chat(api_key, model_name, content, sections, base_url=DEFAULT_BASE_URL,
-          max_tokens=2500, effort='low'):
+          max_tokens=4000, effort='none'):
+    reasoning = {'enabled': False} if effort == 'none' else {'effort': effort}
     body = {'model': model_name,
             'messages': [{'role': 'user', 'content': content}],
             'max_tokens': max_tokens,
             'response_format': _schema(sections),
-            'reasoning': {'effort': effort},
-            'provider': {'sort': 'price', 'require_parameters': True}}
+            'reasoning': reasoning,
+            'provider': {'sort': 'throughput', 'require_parameters': True}}
     if 'openrouter' not in base_url:
         body.pop('reasoning'); body.pop('provider')
     delay = 2.0
@@ -88,7 +89,6 @@ def _chat(api_key, model_name, content, sections, base_url=DEFAULT_BASE_URL,
                 time.sleep(delay); delay = min(delay * 2, 60); continue
             if j['choices'][0].get('finish_reason') == 'length':
                 body['max_tokens'] = 8000
-                body['reasoning'] = {'effort': 'medium'}
                 continue
             out = j['choices'][0]['message']['content'] or ''
             try:
