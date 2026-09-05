@@ -604,6 +604,22 @@ open. Fisher-informative selection dominates all regimes for all methods.
 Regime summary (blend): informative .0663 < random .0901 < geom-var .0931
 at m=1. Data: figures/q100_probe_regimes.json; script q100_probe_regimes.py.
 
+**F36. Raw-trace baseline on q100: the judge stage earns its cost
+(2026-09-05).** Raw rep = head+tail 8K tokens (tiktoken) of the UNPRUNED
+render, text-embedding-3-small, identical protocol (pooled kernel CV, both
+regimes, CIs). Random probes (B=20), geometry: raw ~FLAT in m
+(.100/.096/.095/.095/.093 at m=1..20 -- more raw probes add almost
+nothing) vs qubric .091/.072/.067/.062/.060 -- the gap GROWS with m.
+Blends: raw .098/.083/.072/.063/.044 vs qubric .090/.068/.060/.051/.039 --
+qubric better at every m in both regimes. CAPA (random): .399/.260/.182/
+.121/.069 -- weakest probe-based baseline, dominated by count-lookup
+everywhere (F24 confirmed at scale). The flat raw curve is the cleanest
+evidence that raw embeddings saturate at the authorship signal while
+qubric accumulates behavioral evidence per probe. Ops: OpenAI embed hit a
+transient server-side token miscount (333K counted for a 128K batch;
+unreproducible), resolved at batch 8. Data: figures/q100_baselines.json,
+q100_capa.json; script q100_baselines.py.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.

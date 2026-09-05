@@ -49,12 +49,12 @@ def stage_embed(key):
             texts.append(enc.decode(toks[:8000]) or ' ')
             texts.append(enc.decode(toks[-8000:]) or ' ')
     rows = []
-    for i in tqdm(range(0, len(texts), 16), desc='embed'):
+    for i in tqdm(range(0, len(texts), 8), desc='embed'):
         for attempt in range(8):
             try:
                 r = requests.post('https://api.openai.com/v1/embeddings',
                                   json={'model': 'text-embedding-3-small',
-                                        'input': [t or ' ' for t in texts[i:i+16]]},
+                                        'input': [t or ' ' for t in texts[i:i+8]]},
                                   headers={'Authorization': f'Bearer {key}'},
                                   timeout=120)
             except requests.RequestException as e:
