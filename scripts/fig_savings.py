@@ -24,7 +24,7 @@ INK, SURFACE, GRID = '#0A1638', '#f4f7fc', '#DFE6F2'
 NAVY, AMBER, SLATE = '#2E5CA6', '#D97706', '#6D93D6'
 
 MS = [1, 3, 5, 10, 20]
-COST_RUN = 2.0                       # nominal $/agent-run for the top axis
+COST_RUN = 2.0   # ~HAL aggregate $1.84/rollout (arXiv:2510.11977); range $0.13-4
 FULL = 500
 
 if os.path.exists('figures/q100_adaptive_table.json'):
@@ -87,9 +87,10 @@ sec = ax.secondary_xaxis('top',
                                     lambda c: c / (FULL * COST_RUN) * 100))
 sec.set_xticks([2, 10, 40, 1000])
 sec.set_xticklabels(['$2', '$10', '$40', '$1000'])
-sec.set_xlabel(f'nominal dollars at \\${COST_RUN:.0f} per agent run '
-               '(published range \\$0.10\u2013\\$10)', fontsize=8.5,
-               color='#4a5878')
+sec.set_xlabel(f'dollars at \\${COST_RUN:.0f}/agent-run '
+               '(HAL aggregate: \\$1.84/rollout over 21,730 runs; '
+               'published SWE-bench range \\$0.13\u2013\\$4)',
+               fontsize=8, color='#4a5878')
 
 for s in ax.spines.values():
     s.set_color(GRID)

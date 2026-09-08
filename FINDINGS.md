@@ -635,6 +635,16 @@ task; claim = best known method under our protocol vs strongest
 implemented baselines from the tinyBenchmarks/metabench/CAT lineage.
 Data: figures/q100_adaptive_blend.json.
 
+**Cost note (sourced, 2026-09-08).** Per-instance SWE-bench agent-run
+costs, published: HAL aggregate $1.84/rollout ($40K / 21,730 rollouts,
+arXiv:2510.11977); Agentless $0.70 (GPT-4o; arXiv:2407.01489); OpenHands +
+Claude 3.5 Sonnet ~$0.30, GPT-4o $0.13 (tensorfeed harness page);
+SWE-agent competitive-run cost caps $1-4/instance. Range $0.13-$4/instance;
+the savings figure's $2/run nominal ~ HAL's measured average. Full
+500-instance Verified run: ~$65-$2000 by system, typically low hundreds.
+Only 3/107 corpus submissions expose machine-readable cost fields --
+published sources are the right citation basis.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
