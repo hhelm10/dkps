@@ -25,3 +25,15 @@
 
 Constant references: predict-the-mean 0.134; same-scaffold mean 0.124; same-model mean 0.119. Informative-panel results (dominated by adaptive) archived in figures/q100_final_table.json.
 All rows leave-one-LLM-out, 107 systems, q100 panel, Flash-0731 judge, text-embedding-3-small.
+## Leave-one-harness-out (same-LLM allowed; 59/107 harness-tagged, mean 104 refs/target)
+
+| method (regime) | m=1 | m=3 | m=5 | m=10 | m=20 |
+|---|---|---|---|---|---|
+| 2PL adaptive IRT | 0.077 [0.065, 0.089] | 0.063 [0.053, 0.073] | 0.056 [0.046, 0.065] | 0.041 [0.035, 0.048] | 0.034 [0.029, 0.039] |
+| qubric geometry (adaptive) | 0.072 [0.058, 0.087] | 0.068 [0.056, 0.081] | 0.069 [0.057, 0.083] | 0.066 [0.056, 0.078] | 0.064 [0.051, 0.078] |
+| **qubric blend (adaptive)** | **0.067 [0.055, 0.080]** | **0.055 [0.046, 0.064]** | **0.048 [0.039, 0.057]** | **0.043 [0.036, 0.050]** | **0.036 [0.030, 0.042]** |
+| paired delta (blend − IRT) | -0.010 [-0.018, -0.003] | -0.008 [-0.014, -0.002] | -0.007 [-0.015, -0.000] | +0.001 [-0.004, +0.007] | +0.002 [-0.003, +0.007] |
+| qubric blend (random, B=20) | 0.091 [0.081, 0.103] | 0.071 [0.063, 0.081] | 0.062 [0.055, 0.072] | 0.055 [0.048, 0.063] | 0.042 [0.037, 0.047] |
+| *canonical (LLM-out) blend, adaptive, for reference* | *0.066* | *0.053* | *0.047* | *0.040* | *0.032* |
+
+Swapping the held-out sibling axis (harness instead of LLM) moves the blend by at most 0.004 (m<=5); predictions do not depend on scaffold siblings in the reference pool.

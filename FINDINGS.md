@@ -645,6 +645,22 @@ the savings figure's $2/run nominal ~ HAL's measured average. Full
 Only 3/107 corpus submissions expose machine-readable cost fields --
 published sources are the right citation basis.
 
+**F38. Leave-one-harness-out (2026-09-08, per HH; same-LLM allowed).**
+The symmetric counterpart of the canonical protocol: references sharing the
+target's scaffold excluded (keyword tags, 59/107 tagged; untagged targets
+get plain LOO), same-LLM allowed; mean 104 refs/target (vs 96.9 LLM-out) --
+harness exclusion removes FEWER siblings than LLM exclusion. Everything
+refit under the mask. RESULT: blend moves <= .004 at m<=5 (adaptive: .067/
+.055/.048 vs canonical .066/.053/.047), delta blend-IRT still significant
+at m=1,3 (borderline m=5); geometry alone degrades modestly at larger m
+(+.005-.009 -- harness siblings were mildly useful to raw geometry,
+consistent with qubric's residual harness metric ~.08 not exactly 0);
+random-regime IRT essentially unchanged. CONCLUSION: predictions do not
+depend on scaffold siblings; the sibling axis that matters is the LLM
+(q20-era LOO ablation confirmed at q100 scale with CIs). Data:
+figures/q100_loho.json; script q100_loho.py; table appended to
+q100_tables.md.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
