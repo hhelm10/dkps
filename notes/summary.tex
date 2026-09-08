@@ -11,6 +11,7 @@
 \usepackage{stfloats}
 \usepackage{enumitem}
 \usepackage{listings}
+\input{tables_generated}
 
 \definecolor{ink}{HTML}{0A1638}
 \definecolor{navy}{HTML}{2E5CA6}
@@ -27,7 +28,7 @@
   rulecolor=\color{ink!25},backgroundcolor=\color{ink!4},framesep=4pt,
   aboveskip=4pt,belowskip=4pt,columns=fullflexible,keepspaces=true}
 
-\title{\vspace{-1.2em}\textbf{Transforming semantic embedding functions for agentic traces}}
+\title{\vspace{-1.2em}\textbf{Embedding agentic traces for efficient evaluation}}
 \author{Helivan \quad Jataware \quad Johns Hopkins}
 \date{Summer 2026}
 
@@ -35,198 +36,168 @@
 \maketitle
 
 \section*{The problem}
-Modern generative systems produce logs of their actions and decisions---
-referred to as an \emph{agentic trace}---while processing information. Traces
-often implicitly or explicitly encode information such as the particular type
-of tool that was used, the harness, etc.\ that may or may not be useful for
-determining if the trace produced a useful output. Further, the signal from
-using an off-the-shelf embedding function to encode trace similarity is often
-dominated by information that is potentially irrelevant for correctness, such
-as the harness or model used: in our corpus, nearest neighbors of raw trace
-embeddings are same-system 68--83\% of the time, same-scaffold at $5\times$
-chance, and the exact agent configuration is retrievable at $0.82$ vs.\
-$0.43$ chance even among same-model, same-harness siblings---while agreement
-with outcome sits at chance (AUC $0.52$).
+Evaluating an agentic system is expensive: one SWE-bench Verified entry is
+500 agent executions at \$0.13--\$4 per instance (HAL's measured aggregate:
+\$1.84 per rollout), so each model checkpoint, scaffold tweak, and
+configuration variant costs on the order of \$100--\$2{,}000 and hours of
+wall-clock to score. Meanwhile the runs already performed by others sit in
+public archives: trajectories and outcomes for 100+ systems. We ask how
+accurately a \emph{new} system's full-benchmark score can be predicted from
+a handful of probe runs, using that cache as reference.
 
-The goal of this work is simple: \textbf{develop a method for embedding
-agentic traces that better captures similarity of the work performed.} In
-developing such a method, we have identified six desirable properties of an
-agentic trace embedding, organized into three groups:
+Correctness-only approaches (IRT, adaptive testing, score-matrix
+compression) extract at most a few bits per probe. But each probe also
+produces a \emph{trace} --- a tool-call log of $10^4$--$10^5$ tokens
+recording how the system worked --- which carries far more information
+than its pass/fail bit. The obstacle is that off-the-shelf trace
+embeddings are dominated by \emph{confounders}: nearest neighbors are
+same-system 68--83\% of the time, same-scaffold at $5\times$ chance, and
+the exact configuration is identifiable at twice chance even among
+same-model, same-harness siblings --- while agreement with outcome sits at
+chance.
 
-\smallskip
-\noindent\emph{Faithful to content --- what happened should drive similarity.}
+\section*{What efficient evaluation requires of an embedding}
+Reference-based prediction compares the new system's probe traces against
+cached traces of systems with known scores. This breaks in a specific way
+when the embedding matches on \emph{who built the system} rather than
+\emph{what it did}: prediction degenerates into copying scores from the
+target's LLM-family or harness siblings --- accurate-looking under naive
+cross-validation (we measure $\sim$25\% inflation), and wrong exactly when
+it matters, for systems without siblings in the cache. \textbf{For
+efficient evaluation, an embedding should not rely on confounders --- LLM
+family, harness, configuration identity --- and should instead rely on
+content.} Concretely:
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \textbf{Task fidelity}: traces of different systems working the same
-  problem should be similar. \emph{Measured by} cross-system same-task
-  nearest-neighbor retrieval.
-  \item \textbf{Behavioral fidelity}: among traces of the same problem,
-  similar approaches and results should be similar. \emph{Measured by}
-  within-task coherence of same-outcome traces (AUC of same- vs.\
-  different-outcome distances).
+  \item \textbf{content-faithful}: traces of different systems on the same
+  task, doing similar work, should embed similarly (task and behavioral
+  fidelity);
+  \item \textbf{confounder-invariant}: harness, model family, and exact
+  configuration should be near chance-level recoverable;
+  \item \textbf{stable}: the same trace, re-processed, should map to
+  approximately the same place (the pipeline's stochastic stages are
+  rubric creation and extraction).
 \end{itemize}
-
-\noindent\emph{Invariant to authorship --- who produced it should not.}
-\begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \textbf{Harness invariance}: scaffold formatting and tool idiom
-  should not drive similarity. \emph{Measured by} within-task same-scaffold
-  retrieval vs.\ chance.
-  \item \textbf{Model-family invariance}: the vendor/lineage of the
-  underlying LLM should not drive similarity. \emph{Measured by} within-task
-  same-family retrieval vs.\ chance.
-  \item \textbf{Identity invariance}: the exact system configuration
-  (version, prompts, settings) should not be recoverable. \emph{Measured by}
-  exact-submission retrieval among same-model, same-harness siblings vs.\
-  chance.
-\end{itemize}
-
-\noindent\emph{Reliable --- similarity should be a measurement, not noise.}
-\begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \textbf{Stability}: the \emph{same} trace, processed twice, should
-  map to approximately the same place --- the stochastic stages are rubric
-  creation and extraction. (Different runs of the same agent may legitimately
-  differ; that is variance in the world, not in the measurement.)
-  \emph{Measured by} test--retest self-retrieval: resample the rubric and/or
-  the extraction for a fixed trace and check that its re-embedding retrieves
-  its first-pass twin.
-\end{itemize}
+Each requirement is measurable, and the confounder requirement is also
+enforced in evaluation by a conservative protocol: references sharing the
+target's underlying LLM are excluded (leave-one-LLM-out; robustness under
+leave-one-harness-out is verified separately).
 
 \section*{qubric}
-Our method for embedding agentic traces is based on a query-specific rubric.
-In particular, for each task instance an LLM (Model 1) reads the public
-problem statement and writes a query-specific rubric comprised of
+Our method for embedding agentic traces is based on a query-specific
+rubric. For each task instance an LLM (Model~1) reads the public problem
+statement and writes a query-specific rubric comprised of
 1)~understanding, 2)~localization, 3)~reproduction, 4)~editing,
 5)~verification, and 6)~final state. Given a trace corresponding to the
-task, a judge LLM (Model 2) extracts a short factual description per
+task, a judge LLM (Model~2) extracts a short factual description per
 section. The short descriptions are then embedded with an off-the-shelf
-embedding model, centered against the cross-system median per instance, and
-concatenated. This approach enforces the equivalence relations the space
-should respect by respecting the rubric and using a fixed judge LLM as the
-extractor.
+embedding model, centered against the cross-system median per instance,
+and concatenated. This approach enforces the equivalence relations the
+space should respect by respecting the rubric and using a fixed judge LLM
+as the extractor. (Configuration for all results: Model~1 = Model~2 =
+DeepSeek-V4-Flash-0731 reading full pruned traces; embedder
+text-embedding-3-small; 107 systems $\times$ 100 tasks; total pipeline
+cost $\approx$\$26.)
 
 \begin{figure*}[t]
   \vspace{-6pt}\centering
   \includegraphics[width=\textwidth]{../figures/radar_all.png}
-  \caption{Sensitivity radars across seven embedders. Outside = desirable.
-  Raw embeddings (navy) are authorship-dominated; qubric (amber) collapses
-  Identity / Model family / Harness to chance while holding Task and
-  Behavior.}
+  \caption{Qubric has the sensitivity profile efficient evaluation
+  requires, across seven embedders (rim = ideal). Raw embeddings (navy)
+  are confounder-dominated; qubric (amber) collapses Identity / Model
+  family / Harness to chance while holding Task and Behavior.}
   \label{fig:radar}
 \end{figure*}
 
-\section*{Evidence}
-We evaluate qubric on 107 system configurations from the SWE-bench Verified
-leaderboard (a 500-task benchmark; qubric judging is on a 20-task panel,
-with the 150-task scale-up in progress). We use gpt-5.4-mini for Model~1
-and gpt-5.4-mini for Model~2 in the primary configuration; robustness to
-Model~2 is reported below. We compare qubric along the six axes described
-above against four baselines:
-\begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=1pt]
-  \item \textbf{raw trace}: embed the first/last 8K tokens of the rendered
-  trace directly---the off-the-shelf default;
-  \item \textbf{free-form summary}: Model~2 summarizes the trace with no
-  rubric---tests whether structure matters;
-  \item \textbf{generic rubric}: the same six sections, fixed across
-  instances---tests whether query-specificity matters;
-  \item \textbf{verdict questions}: the rubric phrased as evaluative
-  questions with short answers---tests descriptions vs.\ verdicts;
-\end{itemize}
-across \textbf{seven off-the-shelf embedding functions} spanning three
-families and two orders of magnitude of size. Per-pillar results for the
-baselines are shown in Fig.~\ref{fig:heatmap}.
+\section*{Qubric meets the requirements; raw embeddings do not}
+Across seven embedding models, qubric collapses the confounder axes to
+approximately chance (harness $0.31\!\to\!0.08$, model family
+$0.20\!\to\!0.12$, identity $0.83\!\to\!0.09$) while retaining task
+fidelity ($\sim$0.95; Figs.~\ref{fig:radar},~\ref{fig:heatmap}). The
+confounder-reliance of raw embeddings is visible directly in the
+evaluation curves below: raw-trace prediction error is \emph{flat} in the
+number of probes ($0.100\!\to\!0.093$ MAE from 1 to 20 probes) ---
+additional raw traces mostly re-measure who the system is --- while
+qubric keeps improving ($0.091\!\to\!0.060$). Stability is measured, not
+assumed: the same trace re-processed retrieves its first-pass twin at
+trace level $0.32$; system-level positions recover to $0.80$ after
+aggregating 20 instances, and rewriting the rubric costs only a further
+$0.03$.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{../figures/independence_heatmap.png}
-  \caption{Baselines by property: each cell is the raw metric for that axis
-  (columns) under that representation (rows); color is desirability (blue =
-  ideal). Identity uses the aggregated (10-trace) retrieval test. Stability
-  is test--retest self-retrieval: the same trace re-processed (resampled
-  extraction; chance 0.009) should retrieve its first-pass twin.
-  Deterministic rows are exactly stable; qubric's per-trace 0.32 is the
-  measurement cost of the LLM stages --- aggregating 20 instances recovers
-  0.80 at system level, and a full rubric-rewrite retest costs only
-  marginally more (0.29, partial coverage). Qubric is the only row that is
-  simultaneously task-faithful and authorship-invariant.}
+  \caption{Requirements by representation: each cell is the raw metric for
+  that axis under that representation; blue = ideal for evaluation. Qubric
+  is the only row simultaneously content-faithful and
+  confounder-invariant.}
   \label{fig:heatmap}
 \end{figure}
 
-Qubric produces the same profile shift under all seven embedders
-(Fig.~\ref{fig:radar}):
-\emph{task fidelity} is retained ($\sim$0.95) and \emph{behavioral fidelity}
-retained or improved, while every authorship axis collapses to
-$\approx$chance---\emph{harness} $0.31\!\to\!0.08$, \emph{model family}
-$0.20\!\to\!0.12$, \emph{identity} $0.83\!\to\!0.09$. The properties are
-separately measurable (double dissociations across six representations), so
-these are genuinely different axes being moved, not one metric relabeled.
+\section*{Efficient evaluation results}
+A new system runs $m$ probes; we predict its full 500-instance resolve
+rate. The trace channel (qubric geometry: product-kernel PKPS comparison
+against references' full cached coverage; bandwidth and $k$
+cross-validated on references) is blended with the strongest
+correctness-only channel (2PL IRT; adaptive item selection where probes
+are chosen) via a reference-selected weight $\alpha$. All results are
+leave-one-LLM-out over 107 systems; 95\% bootstrap CIs over systems;
+paired deltas test the trace contribution.
 
-The instance-conditioning is the active ingredient: the
-construction ranking is strict under both readouts (qubric $>$ verdict questions $>$ generic rubric $>$ free-form
-summary $>$ raw), reproduces under a local embedder, and
-no single rubric section carries the effect (best single section 0.091 vs.\
-0.078 for the union). Judge choice degrades gracefully: an open frontier
-judge (DeepSeek-v3.1, $0.083/0.079$) matches the closed reference
-(gpt-5.4-mini, $0.078/0.078$) within panel resolution, and a weak judge
-\emph{with} a qubric outperforms a strong judge without one.
-
-\emph{Stability}: two judges agree on a single trace only 12--28\% of the
-time, but aggregating $\sim$20 instances drives system-level agreement to
-0.82--0.95; replicate runs of the same agent retrieve each other at
-$6\times$ chance. Per-trace noisy, per-agent reliable---and per-agent is
-what evaluation uses.
-
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=\textwidth]{../figures/fig4_quench.png}
-  \caption{QUENCH: error predicting true resolve rates vs.\ probe budget $m$
-  (left) and vs.\ reference-pool size $n$ (right); leave-one-LLM-out, 107
-  systems.}
-  \label{fig:quench}
-\end{figure*}
-
-
-\section*{Query-efficient benchmarking}
-Qubric representations enter the DKPS/PKPS perspective space; a new agent's
-full-benchmark resolve rate is predicted from a few probe traces against
-references' cached coverage, blended with the sample score. Evaluation is
-leave-one-LLM-out throughout (naive CV inflates accuracy $\sim$25\% via
-model-family leakage).
-
-\begin{table}[h]
-\centering\small
-\begin{tabular}{lccc}
-\toprule
-probes $m$ & sample score & qubric pipeline & +selection \\
-\midrule
-1  & 0.44 & \textbf{0.095} & --- \\
-5  & 0.16 & \textbf{0.074} & 0.057 \\
-20 & 0.06 & \textbf{0.048--0.053} & 0.053 \\
-\bottomrule
-\end{tabular}
-\caption{MAE predicting true resolve rates (107 systems). One probe trace
-$\approx$ 8--10 scored runs.}
+\begin{table}[t]
+\centering\scriptsize
+\resizebox{\columnwidth}{!}{\tablerandom}
+\caption{Random probes (B=20 draws): MAE predicting the true resolve
+rate. The blend beats the best correctness-only method at every budget;
+all paired deltas exclude zero.}
+\label{tab:random}
 \end{table}
 
-One trace carries far more than one bit: the strongest correctness-only
-competitor (CAPA-style error overlap) needs 15--20 \emph{scored} probes to
-match one \emph{trace} (0.37 MAE at $m{=}1$), and trails the ensemble at
-every budget. The reference pool, not probe count, is the binding resource:
-error falls $0.145\!\to\!0.078$ as the pool grows 5$\to$96, still declining
-(Fig.~\ref{fig:quench}). Every layer is ablated; CV-inside-selection and
-PCA-composed-with-selection are documented overfitting traps.
+\begin{table}[t]
+\centering\scriptsize
+\resizebox{\columnwidth}{!}{\tableadaptive}
+\caption{Adaptive probes (per-target CAT panels). The blend is
+best-or-tied everywhere; the trace increment is significant at $m\le3$
+and vanishes as correctness information saturates ($m\ge10$).}
+\label{tab:adaptive}
+\end{table}
+
+Three structural findings. (1)~\emph{Traces matter most when probes are
+scarce}: the paired trace increment is largest at $m{=}1$ ($-0.039$,
+random regime) and decays monotonically; the blend weight $\alpha$ rises
+with $m$ accordingly. (2)~\emph{The judge stage earns its cost}:
+replacing qubric with raw-trace embeddings inside the identical blend
+loses 0.004--0.008 MAE at $m\le5$ in every regime. (3)~\emph{Predictions
+do not lean on siblings}: swapping the held-out sibling axis from LLM to
+harness moves the blend by at most 0.004.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{../figures/fig_savings.png}
+  \caption{Savings vs.\ error. At 1\% of full-benchmark cost ($\sim$\$10
+  at HAL's measured \$1.84/rollout average) the blend predicts the final
+  score within $\sim$0.048; at 4\% ($\sim$\$40), within $\sim$0.032.}
+  \label{fig:savings}
+\end{figure}
+
+The economics (Fig.~\ref{fig:savings}): one probe run ($\sim$\$2) yields a
+prediction within 0.066 MAE --- versus 0.457 for that probe's score alone
+and 0.119 for the best metadata-only predictor. The one-time cost of
+constructing the reference geometry from the public archive was
+$\approx$\$26 --- mining roughly \$50K--100K of embodied agent compute
+contributed by leaderboard submitters.
 
 \section*{Remaining tasks}
 \begin{enumerate}[leftmargin=1.4em,itemsep=1pt,topsep=1pt]
-  \item Sensitivity to the choice of Model~1 and Model~2.
+  \item Sensitivity to the choice of Model~1 and Model~2 under the current
+  configuration (judge robustness was mapped in the prior configuration;
+  rerun at q100).
   \item An additional benchmark, ideally Terminal-Bench (142 systems, 89
   tasks, $\geq$5 trials per task, public trajectories).
   \item A descriptive figure: trace anatomy and the qubric pipeline.
-  \item Actual dollar savings from probe-based evaluation vs.\ full
-  benchmark runs.
   \item Literature review.
   \item Another downstream task? (Routing? Just needs to beat using the
   off-the-shelf embedding for this paper.)
 \end{enumerate}
-
 
 \onecolumn
 \section*{Appendix: a worked example (\texttt{sympy\_\_sympy-14248})}
@@ -241,21 +212,12 @@ limit.
 swe_main
 First, I'll create a new Python script to reproduce the issue as described. This script will contain the code provided in the issue text. Let's start by creating a file named `reproduce_issue.py`.
 
-
 action: create reproduce_issue.py
 
 [File: /sympy__sympy/reproduce_issue.py (1 lines total)]
 1:
 
-First, I'll create a new Python script to reproduce the issue as described. This script will contain the code provided in the issue text. Let's start by creating a file named `reproduce_issue.py`.
-
-```
-create reproduce_issue.py
-```
-{"open_file": "n/a", "working_dir": "/sympy__sympy"}
-
-Now I will paste the code from the issue into the `reproduce_issue.py` file to replicate the bug.
-
+First, I'll create a new Python script to reproduce the issue as described. [...]
 
 action: edit 1:1
 from sympy import *
@@ -266,45 +228,8 @@ pprint(A - A*B - B)
 print(latex(A - A*B - B))
 end_of_edit
 
-[File: /sympy__sympy/reproduce_issue.py (6 lines total)]
-1:from sympy import *
-2:A = MatrixSymbol('A', 2, 2)
-3:B = MatrixSymbol('B', 2, 2)
-4:print(A - A*B - B)
-5:pprint(A - A*B - B)
-6:print(latex(A - A*B - B))
-File updated. Please review the changes and make sure they are correct (correct indentation, no duplicate lines, etc). Edit the file again if necessary.
-
-Now I will paste the code from the issue into the `reproduce_issue.py` file to replicate the bug.
-
-```
-edit 1:1
-from sympy import *
-A = MatrixSymbol('A', 2, 2)
-B = MatrixSymbol('B', 2, 2)
-print(A - A*B - B)
-pprint(A - A*B - B)
-print(latex(A - A*B - B))
-end_of_edit
-```
-{"open
 [... ~40K tokens omitted ...]
---------------------------
-[File: /sympy__sympy/sympy/plotting/plot.py (1828 lines total)]
-(22 more lines above)
-23:"""
-24:
-25:from __future__ import print_function, division
-26:
-27:import inspect
-28:from collections import Callable
-29:import warnings
-30:import sys
-31:
-32:from sympy import sympify, Expr, Tuple, Dummy, Symbol
-33:from sympy.external import import_module
-(1795 more lines below)
--------------------------------------------------
+
 Your changes have NOT been applied. Please fix your edit command and try again.
 You either need to 1) Specify the correct start/end line arguments or 2) Correct your edit code.
 DO NOT re-run the same failed edit command. Running it again will lead to the same error.
@@ -326,22 +251,17 @@ describes the symptom only and does not prescribe a fix):
 
 \begin{lstlisting}
 The difference of MatrixSymbols prints as a sum with (-1) coefficient
-Internally, differences like a-b are represented as the sum of a with `(-1)*b`, but they are supposed to print like a-b. This does not happen with MatrixSymbols. I tried three printers: str, pretty, and latex: 
-```
+Internally, differences like a-b are represented as the sum of a with `(-1)*b`, but they are supposed to print like a-b. This does not happen with MatrixSymbols. I tried three printers: str, pretty, and latex:
 from sympy import *
 A = MatrixSymbol('A', 2, 2)
 B = MatrixSymbol('B', 2, 2)
 print(A - A*B - B)
 pprint(A - A*B - B)
 latex(A - A*B - B)
-```
 Output:
-```
 (-1)*B + (-1)*A*B + A
 -B + -A*B + A
 '-1 B + -1 A B + A'
-```
-
 Based on a [Stack Overflow post](https://stackoverflow.com/q/48826611)
 \end{lstlisting}
 
@@ -370,8 +290,8 @@ statement --- they are inferred:
  "understanding": "Look for the agent correctly identifying that MatrixSymbol/MatrixExpr subtraction is being canonically represented as Add with negative terms, but the printers should render binary subtraction for matrix expressions just like scalar expressions, likely involving SymPy's printing layer rather than matrix algebra simplification.",
  "localization": "Look for the agent localizing the bug to the SymPy printers for MatrixExpr/MatrixSymbol, especially StrPrinter, PrettyPrinter, and LatexPrinter in files under sympy/printing/ (for example printers.py, str.py, pretty/pretty.py, latex.py) and any MatrixExpr-specific handling that bypasses standard Add printing.",
  "reproduction": "Look for a minimal reproduction using the exact example A = MatrixSymbol('A', 2, 2); B = MatrixSymbol('B', 2, 2); print(A - A*B - B), pprint(...), latex(...), with observed outputs showing '-1' coefficients instead of subtraction, and ideally an added regression test capturing these outputs.",
- "editing": "Look for a focused code change that teaches the relevant printers to display Add terms involving MatrixExpr/MatrixSymbol negatives as subtraction rather than '-1*term' formatting, without changing symbolic semantics or scalar printing behavior.",
- "verification": "Look for the agent running or reasoning about targeted printer tests in SymPy's test suite\u2014likely tests/printing/test_str.py, test_pretty.py, and test_latex.py or matrix-related printer tests\u2014and confirming the example now renders as 'A - A*B - B' / equivalent pretty/latex forms.",
+ "editing": "Look for a focused code change that teaches the relevant printers to display Add terms involving MatrixExpr/MatrixSymbol negatives as subtraction rather than '-1*term' formatting, without changing symbolic semantics or simplification behavior.",
+ "verification": "Look for the agent running or reasoning about targeted printer tests in SymPy's test suite - likely tests/printing/test_str.py, test_pretty.py, and test_latex.py or matrix-related printer tests - and confirming the example now prints correctly.",
  "final_state": "Look for the final state to include a passing regression test for matrix subtraction printing, no changes to algebraic canonicalization of MatrixExpr, and correct output for str, pretty, and latex on the provided example."
 }
 \end{lstlisting}
@@ -385,7 +305,7 @@ gets embedded. Note the honest record of an unfinished trajectory:
  "understanding": "The agent recognized the bug by reproducing the issue with MatrixSymbol subtraction, noting that outputs showed '-1' coefficients instead of subtraction. It understood the problem was in the printing layer and proceeded to fix it without analyzing canonical representation details.",
  "localization": "The agent localized the bug to SymPy's printing module by searching for MatrixSymbol in files and examining latex.py, focusing on _print_MatrixSymbol and _print_Add methods in printers like StrPrinter, PrettyPrinter, and LatexPrinter.",
  "reproduction": "The agent created a minimal reproduction script with A = MatrixSymbol('A', 2, 2); B = MatrixSymbol('B', 2, 2); and printed str, pretty, and latex outputs, confirming the issue with '-1' coefficients in all printers.",
- "editing": "The agent started editing latex.py by adding a _print_MatrixSymbol method and planned to modify _print_Add, but was diverted to fix deprecation warnings in other files like plot.py, leaving the main edit unfinished and causing indentation errors.",
+ "editing": "The agent started editing latex.py by adding a _print_MatrixSymbol method and planned to modify _print_Add, but was diverted to fix deprecation warnings in other files like plot.py, leaving the main edit unfinished and cost limit reached.",
  "verification": "The agent never ran or reasoned about targeted printer tests in the test suite; verification was limited to running the reproduction script, and no tests from tests/printing/ were executed or considered.",
  "final_state": "The final state did not include a passing regression test or completed fix; the agent was still addressing deprecation warnings and had not finalized changes to ensure correct str, pretty, and latex outputs for matrix subtraction."
 }
