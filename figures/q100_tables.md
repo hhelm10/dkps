@@ -23,6 +23,8 @@
 | qubric geometry | 0.074 [0.060, 0.089] | 0.066 [0.054, 0.077] | 0.065 [0.055, 0.075] | 0.056 [0.047, 0.065] | 0.053 [0.044, 0.063] |
 | **qubric + IRT blend** | **0.066 [0.055, 0.079]** | **0.052 [0.042, 0.061]** | **0.053 [0.045, 0.062]** | **0.042 [0.035, 0.050]** | **0.036 [0.031, 0.042]** |
 | paired delta (qubric blend − IRT) | -0.011 [-0.019, -0.003] | -0.010 [-0.016, -0.004] | -0.011 [-0.017, -0.005] | -0.004 [-0.010, +0.000] | -0.004 [-0.008, +0.001] |
+| **qubric + adaptive-IRT blend** | **0.066** | **0.053** | **0.047** | **0.040** | **0.032** |
+| paired delta (qubric adaptive blend − adaptive IRT) | -0.011 [-0.019, -0.003] | -0.009 [-0.015, -0.002] | -0.006 [-0.012, +0.002] | +0.000 [-0.005, +0.006] | -0.000 [-0.005, +0.004] |
 
 Constant references: predict-the-mean 0.134; same-scaffold mean 0.124; same-model mean 0.119. *adaptive = simulated CAT, point estimate only.
 All rows leave-one-LLM-out, 107 systems, q100 panel, Flash-0731 judge, text-embedding-3-small.
