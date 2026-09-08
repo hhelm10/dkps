@@ -21,7 +21,7 @@ def parse(block):
     return rows
 
 
-t1, t2 = md.split('## Informative')
+t1, t2 = md.split('## Adaptive')
 T1 = parse(t1.split('\n', 2)[2])
 T2 = parse(t2.split('\n', 2)[2])
 
@@ -77,7 +77,7 @@ for a in (a1, a2):
     a.set_facecolor(SURFACE)
 draw(a1, T1, 'Table 1 — Random probes (B=20 draws) — MAE [95% CI], '
              'leave-one-LLM-out, 107 systems')
-draw(a2, T2, 'Table 2 — Informative / adaptive probes (per-target panels)')
+draw(a2, T2, 'Table 2 — Adaptive probes (per-target CAT panels)')
 fig.text(0.05, 0.012,
          'Constant references: predict-the-mean 0.134, same-scaffold mean 0.124, '
          'same-model mean 0.119.   Adaptive rows use simulated CAT item paths.\n'
