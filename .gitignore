@@ -171,3 +171,5 @@ notes/*.log
 notes/*.out
 notes/pg-*.png
 share/
+notes/*.bbl
+notes/*.blg
