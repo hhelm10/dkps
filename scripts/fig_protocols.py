@@ -198,8 +198,11 @@ def main_render():
         ax.set_facecolor('.97')
         ax.text(.5, .5, 'Terminal-Bench\n(to be run)', ha='center',
                 va='center', transform=ax.transAxes, color='.55', fontsize=10)
-        ax.set_xticks([])
+        ax.set_xscale('log')
+        ax.set_xticks(ms)
+        ax.set_xticklabels(ms)
         ax.set_yticks([])
+        ax.tick_params(labelsize=8)
         ax.set_xlabel('Number of probe tasks $m$', fontsize=9)
     axes[1, 0].set_ylabel('Terminal-Bench\nMAE', fontsize=9)
     axes[0, 0].legend(fontsize=7.5, frameon=False, loc='upper right')
