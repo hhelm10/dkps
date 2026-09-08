@@ -55,15 +55,13 @@ Unfortunately, off-the-shelf embedding functions do not yet exist for agentic tr
 Further, we find that semantic embedding functions applied to traces without modification are not appropriate for efficient evaluation: the resulting representations are dominated by evaluation-irrelevant \emph{confounders} -- harness, model family, and exact configuration -- rather than by the content of the work performed.
 In this paper, we introduce \qubric{} (\emph{query-specific rubrics}), a transformation that converts off-the-shelf embedding functions into content-based, confounder-invariant trace representations suitable for efficient evaluation.
 
-\noindent \textbf{Contribution.} We make four primary contributions.
+\noindent \textbf{Contribution.} We make two primary contributions.
 \begin{enumerate}[itemsep=0pt, topsep=0pt, parsep=2pt]
-\item \textbf{Diagnostic:} We show that off-the-shelf semantic embedding functions are not appropriate for efficient evaluation of agentic systems.
-Their trace representations recover harness, model family, and exact configuration at well above chance while remaining near chance on outcome, and their prediction error is flat in the number of probe tasks.
 \item \textbf{Methodological:} We introduce \qubric{}, which extracts and embeds trace content according to a query-specific rubric.
-\qubric{} representations collapse the confounder axes to approximately chance while retaining task and behavioral signal, robustly across seven embedding functions.
+Whereas off-the-shelf trace representations recover harness, model family, and exact configuration at well above chance while remaining near chance on outcome, \qubric{} representations collapse the confounder axes to approximately chance while retaining task and behavioral signal, robustly across seven embedding functions.
 \item \textbf{Empirical:} We demonstrate that \qubric{}-based methods are query-efficient.
 Combined with item-response-theoretic estimators, they achieve the best or near-best mean absolute error at every probe budget and are significantly better where graded evidence is scarce -- e.g., 0.066 MAE from a single probe task.
-\item \textbf{Practical:} We release the reference geometry, code, and judged-trace corpus -- constructed from public archives for approximately \$26 -- to support future work on trace-based evaluation.
+We release the reference geometry, code, and judged-trace corpus -- constructed from public archives for approximately \$26 -- to support future work on trace-based evaluation.
 \end{enumerate}
 
 \subsection{Problem statement}
