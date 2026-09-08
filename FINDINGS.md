@@ -620,6 +620,21 @@ transient server-side token miscount (333K counted for a 128K batch;
 unreproducible), resolved at batch 8. Data: figures/q100_baselines.json,
 q100_capa.json; script q100_baselines.py.
 
+**F37. Adaptive-CAT blend completes the frontier (2026-09-08, per HH SOTA
+question).** Qubric geometry blended with 2PL-ADAPTIVE IRT on the adaptive
+item paths (per-target cols; pooled kernel + alpha on references): m=1
+.0663 (delta -.0111 sig), m=3 .0533 (-.0085 sig), m=5 .0475 (-.0056 ns,
+NEW overall best), m=10 .0403 (wash vs adaptive .0400), m=20 .0316 (wash
+vs .0320; nominal best). Combined with F34: the blend family is
+BEST-OR-TIED AT EVERY BUDGET -- .0663/.0516/.0475/.0400/.0316. Precise
+SOTA shape: trace increment significant at m<=3 (both regimes) and m=5
+informative; adaptive CAT saturates the correctness channel by m~10 where
+traces add ~0 (and cost ~0 -- alpha keeps 34-43% geometry weight without
+harm). Scoping for the paper: no external leaderboard exists for this
+task; claim = best known method under our protocol vs strongest
+implemented baselines from the tinyBenchmarks/metabench/CAT lineage.
+Data: figures/q100_adaptive_blend.json.
+
 ## 5. Negative results (do not re-run without new ideas)
 
 - Supervised channel-weight learning at 13 refs: five schemes all <= uniform.
