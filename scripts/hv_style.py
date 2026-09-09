@@ -43,6 +43,19 @@ CMAP_BLUE = mpl.colors.LinearSegmentedColormap.from_list(
 CMAP_RESERVE = mpl.colors.LinearSegmentedColormap.from_list(
     'hv_reserve', ['#e6e0f8', '#a795e3', '#6d5bd0', '#43307e'])
 
+# Helivan diverging map (per HH): blue = negative / below center,
+# helivan gold = positive / above center; center on zero (TwoSlopeNorm)
+CMAP_DIV = mpl.colors.LinearSegmentedColormap.from_list('helivan_div', [
+    '#19395e', '#065199', '#0c70cf', '#3894fc', '#7cb6fd', '#b5d6fe',
+    '#f3f1ef',
+    '#fecf99', '#fca72a', '#d08713', '#a3690d', '#774b06', '#4f3005',
+])
+try:
+    mpl.colormaps.register(CMAP_DIV)
+    mpl.colormaps.register(CMAP_DIV.reversed())  # 'helivan_div_r'
+except ValueError:
+    pass  # already registered in this process
+
 
 def apply():
     mpl.rcParams.update({
