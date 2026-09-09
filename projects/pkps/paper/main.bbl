@@ -21,7 +21,7 @@ Aranyak Acharyya, Joshua Agterberg, Youngser Park, and Carey~E. Priebe.
 
 \bibitem[Backlund and Petersson(2025)]{backlund2025vendingbench}
 Axel Backlund and Lukas Petersson.
-\newblock Vending-bench: A benchmark for long-term coherence of autonomous
+\newblock {Vending-Bench}: A benchmark for long-term coherence of autonomous
   agents.
 \newblock \emph{arXiv preprint arXiv:2502.15840}, 2025.
 
@@ -140,7 +140,7 @@ Arthur Gretton, Karsten~M. Borgwardt, Malte~J. Rasch, Bernhard Sch{\"o}lkopf,
   et~al.]{guha2023legalbench}
 Neel Guha, Julian Nyarko, Daniel~E. Ho, Christopher R{\'e}, Adam Zambrano,
   et~al.
-\newblock Legalbench: A collaboratively built benchmark for measuring legal
+\newblock {LegalBench}: A collaboratively built benchmark for measuring legal
   reasoning in large language models.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2023.
 
@@ -199,7 +199,7 @@ Minyoung Huh, Brian Cheung, Tongzhou Wang, and Phillip Isola.
   Vidgen]{islam2023financebench}
 Pranab Islam, Anand Kannappan, Douwe Kiela, Rebecca Qian, Nino Scherrer, and
   Bertie Vidgen.
-\newblock Financebench: A new benchmark for financial question answering.
+\newblock {FinanceBench}: A new benchmark for financial question answering.
 \newblock \emph{arXiv preprint arXiv:2311.11944}, 2023.
 
 \bibitem[Jin et~al.(2021)Jin, Pan, Oufattole, Weng, Fang, and
@@ -274,7 +274,7 @@ Felipe~Maia Polo, Lucas Weber, Leshem Choshen, Yuekai Sun, Gongjun Xu, and
   and Bowman]{rein2023gpqa}
 David Rein, Betty~Li Hou, Asa~Cooper Stickland, Jackson Petty, Richard~Yuanzhe
   Pang, Julien Dirani, Julian Michael, and Samuel~R. Bowman.
-\newblock {GPQA}: A graduate-level google-proof {Q\&A} benchmark.
+\newblock {GPQA}: A graduate-level {Google}-proof {Q\&A} benchmark.
 \newblock In \emph{First Conference on Language Modeling}, 2024.
 
 \bibitem[Ruan et~al.(2024)Ruan, Maddison, and Hashimoto]{ruan2024observational}
