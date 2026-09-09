@@ -285,6 +285,57 @@ def stage_embed(key_openai, args):
     print('wrote', EMB, X.shape)
 
 
+def stage_rawembed(key_openai, args):
+    """Raw-trace baseline representation: head 8K + tail 8K tokens of the
+    UNPRUNED render, text-embedding-3-small -- mirrors the SWE q100 raw
+    baseline (q100_raw_emb_openai_small.npz HT convention)."""
+    import time
+
+    import requests
+    import tiktoken
+    enc = tiktoken.get_encoding('cl100k_base')
+    _, systems, tasks = load_panel()
+    chosen = json.load(open(CHOSEN))
+    texts = []
+    for s in tqdm(systems, desc='raw render'):
+        for t in tasks:
+            c = chosen.get(s, {}).get(t)
+            if c is None:
+                texts.append(' ')
+                texts.append(' ')
+                continue
+            tdir = os.path.join(ROOT, s, c['job'], c['trial'])
+            raw = render_trial(tdir)
+            toks = enc.encode(raw, disallowed_special=())
+            texts.append(enc.decode(toks[:8000]) or ' ')
+            texts.append(enc.decode(toks[-8000:]) or ' ')
+    rows = []
+    for i in tqdm(range(0, len(texts), 8), desc='raw embed'):
+        for attempt in range(8):
+            try:
+                r = requests.post(
+                    'https://api.openai.com/v1/embeddings',
+                    json={'model': 'text-embedding-3-small',
+                          'input': [x or ' ' for x in texts[i:i + 8]]},
+                    headers={'Authorization': f'Bearer {key_openai}'},
+                    timeout=120)
+            except requests.RequestException:
+                time.sleep(5 * (attempt + 1))
+                continue
+            if r.status_code == 200:
+                rows.extend(d['embedding'] for d in r.json()['data'])
+                break
+            if r.status_code == 400:
+                raise RuntimeError(f'embed 400 at {i}: {r.text[:200]}')
+            time.sleep(5 * (attempt + 1))
+        else:
+            raise RuntimeError(f'raw embed exhausted retries at {i}')
+    E = np.asarray(rows, np.float32).reshape(len(texts) // 2, 2, -1)
+    np.savez_compressed('data/terminal_bench/tb2_raw_emb_openai_small.npz',
+                        HT=E)
+    print('wrote tb2_raw_emb_openai_small.npz', E.shape)
+
+
 def stage_qvecs(key_openai, args):
     import time
 
@@ -328,7 +379,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--stage', required=True,
                     choices=['render', 'rubrics', 'extract', 'embed',
-                             'qvecs'])
+                             'qvecs', 'rawembed'])
     ap.add_argument('--limit', type=int, default=0)
     args = ap.parse_args()
     load_dotenv()
