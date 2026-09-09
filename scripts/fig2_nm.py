@@ -85,10 +85,13 @@ def main():
 
     import matplotlib
     matplotlib.use('Agg')
+    import hv_style
+    hv_style.apply()
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(2, 3, figsize=(6.6, 4.0))
-    fig.subplots_adjust(left=.085, right=.90, top=.84, bottom=.055,
+    SZ = hv_style.SIZES
+    fig, axes = plt.subplots(2, 3, figsize=(9.4, 5.7))
+    fig.subplots_adjust(left=.085, right=.90, top=.80, bottom=.06,
                         wspace=.06, hspace=.10)
     # row references: qubric's full configuration anchors the figure; the
     # raw row's reference is rotated onto it so the rows are comparable
@@ -103,31 +106,35 @@ def main():
             D = pkps_D(X, sub, cols)
             Z = procrustes(cmds2(D), ref_full[sub])
             ax = axes[r, c]
-            sc = ax.scatter(Z[:, 0], Z[:, 1], c=y[sub], cmap='viridis',
-                            vmin=y.min(), vmax=y.max(), s=17, alpha=.9,
-                            edgecolors='white', lw=.3)
+            sc = ax.scatter(Z[:, 0], Z[:, 1], c=y[sub],
+                            cmap=hv_style.CMAP_RESERVE,
+                            vmin=y.min(), vmax=y.max(), s=26, alpha=.95,
+                            edgecolors=hv_style.EDGE, lw=.5)
             ax.text(.035, .96, f'LOO MAE {loo_mae(D, y[sub]):.3f}',
                     transform=ax.transAxes, ha='left', va='top',
-                    fontsize=7, color='.15',
-                    bbox=dict(boxstyle='round,pad=0.35', fc='#f2f2f2',
-                              ec='.6', lw=.7, alpha=.95))
+                    fontsize=SZ['annot'], color=hv_style.INK,
+                    bbox=dict(boxstyle='round,pad=0.35', fc=hv_style.WASH,
+                              ec=hv_style.SPINE, lw=.8, alpha=.95))
             if r == 0:
                 ax.set_title(cname.replace(', ', ',\n')
                              + f'\n($n={n}$, $m={m}$)',
-                             fontsize=8.5, pad=3)
+                             fontsize=SZ['subtitle'], pad=4)
             ax.set_xticks([])
             ax.set_yticks([])
-            for sp in ax.spines.values():
-                sp.set_color('.8')
+            ax.grid(False)
+            for sp in ('left', 'bottom'):
+                ax.spines[sp].set_color(hv_style.SPINE)
             if r == 1:
-                ax.set_xlabel('PKPS 1', fontsize=8, labelpad=2)
-        axes[r, 0].set_ylabel('PKPS 2', fontsize=8, labelpad=2)
+                ax.set_xlabel('PKPS 1', fontsize=SZ['tick'], labelpad=2)
+        axes[r, 0].set_ylabel('PKPS 2', fontsize=SZ['tick'], labelpad=2)
     for r, rname in enumerate(('raw', 'qubric')):
-        fig.text(.022, .655 - .41 * r, rname, rotation=90, fontsize=11,
+        fig.text(.022, .62 - .385 * r, rname, rotation=90,
+                 fontsize=SZ['label'], color=hv_style.INK,
                  va='center', ha='center')
     cb = fig.colorbar(sc, ax=axes, shrink=.85, pad=.025, aspect=28)
-    cb.set_label('benchmark score $y$', fontsize=8)
-    cb.ax.tick_params(labelsize=7)
+    cb.set_label('benchmark score $y$', fontsize=SZ['tick'])
+    cb.ax.tick_params(labelsize=SZ['annot'])
+    cb.outline.set_edgecolor(hv_style.SPINE)
     fig.savefig('figures/fig2_nm.png', dpi=250, bbox_inches='tight',
                 pad_inches=0.02)
     print('wrote figures/fig2_nm.png')

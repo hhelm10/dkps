@@ -27,7 +27,7 @@ import numpy as np
 sys.path.insert(0, '.')
 sys.path.insert(0, 'scripts')
 from outcome_baselines import ItemModel, load_panel  # noqa: E402
-from pillars import harness_tag  # noqa: E402
+from pillars import harness_tag, vendor_tag  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
 
 SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
@@ -42,11 +42,17 @@ OUT_PNG = 'figures/fig2_protocols.png'
 def build_masks(systems, allowed_llm):
     M = len(systems)
     scaf = [harness_tag(s) for s in systems]
+    labels = json.load(open('data/leaderboard/verified_labels.json'))
+    fam = [vendor_tag(labels, s) for s in systems]
     loso = np.array([[j != i for j in range(M)] for i in range(M)])
     loho = np.array(
         [[j != i and not (scaf[i] and scaf[j] == scaf[i]) for j in range(M)]
          for i in range(M)])
-    return {'system': loso, 'llm': allowed_llm, 'harness': loho}
+    lofo = np.array(
+        [[j != i and not (fam[i] and fam[j] == fam[i]) for j in range(M)]
+         for i in range(M)])
+    return {'system': loso, 'llm': allowed_llm, 'family': lofo,
+            'harness': loho}
 
 
 def main_compute():
@@ -90,7 +96,12 @@ def main_compute():
              for m in MS}
 
     out = {'ms': list(MS), 'b_draws': B_DRAWS, 'protocols': {}}
+    if os.path.exists(OUT_JSON):
+        out = json.load(open(OUT_JSON))
     for name, allowed in masks.items():
+        if name in out['protocols']:
+            print(f'=== protocol: {name} cached, skipping ===')
+            continue
         print(f'=== protocol: {name} ===')
         models = [ItemModel(B[allowed[i]], y[allowed[i]], 10.0)
                   for i in range(M)]
@@ -194,6 +205,10 @@ def main_raw():
 
     out = json.load(open(OUT_JSON))
     for name, allowed in masks.items():
+        if 'raw' in out['protocols'].get(name, {}).get('by_m', {}) \
+                .get(str(MS[0]), {}):
+            print(f'=== raw geometry: {name} cached, skipping ===')
+            continue
         print(f'=== raw geometry: {name} ===')
         for m in MS:
             acc = np.zeros(M)
@@ -348,68 +363,77 @@ def main_adaptive():
 
 
 COLS = [('system', 'Leave-one-system-out'),
-        ('llm', 'Leave-one-LLM-out'),
+        ('family', 'Leave-one-family-out'),
         ('harness', 'Leave-one-harness-out')]
-SERIES = [('sample', 'Sample Score', '#8c8c8c', 'o'),
-          ('raw', 'raw-trace geometry', '#555555', 'v'),
-          ('irt', 'IRT (2PL)', '#e08214', 's'),
-          ('geom', 'qubric geometry', '#2c7fb8', '^'),
-          ('blend', 'qubric + IRT blend', '#c51b7d', 'D')]
+# Helivan Blues roles; dashed = score-only, solid = uses trace embeddings
+import hv_style  # noqa: E402
+SERIES = [('sample', 'Sample Score', 'baseline_gray'),
+          ('irt', 'IRT (2PL)', 'baseline_pale'),
+          ('raw', 'raw-trace geometry', 'comparator'),
+          ('geom', 'qubric geometry', 'focus'),
+          ('blend', 'qubric + IRT blend', 'anchor')]
 
 
 def main_render(src=OUT_JSON, dst=OUT_PNG):
     import matplotlib
     matplotlib.use('Agg')
+    hv_style.apply()
     import matplotlib.pyplot as plt
 
+    SZ = hv_style.SIZES
     d = json.load(open(src))
     ms = d['ms']
-    fig, axes = plt.subplots(2, 3, figsize=(11, 6.2), sharex=True,
+    fig, axes = plt.subplots(2, 3, figsize=(13, 7.6), sharex=True,
                              sharey='row')
     for c, (key, title) in enumerate(COLS):
         ax = axes[0, c]
         p = d['protocols'].get(key)
         if p is None:
             ax.text(.5, .5, 'pending', ha='center', va='center',
-                    transform=ax.transAxes, color='.6')
+                    transform=ax.transAxes, color=hv_style.INK_MUTE)
             continue
         pop = p['pop']['mae']
-        ax.axhline(pop, color='.75', lw=1.2, ls=':', zorder=1)
-        ax.text(ms[-1], pop, ' Pop. Mean', fontsize=7, color='.45',
-                va='bottom', ha='right')
-        for name, label, color, marker in SERIES:
+        ax.axhline(pop, color=hv_style.REFLINE, lw=1.2, ls='--', zorder=1)
+        ax.text(ms[-1], pop, ' Pop. Mean', fontsize=hv_style.SIZES['annot'],
+                color=hv_style.INK_MUTE, va='bottom', ha='right')
+        for name, label, role in SERIES:
             if name not in p['by_m'][str(ms[0])]:
                 continue
+            st = hv_style.ROLES[role]
             mae = [p['by_m'][str(m)][name]['mae'] for m in ms]
             lo = [p['by_m'][str(m)][name]['ci'][0] for m in ms]
             hi = [p['by_m'][str(m)][name]['ci'][1] for m in ms]
-            ax.plot(ms, mae, color=color, marker=marker, ms=4, lw=1.6,
-                    label=label, zorder=3)
-            ax.fill_between(ms, lo, hi, color=color, alpha=.12, lw=0, zorder=2)
-        ax.set_title(title, fontsize=10)
+            ax.plot(ms, mae, color=st['color'], ls=st['ls'],
+                    lw=st.get('lw', 2.6), marker='o', ms=4, label=label,
+                    zorder=4 if role == 'anchor' else 3)
+            ax.fill_between(ms, lo, hi, color=st['color'], alpha=.13,
+                            lw=0, zorder=2)
+        ax.set_title(title, fontsize=SZ['label'], color=hv_style.INK_TITLE)
         ax.set_xscale('log')
         ax.set_xticks(ms)
         ax.set_xticklabels(ms)
-        ax.tick_params(labelsize=8)
-        ax.grid(True, color='.92', lw=.6)
-        ax.set_axisbelow(True)
-    axes[0, 0].set_ylabel('SWE-bench Verified\nMAE', fontsize=9)
+        ax.tick_params(labelsize=SZ['tick'])
+    axes[0, 0].set_ylabel('SWE-bench Verified\nMAE$(\\hat{y}, y)$',
+                          fontsize=SZ['label'])
     axes[0, 0].set_ylim(0, .25)
     axes[0, 0].set_yticks([0, .1, .2])
     for c in range(3):
         ax = axes[1, c]
-        ax.set_facecolor('.97')
+        ax.set_facecolor(hv_style.WASH)
         ax.text(.5, .5, 'Terminal-Bench\n(to be run)', ha='center',
-                va='center', transform=ax.transAxes, color='.55', fontsize=10)
+                va='center', transform=ax.transAxes,
+                color=hv_style.INK_MUTE, fontsize=SZ['subtitle'])
         ax.set_xscale('log')
         ax.set_xticks(ms)
         ax.set_xticklabels(ms)
         ax.set_ylim(0, .25)
         ax.set_yticks([0, .1, .2])
-        ax.tick_params(labelsize=8)
-        ax.set_xlabel('Number of tasks $m$', fontsize=9)
-    axes[1, 0].set_ylabel('Terminal-Bench\nMAE', fontsize=9)
-    axes[0, 0].legend(fontsize=7.5, frameon=False, loc='upper right')
+        ax.tick_params(labelsize=SZ['tick'])
+        ax.set_xlabel('Number of tasks $m$', fontsize=SZ['label'])
+    axes[1, 0].set_ylabel('Terminal-Bench\nMAE$(\\hat{y}, y)$',
+                          fontsize=SZ['label'])
+    axes[0, 0].legend(fontsize=SZ['legend'], handlelength=3.2,
+                      loc='upper right')
     fig.tight_layout()
     fig.savefig(dst, dpi=200, bbox_inches='tight', pad_inches=0.02)
     print(f'wrote {dst}')
