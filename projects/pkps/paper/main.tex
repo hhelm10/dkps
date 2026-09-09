@@ -177,8 +177,7 @@ Evaluators do not necessarily have white-box access and instead rely on black-bo
 the Data Kernel Perspective Space (DKPS) \citep{helm2024tracking,helm2025inference}, which constructs low-dimensional representations based on distances between matrices of embedded responses on a paired set of queries.
 % Recent theoretical work has established desirable theoretical properties such as consistency, concentration, and applicability to inference \citep{acharyya2024consistent,acharyya2025concentration, helm2025inference}.
 Most relevant to our setting, \citet{dkps_qeff} regress benchmark scores of
-previously evaluated models on DKPS representations and prove that the resulting
-predictions are query-efficient relative to the sample score.
+previously evaluated models on DKPS representations and prove that the predictions are query-efficient relative to the sample score.
 The proposed Product Kernel Perspective Space generalizes this construction with a kernel on the query space, enabling comparisons in the sparse and unpaired regime.
 
 \section{Benchmark Prediction}
@@ -395,7 +394,7 @@ In practice, the bandwidth is selected by cross-validation over a finite grid co
 the paired limit, which attains the best grid member up to a vanishing validation error
 (Appendix~\ref{app:proof}).
 We note that query-efficiency is transitive and that Theorem~\ref{thm:qeff}, together with
-\citet{dkps_qeff}, implies that $ h_{n,\sigma}^{(K)} $ is query-efficient relative to the sample score.
+Theorem 2 of \citet{dkps_qeff}, implies that $ h_{n,\sigma}^{(K)} $ is query-efficient relative to the sample score.
 
 The same machinery covers (model, task) score completion ($m_i^{(t)}=0$): since
 Eq.~\eqref{eq:A} uses only responses, a model that has answered none of task $t$'s
@@ -473,8 +472,8 @@ selected via leak-free cross-validation on the observed data (Appendix~\ref{app:
 Following \citet{benchpress}, all methods operate on a pre-processed score matrix:
 observed scores are logit-transformed, standardized per task, and centered by a
 two-way (model, task) additive bias.
-\PKPS and LRMC share this pre-processing exactly, so differences between them are
-attributable to how the residual is modeled.
+% \PKPS and LRMC share this pre-processing exactly, so differences between them are
+% attributable to how the residual is modeled.
 Following \citet{dkps_qeff}, we use the leave-one-family-out protocol: all models from the
 target model's developer are excluded, so predictions never lean on artificially similar models. As such, the reported errors are conservative.
 We report average mean absolute error (MAE) of the predicted score versus the true
@@ -549,7 +548,7 @@ while DKPS is flat.
 IRT is poorly identified without a shared item block and is worse than the sample
 score throughout.
 
-\paragraph{The gains hold cell-by-cell.}
+\paragraph{The gains hold across cells.}
 Figure~\ref{fig:qe}d--g shows the distribution of the per-cell difference between
 the sample score's and the ensemble's absolute errors, by dataset (d), budget (e),
 cohort (f), and task coverage (g).
@@ -592,7 +591,7 @@ coverage. $\blacktriangledown$ indicates the per-row mean.}
 \label{fig:qe}
 \end{figure}
 
-\paragraph{The completion gains are modest but hold cell-by-cell.}
+\paragraph{The completion gains are modest but hold across cells.}
 Figure~\ref{fig:completion}e--h shows the distribution of the per-missing-cell
 difference between LRMC's and the ensemble's absolute errors, by dataset (e),
 cohort (f), coverage (g), and query depth (h).
@@ -632,8 +631,8 @@ tasks, and cohort size. \textbf{(e--h)} Per-cell difference in MAE between LRMC 
 In this paper we introduced the \PKPS, a collection of low-dimensional
 representations of models defined on sparse and unpaired collections of embedded
 responses --- a realistic setting outside of highly curated leaderboards and evaluation collections.
-We prove that the \PKPS is query-efficient relative to its fully-paired counterpart and that, as $\rho\to0$, DKPS and IRT degrade sharply in our experiments while \PKPS does not.
-The same representations support both benchmark prediction tasks, and the ensemble performs at least as well as either component alone.
+We prove that the \PKPS is query-efficient relative to its fully-paired counterpart and show that, as $\rho\to0$, paired methods such as DKPS and IRT degrade sharply while \PKPS does not.
+The same representations support both benchmark prediction tasks and the ensemble dominates both.
 
 \paragraph{Practical deployment.} [PLACEHOLDER] (i) \textit{Stochastic scoring functions.}
 Our analysis assumes the mapping from a response to its score is deterministic.
