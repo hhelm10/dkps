@@ -148,10 +148,86 @@ def main_compute():
     print(f'wrote {OUT_JSON}')
 
 
+def main_raw():
+    """Add a raw-trace-embedding geometry curve per protocol (the
+    off-the-shelf null hypothesis): head+tail 8K-token slices of the
+    unpruned render, text-embedding-3-small, median-center + L2 -- same
+    kNN/kernel machinery and the same probe draws as main_compute."""
+    systems, q100, y, B, allowed_llm = load_panel(panel='data/judge/q100.json')
+    M, Q = B.shape
+    masks = build_masks(systems, allowed_llm)
+    HT = np.load('data/judge/q100_raw_emb_openai_small.npz')['HT'] \
+        .reshape(M, Q, -1)
+    Xc = HT - np.median(HT, axis=0, keepdims=True)
+    Xc /= np.maximum(np.linalg.norm(Xc, axis=-1, keepdims=True), 1e-9)
+    Xc = Xc.astype(np.float32)
+
+    z = np.load('data/leaderboard/query_vecs_64.npz', allow_pickle=True)
+    ids = [str(x) for x in z['ids']]
+    V = np.asarray(z['vecs'], np.float32)[[ids.index(q) for q in q100]]
+    D2q = ((V[:, None] - V[None]) ** 2).sum(-1)
+    med = np.median(D2q)
+    kern = {}
+    for s_ in SIGS:
+        KQ = np.exp(-D2q / (2 * med / s_))
+        W = np.einsum('qp,jpd->jqd', KQ, Xc)
+        kern[s_] = (KQ, W, np.einsum('jqd,jqd->j', Xc, W) / KQ.sum())
+
+    def pkps_D(cols, s_):
+        KQ, W, Arr = kern[s_]
+        A_tr = np.einsum('iqd,jqd->ij', Xc[:, cols], W[:, cols]) / KQ[cols].sum()
+        KQc = KQ[np.ix_(cols, cols)]
+        Wc = np.einsum('qp,jpd->jqd', KQc, Xc[:, cols])
+        Att = np.einsum('iqd,iqd->i', Xc[:, cols], Wc) / KQc.sum()
+        return np.sqrt(np.maximum(Att[:, None] + Arr[None] - 2 * A_tr, 0))
+
+    rng_b = np.random.default_rng(1)
+
+    def ci(e):
+        v = np.array([e[rng_b.integers(0, M, M)].mean() for _ in range(2000)])
+        return [float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))]
+
+    rng = np.random.default_rng(0)
+    draws = {m: [rng.choice(Q, m, replace=False) for _ in range(B_DRAWS)]
+             for m in MS}
+
+    out = json.load(open(OUT_JSON))
+    for name, allowed in masks.items():
+        print(f'=== raw geometry: {name} ===')
+        for m in MS:
+            acc = np.zeros(M)
+            for cols in draws[m]:
+                cand = {}
+                for s_ in SIGS:
+                    D = pkps_D(cols, s_)
+                    for k in KS:
+                        errs, tgt = [], np.zeros(M)
+                        for i in range(M):
+                            refs = np.where(allowed[i])[0]
+                            Dref = D[:, refs].copy()
+                            for r, j in enumerate(refs):
+                                Dref[j, r] = np.inf
+                            Dref[i] = D[i, refs]
+                            nn = np.argsort(Dref, 1)[:, :k]
+                            w = 1 / (np.take_along_axis(Dref, nn, 1) + 1e-12)
+                            pred = (w * y[refs][nn]).sum(1) / w.sum(1)
+                            errs.append(np.abs(pred[refs] - y[refs]).mean())
+                            tgt[i] = pred[i]
+                        cand[(s_, k)] = (float(np.mean(errs)), tgt)
+                tgt = min(cand.values(), key=lambda v: v[0])[1]
+                acc += np.abs(tgt - y) / B_DRAWS
+            out['protocols'][name]['by_m'][str(m)]['raw'] = dict(
+                mae=float(acc.mean()), ci=ci(acc))
+            print(m, round(acc.mean(), 4))
+        json.dump(out, open(OUT_JSON, 'w'), indent=2)
+    print(f'wrote {OUT_JSON}')
+
+
 COLS = [('system', 'Leave-one-system-out'),
         ('llm', 'Leave-one-LLM-out'),
         ('harness', 'Leave-one-harness-out')]
 SERIES = [('sample', 'Sample Score', '#8c8c8c', 'o'),
+          ('raw', 'raw-trace geometry', '#555555', 'v'),
           ('irt', 'IRT (2PL)', '#e08214', 's'),
           ('geom', 'qubric geometry', '#2c7fb8', '^'),
           ('blend', 'qubric + IRT blend', '#c51b7d', 'D')]
@@ -178,6 +254,8 @@ def main_render():
         ax.text(ms[-1], pop, ' Pop. Mean', fontsize=7, color='.45',
                 va='bottom', ha='right')
         for name, label, color, marker in SERIES:
+            if name not in p['by_m'][str(ms[0])]:
+                continue
             mae = [p['by_m'][str(m)][name]['mae'] for m in ms]
             lo = [p['by_m'][str(m)][name]['ci'][0] for m in ms]
             hi = [p['by_m'][str(m)][name]['ci'][1] for m in ms]
@@ -215,5 +293,7 @@ if __name__ == '__main__':
     stage = sys.argv[1] if len(sys.argv) > 1 else 'all'
     if stage in ('compute', 'all'):
         main_compute()
+    if stage in ('raw', 'all'):
+        main_raw()
     if stage in ('render', 'all'):
         main_render()
