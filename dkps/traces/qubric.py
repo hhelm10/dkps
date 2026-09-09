@@ -61,6 +61,19 @@ def _schema(sections):
                 'additionalProperties': False}}}
 
 
+_GATE = None  # optional global semaphore capping in-flight chat requests
+
+
+def set_concurrency_gate(n):
+    """Cap total concurrent _chat HTTP requests across all threads.
+    Callers may then raise their thread counts safely; _chat's 10-attempt
+    exponential-backoff loop (429/5xx/network) absorbs any residual
+    throttling."""
+    global _GATE
+    import threading
+    _GATE = threading.Semaphore(n)
+
+
 def _chat(api_key, model_name, content, sections, base_url=DEFAULT_BASE_URL,
           max_tokens=4000, effort='none'):
     reasoning = {'enabled': False} if effort == 'none' else {'effort': effort}
@@ -75,9 +88,17 @@ def _chat(api_key, model_name, content, sections, base_url=DEFAULT_BASE_URL,
     delay = 2.0
     for _ in range(10):
         try:
-            r = requests.post(base_url.rstrip('/') + '/chat/completions', json=body,
-                              headers={'Authorization': f'Bearer {api_key}'},
-                              timeout=(15, 120))
+            if _GATE is not None:
+                with _GATE:
+                    r = requests.post(base_url.rstrip('/') + '/chat/completions',
+                                      json=body,
+                                      headers={'Authorization': f'Bearer {api_key}'},
+                                      timeout=(15, 120))
+            else:
+                r = requests.post(base_url.rstrip('/') + '/chat/completions',
+                                  json=body,
+                                  headers={'Authorization': f'Bearer {api_key}'},
+                                  timeout=(15, 120))
         except requests.RequestException:
             time.sleep(delay); delay = min(delay * 2, 60); continue
         if r.status_code == 200:
