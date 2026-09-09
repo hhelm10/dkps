@@ -24,9 +24,9 @@ sys.path.insert(0, 'scripts')
 from outcome_baselines import load_panel  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
 
-CELLS = [(25, 3, 'small $n$, small $m$'),
-         (25, 100, 'small $n$, large $m$'),
-         (107, 100, 'large $n$, large $m$')]
+CELLS = [(25, 3, 'fewer ref. systems, fewer probes'),
+         (25, 100, 'fewer ref. systems, more probes'),
+         (107, 100, 'more ref. systems, more probes')]
 SIG = 4
 
 
@@ -88,7 +88,7 @@ def main():
     import matplotlib.pyplot as plt
 
     fig, axes = plt.subplots(2, 3, figsize=(6.6, 4.0))
-    fig.subplots_adjust(left=.055, right=.90, top=.90, bottom=.02,
+    fig.subplots_adjust(left=.055, right=.90, top=.84, bottom=.02,
                         wspace=.06, hspace=.08)
     # row references: qubric's full configuration anchors the figure; the
     # raw row's reference is rotated onto it so the rows are comparable
@@ -111,7 +111,9 @@ def main():
                     fontsize=7, color='.25',
                     bbox=dict(fc='white', ec='none', alpha=.7, pad=1.2))
             if r == 0:
-                ax.set_title(f'$n={n}$, $m={m}$', fontsize=9, pad=3)
+                ax.set_title(cname.replace(', ', ',\n')
+                             + f'\n($n={n}$, $m={m}$)',
+                             fontsize=8.5, pad=3)
             ax.set_xticks([])
             ax.set_yticks([])
             for sp in ax.spines.values():
