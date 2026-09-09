@@ -67,13 +67,21 @@ def main():
     sys_order = rng.permutation(M)
     task_order = rng.permutation(Q)
 
-    def pkps_mds(X, sub, cols):
+    def pkps_D(X, sub, cols):
         Xs = X[np.ix_(sub, cols)].astype(np.float32)
         KQ = KQfull[np.ix_(cols, cols)]
         W = np.einsum('qp,jpd->jqd', KQ, Xs, optimize=True)
         A = (Xs.reshape(len(sub), -1) @ W.reshape(len(sub), -1).T) / KQ.sum()
         d2 = np.diag(A)[:, None] + np.diag(A)[None] - 2 * A
-        return cmds2(np.sqrt(np.maximum(d2, 0)))
+        return np.sqrt(np.maximum(d2, 0))
+
+    def loo_mae(D, ys, k=3):
+        Dm = D.copy()
+        np.fill_diagonal(Dm, np.inf)
+        nn = np.argsort(Dm, 1)[:, :k]
+        w = 1 / (np.take_along_axis(Dm, nn, 1) + 1e-12)
+        pred = (w * ys[nn]).sum(1) / w.sum(1)
+        return float(np.abs(pred - ys).mean())
 
     import matplotlib
     matplotlib.use('Agg')
@@ -83,15 +91,20 @@ def main():
     fig.subplots_adjust(left=.055, right=.90, top=.90, bottom=.02,
                         wspace=.06, hspace=.08)
     for r, (rname, X) in enumerate([('raw', raw), ('qubric', qub)]):
-        ref_full = pkps_mds(X, np.arange(M), np.arange(Q))
+        ref_full = cmds2(pkps_D(X, np.arange(M), np.arange(Q)))
         for c, (n, m, cname) in enumerate(CELLS):
             sub = np.sort(sys_order[:n])
             cols = np.sort(task_order[:m])
-            Z = procrustes(pkps_mds(X, sub, cols), ref_full[sub])
+            D = pkps_D(X, sub, cols)
+            Z = procrustes(cmds2(D), ref_full[sub])
             ax = axes[r, c]
             sc = ax.scatter(Z[:, 0], Z[:, 1], c=y[sub], cmap='viridis',
                             vmin=y.min(), vmax=y.max(), s=17, alpha=.9,
                             edgecolors='white', lw=.3)
+            ax.text(.97, .965, f'LOO MAE {loo_mae(D, y[sub]):.3f}',
+                    transform=ax.transAxes, ha='right', va='top',
+                    fontsize=7, color='.25',
+                    bbox=dict(fc='white', ec='none', alpha=.7, pad=1.2))
             if r == 0:
                 ax.set_title(f'$n={n}$, $m={m}$', fontsize=9, pad=3)
             ax.set_xticks([])
