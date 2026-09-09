@@ -79,9 +79,10 @@ def main():
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(2, 3, figsize=(9.6, 6.4))
-    for r, (rname, X) in enumerate([('Raw trace embedding', raw),
-                                    ('qubric embedding', qub)]):
+    fig, axes = plt.subplots(2, 3, figsize=(6.6, 4.0))
+    fig.subplots_adjust(left=.055, right=.90, top=.90, bottom=.02,
+                        wspace=.06, hspace=.08)
+    for r, (rname, X) in enumerate([('raw', raw), ('qubric', qub)]):
         ref_full = pkps_mds(X, np.arange(M), np.arange(Q))
         for c, (n, m, cname) in enumerate(CELLS):
             sub = np.sort(sys_order[:n])
@@ -89,19 +90,19 @@ def main():
             Z = procrustes(pkps_mds(X, sub, cols), ref_full[sub])
             ax = axes[r, c]
             sc = ax.scatter(Z[:, 0], Z[:, 1], c=y[sub], cmap='viridis',
-                            vmin=y.min(), vmax=y.max(), s=40, alpha=.9,
-                            edgecolors='white', lw=.5)
+                            vmin=y.min(), vmax=y.max(), s=17, alpha=.9,
+                            edgecolors='white', lw=.3)
             if r == 0:
-                ax.set_title(f'{cname}\n($n={n}$, $m={m}$)', fontsize=10)
+                ax.set_title(f'$n={n}$, $m={m}$', fontsize=9, pad=3)
             ax.set_xticks([])
             ax.set_yticks([])
             for sp in ax.spines.values():
                 sp.set_color('.8')
-        axes[r, 0].set_ylabel(rname + '\n(PKPS, classical MDS)', fontsize=10)
-    cb = fig.colorbar(sc, ax=axes, shrink=.6, pad=.02)
-    cb.set_label('benchmark score $y$ (resolve rate)', fontsize=9)
-    cb.ax.tick_params(labelsize=8)
-    fig.savefig('figures/fig2_nm.png', dpi=200, bbox_inches='tight')
+        axes[r, 0].set_ylabel(rname, fontsize=10)
+    cb = fig.colorbar(sc, ax=axes, shrink=.85, pad=.025, aspect=28)
+    cb.set_label('benchmark score $y$', fontsize=8)
+    cb.ax.tick_params(labelsize=7)
+    fig.savefig('figures/fig2_nm.png', dpi=250)
     print('wrote figures/fig2_nm.png')
 
 
