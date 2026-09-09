@@ -270,7 +270,7 @@ def main_render():
         ax.grid(True, color='.92', lw=.6)
         ax.set_axisbelow(True)
     axes[0, 0].set_ylabel('SWE-bench Verified\nMAE', fontsize=9)
-    axes[0, 0].set_ylim(0, .5)
+    axes[0, 0].set_ylim(0, .25)
     for c in range(3):
         ax = axes[1, c]
         ax.set_facecolor('.97')
