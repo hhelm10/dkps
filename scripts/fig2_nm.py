@@ -90,8 +90,13 @@ def main():
     fig, axes = plt.subplots(2, 3, figsize=(6.6, 4.0))
     fig.subplots_adjust(left=.055, right=.90, top=.90, bottom=.02,
                         wspace=.06, hspace=.08)
-    for r, (rname, X) in enumerate([('raw', raw), ('qubric', qub)]):
-        ref_full = cmds2(pkps_D(X, np.arange(M), np.arange(Q)))
+    # row references: qubric's full configuration anchors the figure; the
+    # raw row's reference is rotated onto it so the rows are comparable
+    ref_qub = cmds2(pkps_D(qub, np.arange(M), np.arange(Q)))
+    ref_raw = procrustes(cmds2(pkps_D(raw, np.arange(M), np.arange(Q))),
+                         ref_qub)
+    for r, (rname, X, ref_full) in enumerate([('raw', raw, ref_raw),
+                                              ('qubric', qub, ref_qub)]):
         for c, (n, m, cname) in enumerate(CELLS):
             sub = np.sort(sys_order[:n])
             cols = np.sort(task_order[:m])
