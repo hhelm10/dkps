@@ -24,9 +24,9 @@ sys.path.insert(0, 'scripts')
 from outcome_baselines import load_panel  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
 
-CELLS = [(25, 3, 'fewer ref. systems, fewer probes'),
-         (25, 100, 'fewer ref. systems, more probes'),
-         (107, 100, 'more ref. systems, more probes')]
+CELLS = [(20, 3, 'fewer ref. systems, fewer probes'),
+         (20, 100, 'fewer ref. systems, more probes'),
+         (100, 100, 'more ref. systems, more probes')]
 SIG = 4
 
 
