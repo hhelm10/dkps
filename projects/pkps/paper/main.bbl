@@ -25,6 +25,13 @@ Axel Backlund and Lukas Petersson.
   agents.
 \newblock \emph{arXiv preprint arXiv:2502.15840}, 2025.
 
+\bibitem[Batzner et~al.(2026)Batzner, Nelaturu, Stachura, et~al.]{eee2026}
+Jan Batzner, Sree~Harsha Nelaturu, Damian Stachura, et~al.
+\newblock {Every Eval Ever}: A unifying schema and community repository for
+  {AI} evaluation results, 2026.
+\newblock Dataset:
+  \url{https://huggingface.co/datasets/evaleval/EEE_datastore}.
+
 \bibitem[Bojar et~al.(2014)Bojar, Buck, Federmann, Haddow, Koehn, Leveling,
   Monz, Pecina, Post, Saint-Amand, Soricut, Specia, and Tamchyna]{bojar2014wmt}
 Ond{\v{r}}ej Bojar, Christian Buck, Christian Federmann, Barry Haddow, Philipp
@@ -70,8 +77,8 @@ Guodong Chen, Hayden~S. Helm, Kate Lytvynets, Weiwei Yang, and Carey~E. Priebe.
   Villar]{chen2025weights}
 Nan Chen, Hayden Helm, Youngser Park, Carey Priebe, and Soledad Villar.
 \newblock Extracting information from fine-tuned weights.
-\newblock In \emph{Non-Euclidean Foundation Models: Advancing AI Beyond
-  Euclidean Frameworks}, 2025{\natexlab{a}}.
+\newblock In \emph{NeurIPS Workshop on Non-Euclidean Foundation Models and
+  Geometric Learning (NEGEL)}, 2025{\natexlab{a}}.
 
 \bibitem[Chen et~al.(2025{\natexlab{b}})Chen, Ternasky, Kwesi, Griffin, Yin,
   Salifu, Amoaba, Mu, Alican, and Ihlamur]{chen2025vcbench}
@@ -118,14 +125,6 @@ Ivan Dokmani{\'c}, Reza Parhizkar, Juri Ranieri, and Martin Vetterli.
 Brandon Duderstadt, Hayden~S. Helm, and Carey~E. Priebe.
 \newblock Comparing foundation models using data kernels.
 \newblock \emph{arXiv preprint arXiv:2305.05126}, 2023.
-
-\bibitem[{EvalEval Coalition}(2026)]{eee2026}
-{EvalEval Coalition}.
-\newblock {Every Eval Ever}: A unified open data format and public datastore
-  for {AI} evaluation results.
-\newblock \url{https://evalevalai.com/projects/every-eval-ever/}, 2026.
-\newblock Dataset:
-  \url{https://huggingface.co/datasets/evaleval/EEE_datastore}.
 
 \bibitem[Gretton et~al.(2012)Gretton, Borgwardt, Rasch, Sch{\"o}lkopf, and
   Smola]{gretton2012kernel}
