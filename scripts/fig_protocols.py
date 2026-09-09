@@ -19,6 +19,7 @@ Stages: compute -> figures/q100_protocols.json; render -> figures/fig2_protocols
 Usage: python scripts/fig_protocols.py [compute|render|all]
 """
 import json
+import os
 import sys
 
 import numpy as np
@@ -223,6 +224,129 @@ def main_raw():
     print(f'wrote {OUT_JSON}')
 
 
+def load_embeddings():
+    """(Xc_qubric, Xr_raw, V64) for the q100 panel, both (M, Q, d)."""
+    systems, q100, y, B, allowed_llm = load_panel(panel='data/judge/q100.json')
+    M, Q = B.shape
+    Xc = consensus_center(np.load('data/judge/q100_emb_openai_small.npz')['X'],
+                          np.tile(np.arange(Q), M)) \
+        .reshape(M, Q, -1).astype(np.float32)
+    HT = np.load('data/judge/q100_raw_emb_openai_small.npz')['HT'] \
+        .reshape(M, Q, -1)
+    Xr = HT - np.median(HT, axis=0, keepdims=True)
+    Xr /= np.maximum(np.linalg.norm(Xr, axis=-1, keepdims=True), 1e-9)
+    z = np.load('data/leaderboard/query_vecs_64.npz', allow_pickle=True)
+    ids = [str(x) for x in z['ids']]
+    V = np.asarray(z['vecs'], np.float32)[[ids.index(q) for q in q100]]
+    return systems, q100, y, B, allowed_llm, Xc, Xr.astype(np.float32), V
+
+
+def main_adaptive():
+    """Adaptive-probe (simulated CAT) version of the protocol grid.
+
+    Per protocol: refit 2PL per target on the protocol's allowed refs,
+    take each target's adaptive item path, then evaluate raw geometry,
+    qubric geometry, and the qubric+IRT blend on the per-target panels
+    with pooled (sigma, k, alpha) from honest reference errors -- the
+    adaptive analogue of main_compute. Writes
+    figures/q100_protocols_adaptive.json.
+    """
+    OUT = 'figures/q100_protocols_adaptive.json'
+    systems, q100, y, B, allowed_llm, Xc, Xr, V = load_embeddings()
+    M, Q = B.shape
+    masks = build_masks(systems, allowed_llm)
+    D2q = ((V[:, None] - V[None]) ** 2).sum(-1)
+    med = np.median(D2q)
+
+    kerns = {}
+    for tag, X in (('qubric', Xc), ('raw', Xr)):
+        for s_ in SIGS:
+            KQ = np.exp(-D2q / (2 * med / s_))
+            W = np.einsum('qp,jpd->jqd', KQ, X, optimize=True)
+            kerns[(tag, s_)] = (KQ, W,
+                                np.einsum('jqd,jqd->j', X, W) / KQ.sum())
+    Xof = {'qubric': Xc, 'raw': Xr}
+
+    def pkps_D(tag, cols, s_):
+        X = Xof[tag]
+        KQ, W, Arr = kerns[(tag, s_)]
+        Xi = X[:, cols].reshape(M, -1)
+        A_tr = (Xi @ W[:, cols].reshape(M, -1).T) / KQ[cols].sum()
+        KQc = KQ[np.ix_(cols, cols)]
+        Wc = np.einsum('qp,jpd->jqd', KQc, X[:, cols], optimize=True)
+        Att = np.einsum('jqd,jqd->j', X[:, cols], Wc) / KQc.sum()
+        return np.sqrt(np.maximum(Att[:, None] + Arr[None] - 2 * A_tr, 0))
+
+    rng_b = np.random.default_rng(1)
+
+    def ci(e):
+        v = np.array([e[rng_b.integers(0, M, M)].mean() for _ in range(2000)])
+        return [float(np.percentile(v, 2.5)), float(np.percentile(v, 97.5))]
+
+    out = {'ms': list(MS), 'protocols': {}}
+    if os.path.exists(OUT):
+        out = json.load(open(OUT))
+    for name, allowed in masks.items():
+        if name in out['protocols']:
+            print(f'=== {name}: cached, skipping ===')
+            continue
+        print(f'=== adaptive protocol: {name} ===')
+        models = [ItemModel(B[allowed[i]], y[allowed[i]], 10.0)
+                  for i in range(M)]
+        adaptive = [models[i].adaptive_path(B[i]) for i in range(M)]
+        pop_t = np.array([y[allowed[i]].mean() for i in range(M)])
+
+        def geom_errs(tag, cols_of):
+            cand = {}
+            for s_ in SIGS:
+                Dc = {tuple(c): pkps_D(tag, np.asarray(c), s_)
+                      for c in {tuple(cols_of[i]) for i in range(M)}}
+                for k in KS:
+                    errs, store = [], {}
+                    for i in range(M):
+                        D = Dc[tuple(cols_of[i])]
+                        refs = np.where(allowed[i])[0]
+                        Dref = D[:, refs].copy()
+                        for r, j in enumerate(refs):
+                            Dref[j, r] = np.inf
+                        Dref[i] = D[i, refs]
+                        nn = np.argsort(Dref, 1)[:, :k]
+                        w = 1 / (np.take_along_axis(Dref, nn, 1) + 1e-12)
+                        store[i] = (w * y[refs][nn]).sum(1) / w.sum(1)
+                        errs.append(np.abs(store[i][refs] - y[refs]).mean())
+                    cand[(s_, k)] = (float(np.mean(errs)), store)
+            return min(cand.values(), key=lambda v: v[0])[1]
+
+        res = out['protocols'].setdefault(
+            name, {'pop': dict(mae=float(np.abs(pop_t - y).mean()),
+                               ci=ci(np.abs(pop_t - y))), 'by_m': {}})
+        for m in MS:
+            cols_of = {i: np.array(adaptive[i][0][:m]) for i in range(M)}
+            irt_t = np.array([adaptive[i][1][m - 1] for i in range(M)])
+            store = geom_errs('qubric', cols_of)
+            store_raw = geom_errs('raw', cols_of)
+            curves = np.zeros((M, len(ALPHAS)))
+            for i in range(M):
+                refs = np.where(allowed[i])[0]
+                irt_ref = np.array([models[i].predict(cols_of[i],
+                                                      B[j, cols_of[i]])
+                                    for j in refs])
+                curves[i] = np.abs(ALPHAS[None] * irt_ref[:, None]
+                                   + (1 - ALPHAS[None]) * store[i][refs, None]
+                                   - y[refs, None]).mean(0)
+            a = ALPHAS[int(curves.mean(0).argmin())]
+            geo_t = np.array([store[i][i] for i in range(M)])
+            raw_t = np.array([store_raw[i][i] for i in range(M)])
+            e = {'irt': np.abs(irt_t - y), 'geom': np.abs(geo_t - y),
+                 'raw': np.abs(raw_t - y),
+                 'blend': np.abs(a * irt_t + (1 - a) * geo_t - y)}
+            res['by_m'][m] = {n: dict(mae=float(v.mean()), ci=ci(v))
+                              for n, v in e.items()}
+            print(m, {n: round(v.mean(), 4) for n, v in e.items()})
+            json.dump(out, open(OUT, 'w'), indent=2)
+    print(f'wrote {OUT}')
+
+
 COLS = [('system', 'Leave-one-system-out'),
         ('llm', 'Leave-one-LLM-out'),
         ('harness', 'Leave-one-harness-out')]
@@ -233,12 +357,12 @@ SERIES = [('sample', 'Sample Score', '#8c8c8c', 'o'),
           ('blend', 'qubric + IRT blend', '#c51b7d', 'D')]
 
 
-def main_render():
+def main_render(src=OUT_JSON, dst=OUT_PNG):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
-    d = json.load(open(OUT_JSON))
+    d = json.load(open(src))
     ms = d['ms']
     fig, axes = plt.subplots(2, 3, figsize=(11, 6.2), sharex=True,
                              sharey='row')
@@ -285,8 +409,8 @@ def main_render():
     axes[1, 0].set_ylabel('Terminal-Bench\nMAE', fontsize=9)
     axes[0, 0].legend(fontsize=7.5, frameon=False, loc='upper right')
     fig.tight_layout()
-    fig.savefig(OUT_PNG, dpi=200)
-    print(f'wrote {OUT_PNG}')
+    fig.savefig(dst, dpi=200, bbox_inches='tight', pad_inches=0.02)
+    print(f'wrote {dst}')
 
 
 if __name__ == '__main__':
@@ -297,3 +421,8 @@ if __name__ == '__main__':
         main_raw()
     if stage in ('render', 'all'):
         main_render()
+    if stage == 'adaptive':
+        main_adaptive()
+    if stage in ('adaptive', 'adaptive-render'):
+        main_render('figures/q100_protocols_adaptive.json',
+                    'figures/fig2b_protocols_adaptive.png')

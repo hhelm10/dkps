@@ -128,7 +128,8 @@ def main():
     cb = fig.colorbar(sc, ax=axes, shrink=.85, pad=.025, aspect=28)
     cb.set_label('benchmark score $y$', fontsize=8)
     cb.ax.tick_params(labelsize=7)
-    fig.savefig('figures/fig2_nm.png', dpi=250)
+    fig.savefig('figures/fig2_nm.png', dpi=250, bbox_inches='tight',
+                pad_inches=0.02)
     print('wrote figures/fig2_nm.png')
 
 
