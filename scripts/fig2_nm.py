@@ -106,8 +106,7 @@ def main():
             D = pkps_D(X, sub, cols)
             Z = procrustes(cmds2(D), ref_full[sub])
             ax = axes[r, c]
-            sc = ax.scatter(Z[:, 0], Z[:, 1], c=y[sub],
-                            cmap=hv_style.CMAP_RESERVE,
+            sc = ax.scatter(Z[:, 0], Z[:, 1], c=y[sub], cmap='viridis',
                             vmin=y.min(), vmax=y.max(), s=26, alpha=.95,
                             edgecolors=hv_style.EDGE, lw=.5)
             ax.text(.035, .96, f'LOO MAE {loo_mae(D, y[sub]):.3f}',
