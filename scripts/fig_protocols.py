@@ -395,6 +395,7 @@ def main_render(src=OUT_JSON, dst=OUT_PNG):
         ax.set_axisbelow(True)
     axes[0, 0].set_ylabel('SWE-bench Verified\nMAE', fontsize=9)
     axes[0, 0].set_ylim(0, .25)
+    axes[0, 0].set_yticks([0, .1, .2])
     for c in range(3):
         ax = axes[1, c]
         ax.set_facecolor('.97')
@@ -403,7 +404,8 @@ def main_render(src=OUT_JSON, dst=OUT_PNG):
         ax.set_xscale('log')
         ax.set_xticks(ms)
         ax.set_xticklabels(ms)
-        ax.set_yticks([])
+        ax.set_ylim(0, .25)
+        ax.set_yticks([0, .1, .2])
         ax.tick_params(labelsize=8)
         ax.set_xlabel('Number of probe tasks $m$', fontsize=9)
     axes[1, 0].set_ylabel('Terminal-Bench\nMAE', fontsize=9)
