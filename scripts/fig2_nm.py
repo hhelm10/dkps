@@ -106,10 +106,11 @@ def main():
             sc = ax.scatter(Z[:, 0], Z[:, 1], c=y[sub], cmap='viridis',
                             vmin=y.min(), vmax=y.max(), s=17, alpha=.9,
                             edgecolors='white', lw=.3)
-            ax.text(.97, .965, f'LOO MAE {loo_mae(D, y[sub]):.3f}',
-                    transform=ax.transAxes, ha='right', va='top',
-                    fontsize=7, color='.25',
-                    bbox=dict(fc='white', ec='none', alpha=.7, pad=1.2))
+            ax.text(.035, .96, f'LOO MAE {loo_mae(D, y[sub]):.3f}',
+                    transform=ax.transAxes, ha='left', va='top',
+                    fontsize=7, color='.15',
+                    bbox=dict(boxstyle='round,pad=0.35', fc='#f2f2f2',
+                              ec='.6', lw=.7, alpha=.95))
             if r == 0:
                 ax.set_title(cname.replace(', ', ',\n')
                              + f'\n($n={n}$, $m={m}$)',
