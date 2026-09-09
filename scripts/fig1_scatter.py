@@ -1,5 +1,7 @@
-"""Figure 1 (per HH 2026-09-09): 2x4 PCA scatter of per-(system,task)
-trace embeddings on the SWE-bench q100 panel.
+"""Figure 1 (per HH 2026-09-09, rev: 'down sample to two tasks'): 2x4 PCA
+scatter of per-(system,task) trace embeddings on the SWE-bench q100 panel,
+restricted to TWO tasks (the most correctness-balanced ones) so structure
+is visible -- 214 points per panel instead of 10,700.
 
   row 1  raw off-the-shelf embeddings (head+tail 8K-token slices,
          text-embedding-3-small, L2; no centering -- the default a
@@ -8,8 +10,8 @@ trace embeddings on the SWE-bench q100 panel.
          + L2 -- the pipeline output)
   cols   PC1 v PC2 colored by: model (LLM), harness, task, correctness
 
-One PCA per row (all 10,700 traces); the four columns recolor the same
-coordinates. Writes figures/fig1_scatter.png.
+One PCA per row (fit on the two tasks' traces); the four columns recolor
+the same coordinates. Writes figures/fig1_scatter.png.
 """
 import json
 import re
@@ -46,20 +48,29 @@ def main():
     harness = [harness_tag(s) for s in systems]
 
     raw = np.load('data/judge/q100_raw_emb_openai_small.npz')['HT'] \
-        .reshape(M * Q, -1).astype(np.float32)
-    raw /= np.maximum(np.linalg.norm(raw, axis=1, keepdims=True), 1e-9)
-    qub = np.load('data/judge/q100_emb_openai_small.npz')['X'] \
-        .astype(np.float32)
-    qub = consensus_center(qub, np.tile(np.arange(Q), M))
-    qub /= np.maximum(np.linalg.norm(qub, axis=1, keepdims=True), 1e-9)
+        .reshape(M, Q, -1).astype(np.float32)
+    qub = consensus_center(
+        np.load('data/judge/q100_emb_openai_small.npz')['X'],
+        np.tile(np.arange(Q), M)).reshape(M, Q, -1).astype(np.float32)
 
-    Zr, vr = pca2(raw)
-    Zq, vq = pca2(qub)
+    # two most correctness-balanced tasks
+    bal = np.argsort(np.abs(B.mean(0) - .5))
+    t1, t2 = int(bal[0]), int(bal[1])
+    print('tasks:', q100[t1], q100[t2],
+          'resolve rates', B[:, t1].mean().round(2), B[:, t2].mean().round(2))
+    tsel = [t1, t2]
+
+    def flatten(X):
+        F = X[:, tsel].reshape(M * 2, -1)
+        return F / np.maximum(np.linalg.norm(F, axis=1, keepdims=True), 1e-9)
+
+    Zr, vr = pca2(flatten(raw))
+    Zq, vq = pca2(flatten(qub))
     print('explained var: raw', vr.round(3), 'qubric', vq.round(3))
 
-    sys_idx = np.repeat(np.arange(M), Q)
-    task_idx = np.tile(np.arange(Q), M)
-    corr = B[sys_idx, task_idx]
+    sys_idx = np.repeat(np.arange(M), 2)
+    task_idx = np.tile(np.arange(2), M)
+    corr = B[sys_idx, np.array(tsel)[task_idx]]
 
     import matplotlib
     matplotlib.use('Agg')
@@ -79,7 +90,8 @@ def main():
 
     mcols, mtop, mmap = cat_colors([model[i] for i in sys_idx])
     hcols, htop, hmap = cat_colors([harness[i] for i in sys_idx])
-    tcols = plt.get_cmap('hsv')(task_idx / Q)
+    tmap = {q100[t1]: '#41ab5d', q100[t2]: '#6a51a3'}
+    tcols = np.where(task_idx == 0, '#41ab5d', '#6a51a3')
     ccols = np.where(corr > 0, '#2166ac', '#d95f02')
 
     fig, axes = plt.subplots(2, 4, figsize=(14, 6.8))
@@ -92,9 +104,9 @@ def main():
         order = np.random.default_rng(0).permutation(len(Z))
         for c, (cname, fcol) in enumerate(cols_spec):
             ax = axes[r, c]
-            ax.scatter(Z[order, 0], Z[order, 1], s=2.5,
-                       c=np.asarray(fcol())[order], alpha=.55, lw=0,
-                       rasterized=True)
+            ax.scatter(Z[order, 0], Z[order, 1], s=26,
+                       c=np.asarray(fcol())[order], alpha=.85,
+                       edgecolors='white', lw=.4)
             if r == 0:
                 ax.set_title(cname, fontsize=10)
             ax.set_xticks([])
@@ -118,8 +130,11 @@ def main():
                bbox_to_anchor=(0.01, -0.01), ncol=3, fontsize=6.5,
                frameon=False, title='model (LLM)', title_fontsize=7)
     fig.legend(handles=handles(hmap, 'untagged'), loc='lower left',
-               bbox_to_anchor=(0.47, -0.01), ncol=3, fontsize=6.5,
+               bbox_to_anchor=(0.35, -0.01), ncol=3, fontsize=6.5,
                frameon=False, title='harness', title_fontsize=7)
+    fig.legend(handles=handles(tmap), loc='lower left',
+               bbox_to_anchor=(0.64, -0.01), ncol=1, fontsize=6.5,
+               frameon=False, title='task', title_fontsize=7)
     fig.legend(handles=[mlines.Line2D([], [], marker='o', ls='', ms=5,
                                       color='#2166ac', label='resolved'),
                         mlines.Line2D([], [], marker='o', ls='', ms=5,
