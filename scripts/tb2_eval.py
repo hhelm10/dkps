@@ -22,6 +22,7 @@ from dkps.traces.qubric import consensus_center  # noqa: E402
 
 SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
 KS = (3, 5, 7, 10, 15)  # extended per tb2_tune.json (larger k wins on TB2)
+RIDGE = ((16, 0.1), (16, 1.0), (8, 0.1))  # per tb2_tune3: ridge on MDS coords
 ALPHAS = np.linspace(0, 1, 101)
 MS = (1, 3, 5, 10, 20)
 B_DRAWS = 20
@@ -149,6 +150,35 @@ def main():
                         store[i] = (w * y[refs][nn]).sum(1) / w.sum(1)
                         errs.append(np.abs(store[i][refs] - y[refs]).mean())
                     cand[(s_, k)] = (float(np.mean(errs)), store)
+                # ridge on classical-MDS coords (tb2_tune3): target row is
+                # in the MDS but never in the ridge fit
+                n_ = len(D)
+                J = np.eye(n_) - 1 / n_
+                Bm = -0.5 * J @ (D ** 2) @ J
+                ew, ev = np.linalg.eigh(Bm)
+                order = np.argsort(ew)[::-1]
+                for r_dim, alpha in RIDGE:
+                    Z = ev[:, order[:r_dim]] * np.sqrt(
+                        np.maximum(ew[order[:r_dim]], 1e-12))
+                    errs, store = [], {}
+                    for i in range(M):
+                        refs = np.where(allowed[i])[0]
+                        Zr, yr = Z[refs], y[refs]
+                        G = Zr.T @ Zr + alpha * np.eye(r_dim)
+                        Ginv = np.linalg.inv(G)
+                        beta = Ginv @ (Zr.T @ (yr - yr.mean()))
+                        pred = np.clip(Z @ beta + yr.mean(), 0, 1)
+                        # honest reference predictions: LOO via hat matrix
+                        # (kNN store excludes self; ridge must too)
+                        h = np.einsum('jr,rs,js->j', Zr, Ginv, Zr)
+                        pred_ref = Z[refs] @ beta + yr.mean()
+                        loo = yr - (yr - pred_ref) / np.maximum(1 - h, 1e-6)
+                        pred = pred.copy()
+                        pred[refs] = np.clip(loo, 0, 1)
+                        store[i] = pred
+                        errs.append(np.abs(pred[refs] - yr).mean())
+                    cand[(s_, 'r', r_dim, alpha)] = (float(np.mean(errs)),
+                                                     store)
             return min(cand.values(), key=lambda v: v[0])[1]
 
         for m in MS:

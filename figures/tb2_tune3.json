@@ -1,0 +1,176 @@
+{
+  "1": [
+    {
+      "subset": "only:verification",
+      "sigma": 2,
+      "est": "ridge16a0.1",
+      "ref": 0.0938,
+      "tgt": 0.1245
+    },
+    {
+      "subset": "drop:understanding",
+      "sigma": 2,
+      "est": "ridge16a0.1",
+      "ref": 0.094,
+      "tgt": 0.122
+    },
+    {
+      "subset": "drop:understanding",
+      "sigma": 4,
+      "est": "ridge16a0.1",
+      "ref": 0.0947,
+      "tgt": 0.127
+    },
+    {
+      "subset": "only:verification",
+      "sigma": 4,
+      "est": "ridge16a0.1",
+      "ref": 0.0947,
+      "tgt": 0.1282
+    },
+    {
+      "subset": "drop:localization",
+      "sigma": 2,
+      "est": "ridge16a0.1",
+      "ref": 0.0952,
+      "tgt": 0.1238
+    },
+    {
+      "subset": "all",
+      "sigma": 2,
+      "est": "ridge16a0.1",
+      "ref": 0.0954,
+      "tgt": 0.1237
+    },
+    {
+      "subset": "drop:localization",
+      "sigma": 4,
+      "est": "ridge16a0.1",
+      "ref": 0.0959,
+      "tgt": 0.1273
+    },
+    {
+      "subset": "drop:editing",
+      "sigma": 2,
+      "est": "ridge16a0.1",
+      "ref": 0.0959,
+      "tgt": 0.1245
+    }
+  ],
+  "5": [
+    {
+      "subset": "drop:localization",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0863,
+      "tgt": 0.1251
+    },
+    {
+      "subset": "drop:editing",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0865,
+      "tgt": 0.1252
+    },
+    {
+      "subset": "all",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0868,
+      "tgt": 0.1257
+    },
+    {
+      "subset": "drop:reproduction",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0874,
+      "tgt": 0.1275
+    },
+    {
+      "subset": "drop:understanding",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0878,
+      "tgt": 0.1262
+    },
+    {
+      "subset": "only:verification",
+      "sigma": 4,
+      "est": "ridge16a0.1",
+      "ref": 0.0896,
+      "tgt": 0.1221
+    },
+    {
+      "subset": "drop:final_state",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0901,
+      "tgt": 0.1316
+    },
+    {
+      "subset": "drop:localization",
+      "sigma": 4,
+      "est": "ridge16a0.1",
+      "ref": 0.0907,
+      "tgt": 0.1215
+    }
+  ],
+  "20": [
+    {
+      "subset": "drop:understanding",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0681,
+      "tgt": 0.0988
+    },
+    {
+      "subset": "drop:localization",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0687,
+      "tgt": 0.0985
+    },
+    {
+      "subset": "all",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0692,
+      "tgt": 0.0997
+    },
+    {
+      "subset": "drop:editing",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0699,
+      "tgt": 0.0986
+    },
+    {
+      "subset": "drop:final_state",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0706,
+      "tgt": 0.103
+    },
+    {
+      "subset": "drop:reproduction",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0711,
+      "tgt": 0.1024
+    },
+    {
+      "subset": "drop:verification",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0713,
+      "tgt": 0.1017
+    },
+    {
+      "subset": "only:verification",
+      "sigma": 8,
+      "est": "ridge16a0.1",
+      "ref": 0.0714,
+      "tgt": 0.1058
+    }
+  ]
+}
