@@ -383,54 +383,63 @@ def main_render(src=OUT_JSON, dst=OUT_PNG):
     SZ = hv_style.SIZES
     d = json.load(open(src))
     ms = d['ms']
+    tb = None
+    if os.path.exists('figures/tb2_protocols.json'):
+        tb = json.load(open('figures/tb2_protocols.json'))
     fig, axes = plt.subplots(2, 3, figsize=(13, 7.6), sharex=True,
                              sharey='row')
-    for c, (key, title) in enumerate(COLS):
-        ax = axes[0, c]
-        p = d['protocols'].get(key)
-        if p is None:
-            ax.text(.5, .5, 'pending', ha='center', va='center',
-                    transform=ax.transAxes, color=hv_style.INK_MUTE)
-            continue
-        pop = p['pop']['mae']
-        ax.axhline(pop, color=hv_style.REFLINE, lw=1.2, ls='--', zorder=1)
-        ax.text(ms[-1], pop, ' Pop. Mean', fontsize=hv_style.SIZES['annot'],
-                color=hv_style.INK_MUTE, va='bottom', ha='right')
-        for name, label, role in SERIES:
-            if name not in p['by_m'][str(ms[0])]:
+
+    def draw_row(r, data):
+        for c, (key, title) in enumerate(COLS):
+            ax = axes[r, c]
+            p = data['protocols'].get(key)
+            if p is None:
+                ax.text(.5, .5, 'pending', ha='center', va='center',
+                        transform=ax.transAxes, color=hv_style.INK_MUTE)
                 continue
-            st = hv_style.ROLES[role]
-            mae = [p['by_m'][str(m)][name]['mae'] for m in ms]
-            lo = [p['by_m'][str(m)][name]['ci'][0] for m in ms]
-            hi = [p['by_m'][str(m)][name]['ci'][1] for m in ms]
-            ax.plot(ms, mae, color=st['color'], ls=st['ls'],
-                    lw=st.get('lw', 2.6), marker='o', ms=4, label=label,
-                    zorder=4 if role == 'anchor' else 3)
-            ax.fill_between(ms, lo, hi, color=st['color'], alpha=.13,
-                            lw=0, zorder=2)
-        ax.set_title(title, fontsize=SZ['label'], color=hv_style.INK_TITLE)
-        ax.set_xscale('log')
-        ax.set_xticks(ms)
-        ax.set_xticklabels(ms)
-        ax.tick_params(labelsize=SZ['tick'])
+            pop = p['pop']['mae']
+            ax.axhline(pop, color=hv_style.REFLINE, lw=1.2, ls='--',
+                       zorder=1)
+            ax.text(ms[-1], pop, ' Pop. Mean', fontsize=SZ['annot'],
+                    color=hv_style.INK_MUTE, va='bottom', ha='right')
+            for name, label, role in SERIES:
+                if name not in p['by_m'][str(ms[0])]:
+                    continue
+                st = hv_style.ROLES[role]
+                mae = [p['by_m'][str(m)][name]['mae'] for m in ms]
+                lo = [p['by_m'][str(m)][name]['ci'][0] for m in ms]
+                hi = [p['by_m'][str(m)][name]['ci'][1] for m in ms]
+                ax.plot(ms, mae, color=st['color'], ls=st['ls'],
+                        lw=st.get('lw', 2.6), marker='o', ms=4, label=label,
+                        zorder=4 if role == 'anchor' else 3)
+                ax.fill_between(ms, lo, hi, color=st['color'], alpha=.13,
+                                lw=0, zorder=2)
+            if r == 0:
+                ax.set_title(title, fontsize=SZ['label'],
+                             color=hv_style.INK_TITLE)
+            else:
+                ax.set_xlabel('Number of tasks $m$', fontsize=SZ['label'])
+            ax.set_xscale('log')
+            ax.set_xticks(ms)
+            ax.set_xticklabels(ms)
+            ax.set_ylim(0, .25)
+            ax.set_yticks([0, .1, .2])
+            ax.tick_params(labelsize=SZ['tick'])
+
+    draw_row(0, d)
+    if tb is not None:
+        draw_row(1, tb)
+    else:
+        for c in range(3):
+            ax = axes[1, c]
+            ax.set_facecolor(hv_style.WASH)
+            ax.text(.5, .5, 'Terminal-Bench\n(to be run)', ha='center',
+                    va='center', transform=ax.transAxes,
+                    color=hv_style.INK_MUTE, fontsize=SZ['subtitle'])
+            ax.set_xlabel('Number of tasks $m$', fontsize=SZ['label'])
     axes[0, 0].set_ylabel('SWE-bench Verified\nMAE$(\\hat{y}, y)$',
                           fontsize=SZ['label'])
-    axes[0, 0].set_ylim(0, .25)
-    axes[0, 0].set_yticks([0, .1, .2])
-    for c in range(3):
-        ax = axes[1, c]
-        ax.set_facecolor(hv_style.WASH)
-        ax.text(.5, .5, 'Terminal-Bench\n(to be run)', ha='center',
-                va='center', transform=ax.transAxes,
-                color=hv_style.INK_MUTE, fontsize=SZ['subtitle'])
-        ax.set_xscale('log')
-        ax.set_xticks(ms)
-        ax.set_xticklabels(ms)
-        ax.set_ylim(0, .25)
-        ax.set_yticks([0, .1, .2])
-        ax.tick_params(labelsize=SZ['tick'])
-        ax.set_xlabel('Number of tasks $m$', fontsize=SZ['label'])
-    axes[1, 0].set_ylabel('Terminal-Bench\nMAE$(\\hat{y}, y)$',
+    axes[1, 0].set_ylabel('Terminal-Bench 2.0\nMAE$(\\hat{y}, y)$',
                           fontsize=SZ['label'])
     handles, labels_ = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels_, fontsize=SZ['legend'], handlelength=3.2,

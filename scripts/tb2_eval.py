@@ -21,7 +21,7 @@ from outcome_baselines import ItemModel  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
 
 SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
-KS = (3, 5)
+KS = (3, 5, 7, 10, 15)  # extended per tb2_tune.json (larger k wins on TB2)
 ALPHAS = np.linspace(0, 1, 101)
 MS = (1, 3, 5, 10, 20)
 B_DRAWS = 20
