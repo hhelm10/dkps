@@ -45,11 +45,10 @@ Sam Bowyer, Acyr Locatelli, and Kris Cao.
   regression.
 \newblock \emph{arXiv preprint arXiv:2605.25773}, 2026.
 
-\bibitem[Bridgeford and Helm(2026)]{bridgeford2026change}
-Eric~W. Bridgeford and Hayden~S. Helm.
-\newblock Statistical tests for change detection in populations of interacting
-  agents.
-\newblock In \emph{International Conference on Machine Learning}, 2026.
+\bibitem[Bridgeford and Helm(2025)]{bridgeford2026change}
+Eric Bridgeford and Hayden Helm.
+\newblock Detecting perspective shifts in multi-agent systems.
+\newblock \emph{arXiv preprint arXiv:2512.05013}, 2025.
 
 \bibitem[Bubeck et~al.(2023)Bubeck, Chandrasekaran, Eldan, Gehrke, Horvitz,
   Kamar, Lee, Lee, Li, Lundberg, Nori, Palangi, Ribeiro, and
@@ -166,8 +165,8 @@ Hayden Helm, Ben Johnson, and Carey~E. Priebe.
 
 \bibitem[Helm et~al.(2026{\natexlab{b}})Helm, Priebe, and
   Duderstadt]{helm2026control}
-Hayden~S. Helm, Carey~E. Priebe, and Brandon Duderstadt.
-\newblock Control charts for monitoring black-box generative systems.
+Hayden Helm, Carey Priebe, and Brandon Duderstadt.
+\newblock Control charts for multi-agent systems.
 \newblock \emph{arXiv preprint arXiv:2605.11135}, 2026{\natexlab{b}}.
 
 \bibitem[Hendrycks et~al.(2021)Hendrycks, Burns, Kadavath, Arora, Basart, Tang,
