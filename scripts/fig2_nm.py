@@ -88,8 +88,8 @@ def main():
     import matplotlib.pyplot as plt
 
     fig, axes = plt.subplots(2, 3, figsize=(6.6, 4.0))
-    fig.subplots_adjust(left=.055, right=.90, top=.84, bottom=.02,
-                        wspace=.06, hspace=.08)
+    fig.subplots_adjust(left=.085, right=.90, top=.84, bottom=.055,
+                        wspace=.06, hspace=.10)
     # row references: qubric's full configuration anchors the figure; the
     # raw row's reference is rotated onto it so the rows are comparable
     ref_qub = cmds2(pkps_D(qub, np.arange(M), np.arange(Q)))
@@ -118,7 +118,12 @@ def main():
             ax.set_yticks([])
             for sp in ax.spines.values():
                 sp.set_color('.8')
-        axes[r, 0].set_ylabel(rname, fontsize=10)
+            if r == 1:
+                ax.set_xlabel('PKPS 1', fontsize=8, labelpad=2)
+        axes[r, 0].set_ylabel('PKPS 2', fontsize=8, labelpad=2)
+    for r, rname in enumerate(('raw', 'qubric')):
+        fig.text(.022, .655 - .41 * r, rname, rotation=90, fontsize=11,
+                 va='center', ha='center')
     cb = fig.colorbar(sc, ax=axes, shrink=.85, pad=.025, aspect=28)
     cb.set_label('benchmark score $y$', fontsize=8)
     cb.ax.tick_params(labelsize=7)
