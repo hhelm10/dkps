@@ -34,7 +34,7 @@ SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
 KS = (3, 5)
 ALPHAS = np.linspace(0, 1, 101)
 MS = (1, 3, 5, 10, 20)
-B_DRAWS = 20
+B_DRAWS = 50
 OUT_JSON = 'figures/q100_protocols.json'
 OUT_PNG = 'figures/fig2_protocols.png'
 
@@ -179,8 +179,13 @@ def main_compute():
                 acc['irt'] += e_irt / B_DRAWS
                 acc['geom'] += e_geo / B_DRAWS
                 acc['blend'] += e_bl / B_DRAWS
-            res['by_m'][m] = {n: dict(mae=float(acc[n].mean()), ci=ci(acc[n]))
+            res['by_m'][m] = {n: dict(mae=float(acc[n].mean()), ci=ci(acc[n]),
+                                       sem=float(acc[n].std(ddof=1)
+                                                 / np.sqrt(M)))
                               for n in acc}
+            d_bi = acc['blend'] - acc['irt']
+            res['by_m'][m]['delta_blend_irt'] = dict(mean=float(d_bi.mean()),
+                                                     ci=ci(d_bi))
             print(m, {n: round(acc[n].mean(), 4) for n in acc})
         out['protocols'][name] = res
         json.dump(out, open(OUT_JSON, 'w'), indent=2)  # checkpoint per protocol
@@ -458,14 +463,20 @@ def main_render(src=OUT_JSON, dst=OUT_PNG):
                 if name not in p['by_m'][str(ms[0])]:
                     continue
                 st = hv_style.ROLES[role]
-                mae = [p['by_m'][str(m)][name]['mae'] for m in ms]
-                lo = [p['by_m'][str(m)][name]['ci'][0] for m in ms]
-                hi = [p['by_m'][str(m)][name]['ci'][1] for m in ms]
+                mae = np.array([p['by_m'][str(m)][name]['mae'] for m in ms])
+                # house style: +/- 1 SEM shading (fallback: derive SEM
+                # from the stored 95% bootstrap CI width)
+                sem = np.array([
+                    p['by_m'][str(m)][name].get(
+                        'sem',
+                        (p['by_m'][str(m)][name]['ci'][1]
+                         - p['by_m'][str(m)][name]['ci'][0]) / 3.92)
+                    for m in ms])
                 ax.plot(ms, mae, color=st['color'], ls=st['ls'],
                         lw=st.get('lw', 2.6), marker='o', ms=4, label=label,
                         zorder=4 if role == 'anchor' else 3)
-                ax.fill_between(ms, lo, hi, color=st['color'], alpha=.13,
-                                lw=0, zorder=2)
+                ax.fill_between(ms, mae - sem, mae + sem, color=st['color'],
+                                alpha=.15, lw=0, zorder=2)
             if r == 0:
                 ax.set_title(title, fontsize=SZ['label'],
                              color=hv_style.INK_TITLE)

@@ -25,7 +25,7 @@ KS = (3, 5, 7, 10, 15)  # extended per tb2_tune.json (larger k wins on TB2)
 RIDGE = ((16, 0.1), (16, 1.0), (8, 0.1))  # per tb2_tune3: ridge on MDS coords
 ALPHAS = np.linspace(0, 1, 101)
 MS = (1, 3, 5, 10, 20)
-B_DRAWS = 20
+B_DRAWS = 50
 DROP = {'Droid__GPT-5.3-Codex', 'Droid__Claude-Opus-4.6',
         'just-another-coding-agent__GLM-5'}
 MIN_COV = 0.9
@@ -207,8 +207,13 @@ def main():
                 acc['raw'] += np.abs(raw_t - y) / B_DRAWS
                 acc['blend'] += np.abs(a * irt_t + (1 - a) * geo_t
                                        - y) / B_DRAWS
-            res['by_m'][m] = {n: dict(mae=float(acc[n].mean()), ci=ci(acc[n]))
+            res['by_m'][m] = {n: dict(mae=float(acc[n].mean()), ci=ci(acc[n]),
+                                       sem=float(acc[n].std(ddof=1)
+                                                 / np.sqrt(M)))
                               for n in acc}
+            d_bi = acc['blend'] - acc['irt']
+            res['by_m'][m]['delta_blend_irt'] = dict(mean=float(d_bi.mean()),
+                                                     ci=ci(d_bi))
             print(m, {n: round(acc[n].mean(), 4) for n in acc})
         out['protocols'][name] = res
         json.dump(out, open(OUT, 'w'), indent=2)
