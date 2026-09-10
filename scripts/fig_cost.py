@@ -50,20 +50,25 @@ def main():
         cost = np.array(MS) * COST_RUN
         full_cost = full_runs * COST_RUN
 
+        # in this figure line style encodes the probe regime:
+        # dashed = random probes, solid = adaptive probes
         curves = [
-            (rand, 'sample', 'Sample Score (random)', 'baseline_gray', {}),
-            (adap, 'irt', 'IRT (adaptive)', 'baseline_pale', {}),
-            (rand, 'blend', 'qubric + IRT blend (random)', 'focus', {}),
-            (adap, 'blend', 'qubric + IRT blend (adaptive)', 'anchor', {}),
+            (rand, 'sample', 'Sample Score (random)', 'baseline_gray', '--'),
+            (adap, 'sample', 'Sample Score (adaptive)', 'baseline_gray', '-'),
+            (rand, 'irt', 'IRT (random)', 'comparator', '--'),
+            (adap, 'irt', 'IRT (adaptive)', 'comparator', '-'),
+            (rand, 'blend', 'qubric + IRT blend (random)', 'anchor', '--'),
+            (adap, 'blend', 'qubric + IRT blend (adaptive)', 'anchor', '-'),
         ]
-        for src, key, label, role, kw in curves:
+        for src, key, label, role, ls in curves:
             st = hv_style.ROLES[role]
+            lw = 3.4 if role == 'anchor' and ls == '-' else 2.4
             mae, sem = series(src, key)
-            ax.plot(cost, mae, color=st['color'], ls=st['ls'],
-                    lw=st.get('lw', 2.6), marker='o', ms=4, label=label,
+            ax.plot(cost, mae, color=st['color'], ls=ls, lw=lw,
+                    marker='o', ms=4, label=label,
                     zorder=4 if role == 'anchor' else 3)
             ax.fill_between(cost, mae - sem, mae + sem, color=st['color'],
-                            alpha=.15, lw=0, zorder=2)
+                            alpha=.13, lw=0, zorder=2)
         ax.axvline(full_cost, color=hv_style.REFLINE, ls='--', lw=1.2,
                    zorder=1)
         ax.text(full_cost * .88, .235,
@@ -84,7 +89,7 @@ def main():
     handles, labels_ = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels_, fontsize=SZ['legend'] - 1,
                handlelength=3.2, loc='lower center',
-               bbox_to_anchor=(0.5, -0.03), ncol=4, columnspacing=1.2)
+               bbox_to_anchor=(0.5, -0.075), ncol=3, columnspacing=1.2)
     fig.tight_layout(rect=(0, 0.06, 1, 1))
     fig.savefig('figures/fig_cost.png', dpi=200, bbox_inches='tight',
                 pad_inches=0.03)
