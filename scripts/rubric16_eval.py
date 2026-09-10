@@ -211,6 +211,9 @@ def render(all_res):
                         label='10th–90th pct')
         ax.plot(rs, mean, color=st['color'], lw=2.6, marker='o', ms=4,
                 label='mean subset')
+        ax.plot(rs, mn, color=hv_style.ROLES['anchor']['color'], lw=2.0,
+                ls='--', marker='v', ms=4, label='best subset per $r$'
+                + '\n(optimistically selected)')
         ax.scatter([6], [res['orig6']], marker='D', s=70,
                    color=hv_style.ROLES['anchor']['color'], zorder=5,
                    label='original six fields')
