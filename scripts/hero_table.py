@@ -12,6 +12,8 @@ Writes figures/hero_table.md, notes/tables_hero.tex, figures/hero_table.png.
 import json
 import sys
 
+import numpy as np
+
 sys.path.insert(0, 'scripts')
 
 MS = (1, 5, 20)
@@ -36,8 +38,24 @@ def load_cell(bench, regime):
     return by_m
 
 
+def sig_vs_irt(errs, rng):
+    """{method: True if paired (method - irt) 95% CI upper < 0}."""
+    out = {}
+    e_irt = np.array(errs['irt'])
+    M = len(e_irt)
+    for k in errs:
+        if k == 'irt':
+            out[k] = False
+            continue
+        d = np.array(errs[k]) - e_irt
+        v = np.array([d[rng.integers(0, M, M)].mean() for _ in range(2000)])
+        out[k] = float(np.percentile(v, 97.5)) < 0
+    return out
+
+
 def collect():
-    """-> table[bench][regime][m] = {method: mae, 'star': bool}"""
+    """-> table[bench][regime][m] = (vals, sig) with sig per method."""
+    rng = np.random.default_rng(1)
     t = {}
     for b, _ in BENCH:
         t[b] = {}
@@ -47,9 +65,9 @@ def collect():
             for m in MS:
                 cell = by_m[str(m)]
                 vals = {k: cell[k]['mae'] for k, _ in ROWS if k in cell}
-                star = cell.get('delta_blend_irt', {}).get('ci',
-                                                           [0, 1])[1] < 0
-                t[b][reg][m] = (vals, star)
+                sig = sig_vs_irt(cell['errs'], rng) if 'errs' in cell \
+                    else {k: False for k in vals}
+                t[b][reg][m] = (vals, sig)
     return t
 
 
@@ -71,10 +89,10 @@ def build_md(t):
         for b, _ in BENCH:
             for reg in ('random', 'adaptive'):
                 for m in MS:
-                    vals, star = t[b][reg][m]
+                    vals, sig = t[b][reg][m]
                     best = min(vals.values())
                     s = fmt(vals[key], abs(vals[key] - best) < 5e-4)
-                    if key == 'blend' and star:
+                    if sig.get(key):
                         s = f'<u>{s}</u>'
                     row.append(s)
         lines.append('| ' + ' | '.join(row) + ' |')
@@ -101,15 +119,14 @@ def build_tex(t):
         for b, _ in BENCH:
             for reg in ('random', 'adaptive'):
                 for m in MS:
-                    vals, star = t[b][reg][m]
+                    vals, sig = t[b][reg][m]
                     best = min(vals.values())
                     v = vals[key]
                     s = f'{v:.3f}'
                     if abs(v - best) < 5e-4:
                         s = r'\bfseries ' + s
-                    if key == 'blend' and star:
-                        s = r'{\underline{' + s.replace(
-                            r'\bfseries ', r'\bfseries\ ') + '}}'
+                    if sig.get(key):
+                        s = r'{\underline{' + s + '}}'
                     cells.append(s)
         out.append(label.replace('+', '$+$') + ' & '
                    + ' & '.join(cells) + r' \\')
@@ -177,7 +194,7 @@ def build_png(t):
         for b, _ in BENCH:
             for reg in ('random', 'adaptive'):
                 for m in MS:
-                    vals, star = t[b][reg][m]
+                    vals, sig = t[b][reg][m]
                     best = min(vals.values())
                     v = vals[key]
                     isbest = abs(v - best) < 5e-4
@@ -186,7 +203,7 @@ def build_png(t):
                            else hv_style.INK)
                     cell((xs[j] + xs[j + 1]) / 2, cy, s,
                          'bold' if isbest else 'normal', col, 13.5)
-                    if key == 'blend' and star:
+                    if sig.get(key):
                         cxm = (xs[j] + xs[j + 1]) / 2
                         ax.plot([cxm - .0235, cxm + .0235],
                                 [cy - row_h * .30] * 2, color=col, lw=1.6,

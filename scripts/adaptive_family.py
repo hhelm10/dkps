@@ -201,6 +201,14 @@ def main(bench):
         out['by_m'][m] = {n: dict(mae=float(v.mean()), ci=ci(v),
                                   sem=float(v.std(ddof=1) / np.sqrt(M)))
                           for n, v in e.items()}
+        out['by_m'][m]['errs'] = {n: [round(float(x), 6) for x in v]
+                                  for n, v in e.items()}
+        out['by_m'][m]['errs']['sample'] = [
+            round(float(abs(B[i, cols_of[i]].mean() - y[i])), 6)
+            for i in range(M)]
+        out['by_m'][m]['sample'] = dict(
+            mae=float(np.mean(out['by_m'][m]['errs']['sample'])),
+            ci=ci(np.array(out['by_m'][m]['errs']['sample'])))
         d_bi = e['blend'] - e['irt']
         out['by_m'][m]['delta_blend_irt'] = dict(mean=float(d_bi.mean()),
                                                  ci=ci(d_bi))

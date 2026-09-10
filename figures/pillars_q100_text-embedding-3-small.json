@@ -1,0 +1,28 @@
+{
+  "embed_model": "text-embedding-3-small",
+  "judge_dir": "data/judge/q100-qspec-flash0731",
+  "chance": {
+    "task": 0.01,
+    "identity": 0.009345794392523364,
+    "family": 0.319790704832256,
+    "harness": 0.07727664464234417
+  },
+  "reps": {
+    "raw": {
+      "task": 0.907196261682243,
+      "behavior": 0.048180414045833064,
+      "identity_trace": 0.7140186915887851,
+      "identity_agg": 0.9742990654205608,
+      "family": 0.3098245614035088,
+      "harness": 0.5249152542372881
+    },
+    "qubric": {
+      "task": 0.911588785046729,
+      "behavior": 0.06647719471610902,
+      "identity_trace": 0.18794392523364487,
+      "identity_agg": 0.9397196261682245,
+      "family": 0.25263157894736843,
+      "harness": 0.15271186440677967
+    }
+  }
+}

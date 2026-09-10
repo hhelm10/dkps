@@ -211,6 +211,8 @@ def main():
                                        sem=float(acc[n].std(ddof=1)
                                                  / np.sqrt(M)))
                               for n in acc}
+            res['by_m'][m]['errs'] = {n: [round(float(v), 6) for v in acc[n]]
+                                      for n in acc}
             d_bi = acc['blend'] - acc['irt']
             res['by_m'][m]['delta_blend_irt'] = dict(mean=float(d_bi.mean()),
                                                      ci=ci(d_bi))
