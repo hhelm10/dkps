@@ -75,7 +75,7 @@ def build_md(t):
                     best = min(vals.values())
                     s = fmt(vals[key], abs(vals[key] - best) < 5e-4)
                     if key == 'blend' and star:
-                        s += '*'
+                        s = f'<u>{s}</u>'
                     row.append(s)
         lines.append('| ' + ' | '.join(row) + ' |')
     return '\n'.join(lines)
@@ -108,7 +108,8 @@ def build_tex(t):
                     if abs(v - best) < 5e-4:
                         s = r'\bfseries ' + s
                     if key == 'blend' and star:
-                        s += r'\rlap{$^{*}$}'
+                        s = r'{\underline{' + s.replace(
+                            r'\bfseries ', r'\bfseries\ ') + '}}'
                     cells.append(s)
         out.append(label.replace('+', '$+$') + ' & '
                    + ' & '.join(cells) + r' \\')
@@ -181,12 +182,16 @@ def build_png(t):
                     v = vals[key]
                     isbest = abs(v - best) < 5e-4
                     s = f'{v:.3f}'
-                    if key == 'blend' and star:
-                        s += '*'
+                    col = (hv_style.ROLES['anchor']['color'] if isbest
+                           else hv_style.INK)
                     cell((xs[j] + xs[j + 1]) / 2, cy, s,
-                         'bold' if isbest else 'normal',
-                         hv_style.ROLES['anchor']['color'] if isbest
-                         else hv_style.INK, 13.5)
+                         'bold' if isbest else 'normal', col, 13.5)
+                    if key == 'blend' and star:
+                        cxm = (xs[j] + xs[j + 1]) / 2
+                        ax.plot([cxm - .0235, cxm + .0235],
+                                [cy - row_h * .30] * 2, color=col, lw=1.6,
+                                transform=ax.transAxes, clip_on=False,
+                                zorder=4)
                     j += 1
 
     # rules: horizontal
