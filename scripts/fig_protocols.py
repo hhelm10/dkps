@@ -126,7 +126,34 @@ def main_compute():
                         store[i] = (w * y[refs][nn]).sum(1) / w.sum(1)
                         errs.append(np.abs(store[i][refs] - y[refs]).mean())
                     cand[(s_, k)] = (float(np.mean(errs)), store)
-            (s_b, k_b), (_, store) = min(cand.items(), key=lambda kv: kv[1][0])
+                # ridge on classical-MDS coords, LOO-honest ref preds
+                # (same estimator family as tb2_eval; CV decides per draw)
+                n_ = len(D)
+                J = np.eye(n_) - 1 / n_
+                Bmat = -0.5 * J @ (D ** 2) @ J
+                ew, evec = np.linalg.eigh(Bmat)
+                order_ = np.argsort(ew)[::-1]
+                for r_dim, alpha in ((16, 0.1), (16, 1.0), (8, 0.1)):
+                    Z = evec[:, order_[:r_dim]] * np.sqrt(
+                        np.maximum(ew[order_[:r_dim]], 1e-12))
+                    errs, store2 = [], {}
+                    for i in range(M):
+                        refs = np.where(allowed[i])[0]
+                        Zr, yr = Z[refs], y[refs]
+                        G = Zr.T @ Zr + alpha * np.eye(r_dim)
+                        Ginv = np.linalg.inv(G)
+                        beta = Ginv @ (Zr.T @ (yr - yr.mean()))
+                        pred = np.clip(Z @ beta + yr.mean(), 0, 1)
+                        h = np.einsum('jr,rs,js->j', Zr, Ginv, Zr)
+                        pr = Zr @ beta + yr.mean()
+                        loo = yr - (yr - pr) / np.maximum(1 - h, 1e-6)
+                        pred = pred.copy()
+                        pred[refs] = np.clip(loo, 0, 1)
+                        store2[i] = pred
+                        errs.append(np.abs(pred[refs] - yr).mean())
+                    cand[(s_, 'r', r_dim, alpha)] = (float(np.mean(errs)),
+                                                     store2)
+            _, (_, store) = min(cand.items(), key=lambda kv: kv[1][0])
             curves = np.zeros((M, len(ALPHAS)))
             for i in range(M):
                 refs = np.where(allowed[i])[0]
@@ -230,6 +257,31 @@ def main_raw():
                             errs.append(np.abs(pred[refs] - y[refs]).mean())
                             tgt[i] = pred[i]
                         cand[(s_, k)] = (float(np.mean(errs)), tgt)
+                    # LOO-honest ridge on MDS coords (parity with qubric)
+                    n_ = len(D)
+                    J = np.eye(n_) - 1 / n_
+                    Bmat = -0.5 * J @ (D ** 2) @ J
+                    ew, evec = np.linalg.eigh(Bmat)
+                    order_ = np.argsort(ew)[::-1]
+                    for r_dim, alpha in ((16, 0.1), (16, 1.0), (8, 0.1)):
+                        Z = evec[:, order_[:r_dim]] * np.sqrt(
+                            np.maximum(ew[order_[:r_dim]], 1e-12))
+                        errs, tgt = [], np.zeros(M)
+                        for i in range(M):
+                            refs = np.where(allowed[i])[0]
+                            Zr, yr = Z[refs], y[refs]
+                            G = Zr.T @ Zr + alpha * np.eye(r_dim)
+                            Ginv = np.linalg.inv(G)
+                            beta = Ginv @ (Zr.T @ (yr - yr.mean()))
+                            tgt[i] = float(np.clip(
+                                Z[i] @ beta + yr.mean(), 0, 1))
+                            h = np.einsum('jr,rs,js->j', Zr, Ginv, Zr)
+                            pr = Zr @ beta + yr.mean()
+                            loo = yr - (yr - pr) / np.maximum(1 - h, 1e-6)
+                            errs.append(np.abs(np.clip(loo, 0, 1)
+                                               - yr).mean())
+                        cand[(s_, 'r', r_dim, alpha)] = \
+                            (float(np.mean(errs)), tgt)
                 tgt = min(cand.values(), key=lambda v: v[0])[1]
                 acc += np.abs(tgt - y) / B_DRAWS
             out['protocols'][name]['by_m'][str(m)]['raw'] = dict(
