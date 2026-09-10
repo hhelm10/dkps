@@ -75,7 +75,7 @@ def build_md(t):
                     best = min(vals.values())
                     s = fmt(vals[key], abs(vals[key] - best) < 5e-4)
                     if key == 'blend' and star:
-                        s += '†'
+                        s += '*'
                     row.append(s)
         lines.append('| ' + ' | '.join(row) + ' |')
     return '\n'.join(lines)
@@ -108,7 +108,7 @@ def build_tex(t):
                     if abs(v - best) < 5e-4:
                         s = r'\bfseries ' + s
                     if key == 'blend' and star:
-                        s += r'\rlap{$^\dagger$}'
+                        s += r'\rlap{$^{*}$}'
                     cells.append(s)
         out.append(label.replace('+', '$+$') + ' & '
                    + ' & '.join(cells) + r' \\')
@@ -125,16 +125,16 @@ def build_png(t):
     import matplotlib.pyplot as plt
 
     n_data_rows = len(ROWS)
-    fig, ax = plt.subplots(figsize=(13.6, 0.62 * (n_data_rows + 3) + 0.5))
+    fig, ax = plt.subplots(figsize=(14.2, 0.66 * (n_data_rows + 3) + 0.3))
     ax.axis('off')
-    LAB_W = .195
+    LAB_W = .19
     col_w = (1 - LAB_W) / 12
     xs = [LAB_W + col_w * j for j in range(13)]     # 12 data col edges
     n_rows = n_data_rows + 3                        # 2 header rows + m row
-    row_h = 1 / (n_rows + 0.55)
+    row_h = 1 / (n_rows + 0.05)
     ys = [1 - row_h * r for r in range(n_rows + 1)]  # row top edges
 
-    def cell(cx, cy, s, weight='normal', color=hv_style.INK, size=12,
+    def cell(cx, cy, s, weight='normal', color=hv_style.INK, size=13.5,
              ha='center'):
         ax.text(cx, cy, s, weight=weight, color=color, fontsize=size,
                 ha=ha, va='center', transform=ax.transAxes)
@@ -152,18 +152,18 @@ def build_png(t):
 
     # header text
     cell((xs[0] + xs[6]) / 2, (ys[0] + ys[1]) / 2, 'SWE-bench Verified',
-         'bold', hv_style.INK_TITLE, 13)
+         'bold', hv_style.INK_TITLE, 14.5)
     cell((xs[6] + xs[12]) / 2, (ys[0] + ys[1]) / 2, 'Terminal-Bench 2.0',
-         'bold', hv_style.INK_TITLE, 13)
+         'bold', hv_style.INK_TITLE, 14.5)
     for j0, lab in ((0, 'random'), (3, 'adaptive'), (6, 'random'),
                     (9, 'adaptive')):
         cell((xs[j0] + xs[j0 + 3]) / 2, (ys[1] + ys[2]) / 2, lab,
-             color=hv_style.INK_MUTE, size=12)
+             color=hv_style.INK_MUTE, size=13.5)
     cell(.008, (ys[2] + ys[3]) / 2, 'method  /  $m$ =', 'bold',
-         hv_style.INK_MUTE, 11.5, ha='left')
+         hv_style.INK_MUTE, 13, ha='left')
     for j in range(12):
         cell((xs[j] + xs[j + 1]) / 2, (ys[2] + ys[3]) / 2, str(MS[j % 3]),
-             color=hv_style.INK_MUTE, size=12)
+             color=hv_style.INK_MUTE, size=13.5)
 
     # data cells
     for r, (key, label) in enumerate(ROWS):
@@ -171,7 +171,7 @@ def build_png(t):
         is_anchor = key == 'blend'
         cell(.008, cy, label, 'bold' if is_anchor else 'normal',
              hv_style.ROLES['anchor']['color'] if is_anchor else hv_style.INK,
-             12, ha='left')
+             12.5, ha='left')
         j = 0
         for b, _ in BENCH:
             for reg in ('random', 'adaptive'):
@@ -182,11 +182,11 @@ def build_png(t):
                     isbest = abs(v - best) < 5e-4
                     s = f'{v:.3f}'
                     if key == 'blend' and star:
-                        s += '†'
+                        s += '*'
                     cell((xs[j] + xs[j + 1]) / 2, cy, s,
                          'bold' if isbest else 'normal',
                          hv_style.ROLES['anchor']['color'] if isbest
-                         else hv_style.INK, 12)
+                         else hv_style.INK, 13.5)
                     j += 1
 
     # rules: horizontal
@@ -211,11 +211,6 @@ def build_png(t):
                 lw=1.2 if major else (1.0 if block else .6),
                 transform=ax.transAxes, clip_on=False, zorder=3)
 
-    cell(.008, ys[3 + n_data_rows] - row_h * .55,
-         'leave-one-family-out; random = 50 shared draws; adaptive = '
-         'simulated CAT (Sample Score on CAT items is biased by design); '
-         '† paired blend−IRT 95% CI excludes 0',
-         color=hv_style.INK_MUTE, size=10, ha='left')
     fig.savefig('figures/hero_table.png', dpi=250, bbox_inches='tight',
                 pad_inches=0.08)
     print('wrote figures/hero_table.png')
