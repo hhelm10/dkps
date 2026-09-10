@@ -15,7 +15,8 @@ import sys
 sys.path.insert(0, 'scripts')
 
 MS = (1, 5, 20)
-ROWS = [('raw', 'raw-trace geometry'),
+ROWS = [('sample', 'Sample Score'),
+        ('raw', 'raw-trace geometry'),
         ('irt', 'IRT (2PL)'),
         ('geom', 'qubric geometry'),
         ('blend', 'qubric + IRT blend')]
@@ -120,40 +121,57 @@ def build_png(t):
     matplotlib.use('Agg')
     import hv_style
     hv_style.apply()
+    import matplotlib.patches as mpatches
     import matplotlib.pyplot as plt
 
-    fig, ax = plt.subplots(figsize=(13.2, 2.9))
+    n_data_rows = len(ROWS)
+    fig, ax = plt.subplots(figsize=(13.6, 0.62 * (n_data_rows + 3) + 0.5))
     ax.axis('off')
-    ncol = 13
-    x = [0.0, .20] + [.20 + .0665 * (i + 1) for i in range(12)]
-    row_h = 1 / 7.4
+    LAB_W = .195
+    col_w = (1 - LAB_W) / 12
+    xs = [LAB_W + col_w * j for j in range(13)]     # 12 data col edges
+    n_rows = n_data_rows + 3                        # 2 header rows + m row
+    row_h = 1 / (n_rows + 0.55)
+    ys = [1 - row_h * r for r in range(n_rows + 1)]  # row top edges
 
-    def cell(cx, cy, s, weight='normal', color=hv_style.INK, size=11.5,
+    def cell(cx, cy, s, weight='normal', color=hv_style.INK, size=12,
              ha='center'):
         ax.text(cx, cy, s, weight=weight, color=color, fontsize=size,
                 ha=ha, va='center', transform=ax.transAxes)
 
-    y0 = 1 - row_h * .6
-    cell((x[1] + x[4]) / 2 + .035, y0, 'SWE-bench Verified', 'bold',
-         hv_style.INK_TITLE)
-    cell((x[7] + x[10]) / 2 + .035, y0, 'Terminal-Bench 2.0', 'bold',
-         hv_style.INK_TITLE)
-    y1 = y0 - row_h
-    for j, lab in ((1, 'random'), (4, 'adaptive'), (7, 'random'),
-                   (10, 'adaptive')):
-        cell((x[j + 1] + x[j + 3]) / 2, y1, lab, color=hv_style.INK_MUTE)
-    y2 = y1 - row_h * .85
-    cell(0.005, y2, 'method  /  m =', 'bold', hv_style.INK_MUTE, ha='left')
+    def rect(x0, y0, w, h, fc):
+        ax.add_patch(mpatches.Rectangle((x0, y0), w, h, fc=fc, ec='none',
+                                        transform=ax.transAxes, zorder=0))
+
+    # header wash
+    rect(0, ys[3], 1, ys[0] - ys[3], hv_style.WASH)
+    # zebra stripes on data rows
+    for r in range(n_data_rows):
+        if r % 2 == 1:
+            rect(0, ys[4 + r], 1, row_h, '#f7f9fc')
+
+    # header text
+    cell((xs[0] + xs[6]) / 2, (ys[0] + ys[1]) / 2, 'SWE-bench Verified',
+         'bold', hv_style.INK_TITLE, 13)
+    cell((xs[6] + xs[12]) / 2, (ys[0] + ys[1]) / 2, 'Terminal-Bench 2.0',
+         'bold', hv_style.INK_TITLE, 13)
+    for j0, lab in ((0, 'random'), (3, 'adaptive'), (6, 'random'),
+                    (9, 'adaptive')):
+        cell((xs[j0] + xs[j0 + 3]) / 2, (ys[1] + ys[2]) / 2, lab,
+             color=hv_style.INK_MUTE, size=12)
+    cell(.008, (ys[2] + ys[3]) / 2, 'method  /  $m$ =', 'bold',
+         hv_style.INK_MUTE, 11.5, ha='left')
     for j in range(12):
-        cell(x[j + 2] - .035, y2, str(MS[j % 3]), color=hv_style.INK_MUTE)
-    ax.plot([0, 1], [y2 - row_h * .45] * 2, color=hv_style.SPINE, lw=1,
-            transform=ax.transAxes, clip_on=False)
+        cell((xs[j] + xs[j + 1]) / 2, (ys[2] + ys[3]) / 2, str(MS[j % 3]),
+             color=hv_style.INK_MUTE, size=12)
+
+    # data cells
     for r, (key, label) in enumerate(ROWS):
-        yy = y2 - row_h * (r + 1.1)
+        cy = ys[3 + r] - row_h / 2
         is_anchor = key == 'blend'
-        cell(0.005, yy, label, 'bold' if is_anchor else 'normal',
+        cell(.008, cy, label, 'bold' if is_anchor else 'normal',
              hv_style.ROLES['anchor']['color'] if is_anchor else hv_style.INK,
-             ha='left')
+             12, ha='left')
         j = 0
         for b, _ in BENCH:
             for reg in ('random', 'adaptive'):
@@ -165,17 +183,41 @@ def build_png(t):
                     s = f'{v:.3f}'
                     if key == 'blend' and star:
                         s += '†'
-                    cell(x[j + 2] - .035, yy, s,
+                    cell((xs[j] + xs[j + 1]) / 2, cy, s,
                          'bold' if isbest else 'normal',
                          hv_style.ROLES['anchor']['color'] if isbest
-                         else hv_style.INK)
+                         else hv_style.INK, 12)
                     j += 1
-    cell(0.005, y2 - row_h * 5.6,
+
+    # rules: horizontal
+    def hline(yy, lw, color):
+        ax.plot([0, 1], [yy, yy], color=color, lw=lw,
+                transform=ax.transAxes, clip_on=False, zorder=3)
+    hline(ys[0], 1.6, hv_style.INK_MUTE)
+    hline(ys[1], .8, hv_style.EDGE)
+    hline(ys[2], .8, hv_style.EDGE)
+    hline(ys[3], 1.2, hv_style.INK_MUTE)
+    for r in range(1, n_data_rows):
+        hline(ys[3 + r], .7, hv_style.EDGE)
+    hline(ys[3 + n_data_rows], 1.6, hv_style.INK_MUTE)
+    # rules: vertical -- light between m columns, heavier between blocks
+    for j in range(13):
+        top = ys[1] if j % 3 == 0 else ys[2]
+        major = j in (0, 6, 12)
+        block = j % 3 == 0
+        ax.plot([xs[j], xs[j]], [ys[3 + n_data_rows], top],
+                color=hv_style.INK_MUTE if major else
+                (hv_style.SPINE if block else hv_style.EDGE),
+                lw=1.2 if major else (1.0 if block else .6),
+                transform=ax.transAxes, clip_on=False, zorder=3)
+
+    cell(.008, ys[3 + n_data_rows] - row_h * .55,
          'leave-one-family-out; random = 50 shared draws; adaptive = '
-         'simulated CAT; † paired blend−IRT 95% CI excludes 0',
-         color=hv_style.INK_MUTE, size=9.5, ha='left')
+         'simulated CAT (Sample Score on CAT items is biased by design); '
+         '† paired blend−IRT 95% CI excludes 0',
+         color=hv_style.INK_MUTE, size=10, ha='left')
     fig.savefig('figures/hero_table.png', dpi=250, bbox_inches='tight',
-                pad_inches=0.06)
+                pad_inches=0.08)
     print('wrote figures/hero_table.png')
 
 
