@@ -43,8 +43,8 @@ def series(by_m, key):
 
 def main():
     SZ = hv_style.SIZES
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5.2), sharey=True)
-    for ax, (title, rand_f, adap_f, full_runs) in zip(axes, PANELS):
+    fig, axes = plt.subplots(1, 4, figsize=(22, 4.9))
+    for ax, (title, rand_f, adap_f, full_runs) in zip(axes[:2], PANELS):
         rand = json.load(open(rand_f))['protocols']['family']['by_m']
         adap = json.load(open(adap_f))['by_m']
         cost = np.array(MS) * COST_RUN
@@ -86,11 +86,51 @@ def main():
                       '(\\$2/agent-run)', fontsize=SZ['subtitle'])
         ax.tick_params(labelsize=SZ['tick'])
     axes[0].set_ylabel('MAE$(\\hat{y}, y)$', fontsize=SZ['label'])
-    handles, labels_ = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels_, fontsize=SZ['legend'] - 1,
-               handlelength=3.2, loc='lower center',
-               bbox_to_anchor=(0.5, -0.075), ncol=3, columnspacing=1.2)
-    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    axes[1].set_yticklabels([])
+    axes[1].set_ylim(0, .25)
+    axes[0].set_ylim(0, .25)
+
+    # panels 3-4: pairwise decision accuracy (leave-two-out shared pools)
+    pw = json.load(open('figures/pairwise_cost.json'))
+    PW_SERIES = [('sample', 'Sample Score', 'baseline_gray'),
+                 ('irt', 'IRT (2PL)', 'comparator'),
+                 ('geom', 'qubric geometry', 'focus'),
+                 ('blend', 'qubric + IRT blend', 'anchor')]
+    for ax, (bkey, (title, _, _, full_runs)) in zip(
+            axes[2:], zip(('swe', 'tb2'), PANELS)):
+        cost = np.array(MS) * COST_RUN
+        for key, label, role in PW_SERIES:
+            st = hv_style.ROLES[role]
+            acc = [pw[bkey][str(m)]['gap05'][key] for m in MS]
+            ax.plot(cost, acc, color=st['color'], ls='--',
+                    lw=st.get('lw', 2.6), marker='o', ms=4, label=label,
+                    zorder=4 if role == 'anchor' else 3)
+        ax.axhline(0.5, color=hv_style.REFLINE, ls=':', lw=1.1, zorder=1)
+        ax.text(cost[-1], .505, 'chance', ha='right', va='bottom',
+                fontsize=SZ['annot'] - 1, color=hv_style.INK_MUTE)
+        ax.set_xscale('log')
+        ax.set_xticks([2, 10, 40])
+        ax.set_xticklabels(['\\$2', '\\$10', '\\$40'])
+        ax.set_ylim(.45, 1.0)
+        ax.set_title(f'{title}\n(ranking, random probes)',
+                     fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
+        ax.set_xlabel('cost per system (\\$2/run)',
+                      fontsize=SZ['subtitle'] - 1)
+        ax.tick_params(labelsize=SZ['tick'])
+    axes[2].set_ylabel('pairwise accuracy\n(true gap $\\geq 0.05$)',
+                       fontsize=SZ['subtitle'])
+    axes[3].set_yticklabels([])
+
+    h1, l1 = axes[0].get_legend_handles_labels()
+    h2, l2 = axes[2].get_legend_handles_labels()
+    seen = {}
+    for h, l in zip(h1 + h2, l1 + l2):
+        if l not in seen:
+            seen[l] = h
+    fig.legend(seen.values(), seen.keys(), fontsize=SZ['legend'] - 2,
+               handlelength=3.0, loc='lower center',
+               bbox_to_anchor=(0.5, -0.09), ncol=5, columnspacing=1.1)
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
     fig.savefig('figures/fig_cost.png', dpi=200, bbox_inches='tight',
                 pad_inches=0.03)
     print('wrote figures/fig_cost.png')
