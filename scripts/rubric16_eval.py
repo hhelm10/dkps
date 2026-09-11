@@ -29,16 +29,25 @@ import numpy as np
 
 sys.path.insert(0, '.')
 sys.path.insert(0, 'scripts')
-from rubric16 import FIELDS, SECTIONS, panel  # noqa: E402
+import argparse
 
-RS = (1, 2, 4, 6, 8, 12, 16)
+from rubric16 import bank, panel  # noqa: E402
+
+_ap = argparse.ArgumentParser()
+_ap.add_argument('--bank', type=int, default=16, choices=[16, 32])
+_ARGS, _ = _ap.parse_known_args()
+BANK = _ARGS.bank
+FIELDS, SECTIONS, _ROOT, _PREFIX = bank(BANK)
+RS = ((1, 2, 4, 6, 8, 12, 16) if BANK == 16
+      else (1, 2, 4, 6, 8, 12, 16, 24, 32))
 MSA = (1, 2, 3, 5, 10, 20)
 N_SUB = 1000
 N_DRAW = 100
-MANIFEST = 'data/judge/rubric16/manifest.json'
-OUT_JSON = 'figures/rubric16_sensitivity.json'
-OUT_NPZ = 'figures/rubric16_subset_table.npz'
-OUT_PNG = 'figures/fig_sensitivity.png'
+MANIFEST = f'{_ROOT}/manifest.json'
+OUT_JSON = f'figures/{_PREFIX}_sensitivity.json'
+OUT_NPZ = f'figures/{_PREFIX}_subset_table.npz'
+OUT_PNG = 'figures/fig_sensitivity.png' if BANK == 16 \
+    else 'figures/fig_sensitivity32.png'
 F = len(SECTIONS)
 ORIG6 = tuple(range(6))
 
@@ -114,7 +123,7 @@ def d2_blocks(arm, systems, q20, tags):
     """(Q, F, M, M) float32: row i centered under target i's pool
     (everyone outside i's model_display group)."""
     M, Q = len(systems), len(q20)
-    X = np.load(f'data/judge/rubric16_emb_{arm}.npz')['X'] \
+    X = np.load(f'data/judge/{_PREFIX}_emb_{arm}.npz')['X'] \
         .reshape(M, Q, F, -1)
     tag_arr = np.array(tags)
     D2 = np.zeros((Q, F, M, M), np.float32)
@@ -155,7 +164,9 @@ def part_a(man, arm):
 
     results = {}
     table = {}
-    controls = {'orig6': list(ORIG6), 'all16': list(range(F))}
+    controls = {'orig6': list(ORIG6), 'all16': list(range(16))}
+    if BANK == 32:
+        controls['all32'] = list(range(32))
     for m in MSA:
         drs = man['selection_draws'][str(m)]
         Pmats = [np.asarray(P) for P in drs]
@@ -219,6 +230,10 @@ def render(all_res):
                    label='original six fields')
         ax.scatter([16], [res['all16']], marker='s', s=70,
                    color=hv_style.INK_MUTE, zorder=5, label='all 16 fields')
+        if 'all32' in res:
+            ax.scatter([32], [res['all32']], marker='P', s=80,
+                       color=hv_style.INK_MUTE, zorder=5,
+                       label='all 32 fields')
         ax.set_title(nice, fontsize=SZ['label'], color=hv_style.INK_TITLE)
         ax.set_xlabel('number of rubric fields $r$', fontsize=SZ['subtitle'])
         ax.set_xticks(RS)

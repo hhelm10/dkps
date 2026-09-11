@@ -68,7 +68,53 @@ FIELDS = {
     'patch_review': ('whether/how it inspected the final diff, removed '
                      'temporary changes, or checked patch scope'),
 }
+FIELDS_EXTRA = {
+    'exploration_breadth': ('how many distinct files, modules, or '
+                            'approaches it explored before committing to '
+                            'one'),
+    'hypothesis_testing': ('what explicit hypotheses it stated and how it '
+                           'confirmed or refuted them'),
+    'search_strategy': ('the search/grep/navigation patterns it used to '
+                        'find information'),
+    'dependency_handling': ('how it dealt with imports, environment '
+                            'setup, or package versions'),
+    'error_interpretation': ('how it read tracebacks or error messages '
+                             'and what it concluded from them'),
+    'incrementalism': ('whether it worked in small verified steps or '
+                       'large unverified jumps'),
+    'backtracking': ('which approaches it abandoned or reverted, and '
+                     'why'),
+    'code_reuse': ('whether it followed existing repository conventions '
+                   'and helpers or reinvented functionality'),
+    'instruction_adherence': ('how closely it followed the task '
+                              'constraints and stated scope'),
+    'efficiency': ('wasted actions, repeated commands, or redundant '
+                   'reads in the run'),
+    'state_tracking': ('whether it kept accurate track of file and '
+                       'system state across steps'),
+    'assumption_checking': ('which assumptions it made without '
+                            'verification versus checked explicitly'),
+    'output_quality': ('the clarity and structure of its final summary '
+                       'or explanation'),
+    'risk_management': ('how it handled potentially destructive commands '
+                        'or guarded against breaking working code'),
+    'domain_knowledge': ('what external knowledge (APIs, algorithms, '
+                         'standards) it applied to the task'),
+    'completion_confidence': ('what certainty the agent expressed about '
+                              'its solution and on what basis'),
+}
+FIELDS32 = {**FIELDS, **FIELDS_EXTRA}
 SECTIONS = tuple(FIELDS)
+SECTIONS32 = tuple(FIELDS32)
+
+
+def bank(n):
+    """(fields dict, sections tuple, cache root, emb prefix) for a bank."""
+    if n == 16:
+        return FIELDS, SECTIONS, 'data/judge/rubric16', 'rubric16'
+    if n == 32:
+        return FIELDS32, SECTIONS32, 'data/judge/rubric32', 'rubric32'
+    raise ValueError(n)
 
 
 def panel():
@@ -162,18 +208,24 @@ def stage_embed(key_openai, args):
     print(f'{arm}: {len(graded)} traces ({n_bad} empty)')
     X = embed_graded(graded, key_openai, 'text-embedding-3-small',
                      sections=SECTIONS)
-    np.savez_compressed(f'data/judge/rubric16_emb_{arm}.npz',
-                        X=X.astype(np.float32))
-    print('wrote', f'data/judge/rubric16_emb_{arm}.npz', X.shape)
+    out = f'data/judge/{PREFIX}_emb_{arm}.npz'
+    np.savez_compressed(out, X=X.astype(np.float32))
+    print('wrote', out, X.shape)
+
+
+PREFIX = 'rubric16'
 
 
 def main():
+    global FIELDS, SECTIONS, ROOT, PREFIX
     ap = argparse.ArgumentParser()
     ap.add_argument('--stage', required=True,
                     choices=['qrubrics', 'extract', 'embed'])
     ap.add_argument('--arm', default='qspec',
                     choices=['generic', 'qspec'])
+    ap.add_argument('--bank', type=int, default=16, choices=[16, 32])
     args = ap.parse_args()
+    FIELDS, SECTIONS, ROOT, PREFIX = bank(args.bank)
     load_dotenv()
     if args.stage == 'qrubrics':
         stage_qrubrics(os.environ['OPENROUTER_API_KEY'], args)
