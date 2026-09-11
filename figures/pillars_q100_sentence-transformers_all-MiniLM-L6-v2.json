@@ -1,0 +1,59 @@
+{
+  "embed_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "judge_dir": "data/judge/q100-qspec-flash0731",
+  "chance": {
+    "task": 0.01,
+    "identity": 0.009345794392523364,
+    "family": 0.319790704832256,
+    "harness": 0.07727664464234417
+  },
+  "reps": {
+    "raw": {
+      "task": 0.7150467289719626,
+      "behavior": 0.011305610251393428,
+      "identity_trace": 0.5664485981308411,
+      "identity_agg": 0.9135514018691587,
+      "family": 0.323859649122807,
+      "harness": 0.4942372881355932
+    },
+    "qubric": {
+      "task": 0.9170093457943925,
+      "behavior": 0.05429382363533841,
+      "identity_trace": 0.09785046728971962,
+      "identity_agg": 0.883177570093458,
+      "family": 0.23701754385964913,
+      "harness": 0.11813559322033898
+    }
+  },
+  "stability": {
+    "definition": "test-retest self-retrieval P@1 (same trace, pipeline rerun); chance 1/107=0.009",
+    "chance": 0.009345794392523364,
+    "rows": {
+      "raw": 1.0,
+      "head-only": 1.0,
+      "tail-only": 1.0,
+      "centered": 1.0,
+      "free-form judge": null,
+      "qubric": 0.316
+    },
+    "detail": {
+      "extraction": {
+        "centered": 0.31537019681349576,
+        "uncentered": 0.22164948453608246
+      },
+      "pipeline_partial": {
+        "centered": 0.29130434782608694,
+        "uncentered": 0.1318840579710145,
+        "coverage": 690
+      },
+      "chance": 0.009345794392523364
+    },
+    "system_level": {
+      "p1": 0.31630740393626994,
+      "ratio_median": 0.872581958770752,
+      "system_p1": 0.8037383177570093,
+      "chance": 0.009345794392523364,
+      "coverage": 2134
+    }
+  }
+}

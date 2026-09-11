@@ -1,0 +1,59 @@
+{
+  "embed_model": "BAAI/bge-large-en-v1.5",
+  "judge_dir": "data/judge/q100-qspec-flash0731",
+  "chance": {
+    "task": 0.01,
+    "identity": 0.009345794392523364,
+    "family": 0.319790704832256,
+    "harness": 0.07727664464234417
+  },
+  "reps": {
+    "raw": {
+      "task": 0.7862616822429906,
+      "behavior": 0.008414819078209068,
+      "identity_trace": 0.5733644859813084,
+      "identity_agg": 0.935981308411215,
+      "family": 0.2980701754385965,
+      "harness": 0.49474576271186443
+    },
+    "qubric": {
+      "task": 0.8907476635514019,
+      "behavior": 0.06326160719363438,
+      "identity_trace": 0.1408411214953271,
+      "identity_agg": 0.9177570093457943,
+      "family": 0.24543859649122807,
+      "harness": 0.13847457627118645
+    }
+  },
+  "stability": {
+    "definition": "test-retest self-retrieval P@1 (same trace, pipeline rerun); chance 1/107=0.009",
+    "chance": 0.009345794392523364,
+    "rows": {
+      "raw": 1.0,
+      "head-only": 1.0,
+      "tail-only": 1.0,
+      "centered": 1.0,
+      "free-form judge": null,
+      "qubric": 0.316
+    },
+    "detail": {
+      "extraction": {
+        "centered": 0.31537019681349576,
+        "uncentered": 0.22164948453608246
+      },
+      "pipeline_partial": {
+        "centered": 0.29130434782608694,
+        "uncentered": 0.1318840579710145,
+        "coverage": 690
+      },
+      "chance": 0.009345794392523364
+    },
+    "system_level": {
+      "p1": 0.31630740393626994,
+      "ratio_median": 0.872581958770752,
+      "system_p1": 0.8037383177570093,
+      "chance": 0.009345794392523364,
+      "coverage": 2134
+    }
+  }
+}
