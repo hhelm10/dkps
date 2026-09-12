@@ -28,6 +28,7 @@ FIELDS, SECTIONS, ROOT, PREFIX = bank(32)
 F = 32
 RS = (1, 2, 4, 6, 8, 12, 16, 24, 32)
 MSP = (1, 5, 20)
+NS = (107, 20)          # reference-library sizes; 20 = seeded subsample
 N_SUB = 200
 SIGS = (2, 4, 8)
 OUT_JSON = 'figures/rubric_sens_paper.json'
@@ -41,6 +42,9 @@ def main():
     fam = [vendor_tag(labels, s) for s in systems]
     allowed = np.array([[j != i and not (fam[i] and fam[j] == fam[i])
                          for j in range(M)] for i in range(M)])
+    lib20 = np.zeros(M, bool)
+    lib20[np.random.default_rng(11).choice(M, 20, replace=False)] = True
+    allowed_n = {107: allowed, 20: allowed & lib20[None, :]}
     man = json.load(open(f'{ROOT}/manifest.json'))
     z = np.load('data/leaderboard/query_vecs_64.npz', allow_pickle=True)
     ids = [str(x) for x in z['ids']]
@@ -85,12 +89,12 @@ def main():
                         T[key][2][f] = Arr_f
         return T
 
-    def estimators(D):
+    def estimators(D, allow):
         cand = {}
         # kNN k=5
         errs, tgt = [], np.zeros(M)
         for i in range(M):
-            refs = np.where(allowed[i])[0]
+            refs = np.where(allow[i])[0]
             Dref = D[:, refs].copy()
             for r_, j in enumerate(refs):
                 Dref[j, r_] = np.inf
@@ -106,13 +110,14 @@ def main():
         J = np.eye(n_) - 1 / n_
         Bm = -0.5 * J @ (D ** 2) @ J
         ew, ev = np.linalg.eigh(Bm)
-        order = np.argsort(ew)[::-1][:16]
+        rdim = 16 if allow.sum(1).min() > 20 else 8
+        order = np.argsort(ew)[::-1][:rdim]
         Z = ev[:, order] * np.sqrt(np.maximum(ew[order], 1e-12))
         errs, tgt = [], np.zeros(M)
         for i in range(M):
-            refs = np.where(allowed[i])[0]
+            refs = np.where(allow[i])[0]
             Zr, yr = Z[refs], y[refs]
-            G = Zr.T @ Zr + 0.1 * np.eye(16)
+            G = Zr.T @ Zr + 0.1 * np.eye(rdim)
             Gi = np.linalg.inv(G)
             beta = Gi @ (Zr.T @ (yr - yr.mean()))
             tgt[i] = float(np.clip(Z[i] @ beta + yr.mean(), 0, 1))
@@ -130,7 +135,9 @@ def main():
         res = {}
         controls = {'orig6': list(range(6)), 'all16': list(range(16)),
                     'all32': list(range(32))}
-        for m in MSP:
+        for n_refs in NS:
+          allow = allowed_n[n_refs]
+          for m in MSP:
             subsets = {r: [tuple(s) for s in man['masks'][str(r)][:N_SUB]]
                        for r in RS}
             per_r = {}
@@ -148,7 +155,7 @@ def main():
                             Arrs = Arr[Sarr].mean(0)
                             D = np.sqrt(np.maximum(
                                 Atts[:, None] + Arrs[None] - 2 * Ats, 0))
-                            for nm, v in estimators(D).items():
+                            for nm, v in estimators(D, allow).items():
                                 cand_all[(s_, nm)] = v
                         tgt = min(cand_all.values(),
                                   key=lambda v: v[0])[1]
@@ -157,6 +164,8 @@ def main():
                 maes = np.array(maes)
                 per_r[str(r)] = dict(
                     mean=float(maes.mean()),
+                    sem=float(maes.std(ddof=1) / np.sqrt(len(maes)))
+                    if len(maes) > 1 else 0.0,
                     p10=float(np.percentile(maes, 10)),
                     p90=float(np.percentile(maes, 90)),
                     min=float(maes.min()), max=float(maes.max()),
@@ -172,17 +181,15 @@ def main():
                             Att[Sarr].mean(0)[:, None]
                             + Arr[Sarr].mean(0)[None]
                             - 2 * A_tr[Sarr].mean(0), 0))
-                        for nm, v in estimators(D).items():
+                        for nm, v in estimators(D, allow).items():
                             cand_all[(s_, nm)] = v
                     tgt = min(cand_all.values(), key=lambda v: v[0])[1]
                     tgt_err += np.abs(tgt - y) / len(draws[m])
                 per_r[cname] = float(tgt_err.mean())
-            res[str(m)] = per_r
-            print(arm, f'm={m}',
+            res.setdefault(str(n_refs), {})[str(m)] = per_r
+            print(arm, f'n={n_refs} m={m}',
                   {r: round(per_r[str(r)]['mean'], 4) for r in RS},
-                  'orig6', round(per_r['orig6'], 4),
-                  'all16', round(per_r['all16'], 4),
-                  'all32', round(per_r['all32'], 4), flush=True)
+                  'orig6', round(per_r['orig6'], 4), flush=True)
         results[arm] = res
         json.dump(results, open(OUT_JSON, 'w'), indent=1)
     render(results)
@@ -201,18 +208,22 @@ def render(results):
         for arm, nice, role in (('generic', 'generic rubric',
                                  'comparator'),
                                 ('qspec', 'qubric', 'focus')):
-            res = results[arm][m0]
-            rs = np.array(RS)
-            mean = [res[str(r)]['mean'] for r in RS]
-            p10 = [res[str(r)]['p10'] for r in RS]
-            p90 = [res[str(r)]['p90'] for r in RS]
             st = hv_style.ROLES[role]
-            ax.fill_between(rs, p10, p90, color=st['color'], alpha=.16,
-                            lw=0)
-            ax.plot(rs, mean, color=st['color'], lw=2.8, marker='o',
-                    ms=4, label=nice)
-            ax.scatter([6], [res['orig6']], marker='D', s=70,
-                       color=st['color'], zorder=5)
+            for n_refs, ls in (('107', '-'), ('20', '--')):
+                if n_refs not in results[arm]:
+                    continue
+                res = results[arm][n_refs][m0]
+                rs = np.array(RS)
+                mean = np.array([res[str(r)]['mean'] for r in RS])
+                sem = np.array([res[str(r)].get('sem', 0) for r in RS])
+                ax.fill_between(rs, mean - sem, mean + sem,
+                                color=st['color'], alpha=.18, lw=0)
+                ax.plot(rs, mean, color=st['color'], lw=2.8, ls=ls,
+                        marker='o', ms=4,
+                        label=f'{nice} ($n$={n_refs})')
+                if n_refs == '107':
+                    ax.scatter([6], [res['orig6']], marker='D', s=70,
+                               color=st['color'], zorder=5)
         ax.set_title(f'$m = {m0}$', fontsize=SZ['label'],
                      color=hv_style.INK_TITLE)
         ax.set_xlabel('number of rubric fields $r$',
