@@ -7,12 +7,17 @@ draw: candidates = sigma in {2,4,8} x {kNN-5, ridge(16,0.1) LOO-honest},
 selected by pool reference error; blend alpha fit on pool with the
 selected store. Overwrites figures/pairwise_cost.json (same schema; the
 fig_cost renderer is unchanged).
+
+Contexts are independent -> parallelized over a fork Pool (the serial
+run was ~60-90 s/context x 1463 contexts). Launch with
+OPENBLAS_NUM_THREADS=2; the pool provides the outer parallelism.
 """
 import json
 import os
 import re
 import sys
 from itertools import combinations
+from multiprocessing import get_context
 
 import numpy as np
 
@@ -25,6 +30,106 @@ MS = (1, 3, 5, 10, 20)
 N_DRAW = 10
 SIGS = (2, 4, 8)
 ALPH = np.linspace(0, 1, 21)
+WORKERS = 12
+
+G = {}  # read-only worker state, inherited via fork
+
+
+def _ctx_work(item):
+    excl, tgts = item
+    M, X, B, y = G['M'], G['X'], G['B'], G['y']
+    tag, KQs, draws = G['tag'], G['KQs'], G['draws']
+    pool = np.array([i for i in range(M) if tag[i] not in excl])
+    P = len(pool)
+    med_p = np.median(X[pool], axis=0, keepdims=True)
+    Zc = X - med_p
+    Zc = (Zc / np.maximum(np.linalg.norm(Zc, axis=-1, keepdims=True),
+                          1e-9)).astype(np.float32)
+    im = ItemModel(B[pool], y[pool], 10.0)
+    Ws = {s_: np.einsum('qp,jpd->jqd', KQs[s_], Zc[pool],
+                        optimize=True) for s_ in SIGS}
+    Arrs = {s_: np.einsum('jqd,jqd->j', Zc[pool], Ws[s_]) / KQs[s_].sum()
+            for s_ in SIGS}
+    out = {m: {} for m in MS}
+    yp = y[pool]
+    for m in MS:
+        for cols in draws[m]:
+            irt_t = np.array([im.predict(cols, B[t, cols])
+                              for t in tgts])
+            irt_p = np.array([im.predict(cols, B[p, cols])
+                              for p in pool])
+            cand = {}
+            for s_ in SIGS:
+                KQ = KQs[s_]
+                Wp = Ws[s_][:, cols].reshape(P, -1)
+                Xi_t = Zc[tgts][:, cols].reshape(len(tgts), -1)
+                Xi_p = Zc[pool][:, cols].reshape(P, -1)
+                At = (Xi_t @ Wp.T) / KQ[cols].sum()
+                Ap = (Xi_p @ Wp.T) / KQ[cols].sum()
+                KQc = KQ[np.ix_(cols, cols)]
+                Wc = np.einsum('qp,jpd->jqd', KQc, Zc[pool][:, cols],
+                               optimize=True)
+                App = np.einsum('jqd,jqd->j', Zc[pool][:, cols], Wc) \
+                    / KQc.sum()
+                Wct = np.einsum('qp,jpd->jqd', KQc, Zc[tgts][:, cols],
+                                optimize=True)
+                Att = np.einsum('jqd,jqd->j', Zc[tgts][:, cols], Wct) \
+                    / KQc.sum()
+                Arr = Arrs[s_]
+                Dt = np.sqrt(np.maximum(
+                    Att[:, None] + Arr[None] - 2 * At, 0))
+                Dp = np.sqrt(np.maximum(
+                    App[:, None] + Arr[None] - 2 * Ap, 0))
+                # kNN-5
+                Dp2 = Dp.copy()
+                np.fill_diagonal(Dp2, np.inf)
+                nn_p = np.argsort(Dp2, 1)[:, :5]
+                w = 1 / (np.take_along_axis(Dp2, nn_p, 1) + 1e-12)
+                gp = (w * yp[nn_p]).sum(1) / w.sum(1)
+                nn_t = np.argsort(Dt, 1)[:, :5]
+                wt = 1 / (np.take_along_axis(Dt, nn_t, 1) + 1e-12)
+                gt = (wt * yp[nn_t]).sum(1) / wt.sum(1)
+                cand[(s_, 'knn')] = (np.abs(gp - yp).mean(), gp, gt)
+                # ridge on pooled MDS coords (targets in MDS, not fit)
+                Dall = np.zeros((P + len(tgts), P + len(tgts)),
+                                np.float32)
+                Dall[:P, :P] = Dp
+                Dall[P:, :P] = Dt
+                Dall[:P, P:] = Dt.T
+                Dtt = np.sqrt(np.maximum(
+                    Att[:, None] + Att[None]
+                    - 2 * ((Xi_t @ Wct.reshape(len(tgts), -1).T)
+                           / KQc.sum()), 0))
+                Dall[P:, P:] = Dtt
+                n_ = P + len(tgts)
+                J = np.eye(n_) - 1 / n_
+                Bmm = -0.5 * J @ (Dall ** 2) @ J
+                ew, ev = np.linalg.eigh(Bmm)
+                order = np.argsort(ew)[::-1][:16]
+                Zm = ev[:, order] * np.sqrt(np.maximum(ew[order],
+                                                       1e-12))
+                Zr, Zt = Zm[:P], Zm[P:]
+                Gm = Zr.T @ Zr + 0.1 * np.eye(16)
+                Gi = np.linalg.inv(Gm)
+                beta = Gi @ (Zr.T @ (yp - yp.mean()))
+                h = np.einsum('jr,rs,js->j', Zr, Gi, Zr)
+                pr = Zr @ beta + yp.mean()
+                loo = yp - (yp - pr) / np.maximum(1 - h, 1e-6)
+                gp_r = np.clip(loo, 0, 1)
+                gt_r = np.clip(Zt @ beta + yp.mean(), 0, 1)
+                cand[(s_, 'ridge')] = (np.abs(gp_r - yp).mean(),
+                                       gp_r, gt_r)
+            _, gp, gt = min(cand.values(), key=lambda v: v[0])
+            a = ALPH[int(np.argmin([np.abs(al * irt_p + (1 - al) * gp
+                                           - yp).mean()
+                                    for al in ALPH]))]
+            samp_t = B[np.ix_(tgts, cols)].mean(1)
+            for k, v in (('sample', samp_t), ('irt', irt_t),
+                         ('geom', gt), ('blend', a * irt_t
+                                        + (1 - a) * gt)):
+                out[m].setdefault(k, np.zeros(len(tgts)))
+                out[m][k] = out[m][k] + v / len(draws[m])
+    return excl, tgts, out
 
 
 def run(bench):
@@ -38,7 +143,7 @@ def run(bench):
             tags.append(m.group(1).strip() if m else f'__solo__{s}')
         M, Q = B.shape
         X = np.load('data/judge/q100_emb_openai_small.npz')['X'] \
-            .reshape(M, Q, -1)
+            .reshape(M, Q, -1).astype(np.float32)
         z = np.load('data/leaderboard/query_vecs_64.npz', allow_pickle=True)
         ids = [str(x) for x in z['ids']]
         V = np.asarray(z['vecs'], np.float32)[[ids.index(q) for q in qs]]
@@ -73,12 +178,11 @@ def run(bench):
             np.load('data/terminal_bench/tb2_emb_openai_small.npz')['X'],
             np.tile(np.arange(Q), len(all_sys))) \
             .reshape(len(all_sys), Q, -1)[
-                [all_sys.index(s) for s in systems]]
+                [all_sys.index(s) for s in systems]].astype(np.float32)
         z = np.load('data/terminal_bench/tb2_query_vecs_64.npz',
                     allow_pickle=True)
         ids = [str(x) for x in z['ids']]
         V = np.asarray(z['vecs'], np.float32)[[ids.index(t) for t in tasks]]
-        X = X.astype(np.float64)
 
     tag = np.array(tags)
     groups = sorted(set(tags))
@@ -98,102 +202,15 @@ def run(bench):
             contexts[frozenset((g,))] = gidx[g]
     print(bench, len(contexts), 'contexts', flush=True)
 
+    G.update(M=M, X=X, B=B, y=y, tag=tag, KQs=KQs, draws=draws)
+    items = list(contexts.items())
     ctx_pred = {}
-    for ci, (excl, tgts) in enumerate(contexts.items()):
-        pool = np.array([i for i in range(M) if tag[i] not in excl])
-        P = len(pool)
-        med_p = np.median(X[pool], axis=0, keepdims=True)
-        Zc = X - med_p
-        Zc = (Zc / np.maximum(np.linalg.norm(Zc, axis=-1, keepdims=True),
-                              1e-9)).astype(np.float32)
-        im = ItemModel(B[pool], y[pool], 10.0)
-        Ws = {s_: np.einsum('qp,jpd->jqd', KQs[s_], Zc[pool],
-                            optimize=True) for s_ in SIGS}
-        out = {m: {} for m in MS}
-        yp = y[pool]
-        for m in MS:
-            for cols in draws[m]:
-                irt_t = np.array([im.predict(cols, B[t, cols])
-                                  for t in tgts])
-                irt_p = np.array([im.predict(cols, B[p, cols])
-                                  for p in pool])
-                cand = {}
-                for s_ in SIGS:
-                    KQ = KQs[s_]
-                    Wp = Ws[s_][:, cols].reshape(P, -1)
-                    Xi_t = Zc[tgts][:, cols].reshape(len(tgts), -1)
-                    Xi_p = Zc[pool][:, cols].reshape(P, -1)
-                    At = (Xi_t @ Wp.T) / KQ[cols].sum()
-                    Ap = (Xi_p @ Wp.T) / KQ[cols].sum()
-                    KQc = KQ[np.ix_(cols, cols)]
-                    Wc = np.einsum('qp,jpd->jqd', KQc, Zc[pool][:, cols],
-                                   optimize=True)
-                    App = np.einsum('jqd,jqd->j', Zc[pool][:, cols], Wc) \
-                        / KQc.sum()
-                    Wct = np.einsum('qp,jpd->jqd', KQc, Zc[tgts][:, cols],
-                                    optimize=True)
-                    Att = np.einsum('jqd,jqd->j', Zc[tgts][:, cols], Wct) \
-                        / KQc.sum()
-                    Arr = np.einsum('jqd,jqd->j', Zc[pool],
-                                    Ws[s_]) / KQ.sum()
-                    Dt = np.sqrt(np.maximum(
-                        Att[:, None] + Arr[None] - 2 * At, 0))
-                    Dp = np.sqrt(np.maximum(
-                        App[:, None] + Arr[None] - 2 * Ap, 0))
-                    # kNN-5
-                    Dp2 = Dp.copy()
-                    np.fill_diagonal(Dp2, np.inf)
-                    nn_p = np.argsort(Dp2, 1)[:, :5]
-                    w = 1 / (np.take_along_axis(Dp2, nn_p, 1) + 1e-12)
-                    gp = (w * yp[nn_p]).sum(1) / w.sum(1)
-                    nn_t = np.argsort(Dt, 1)[:, :5]
-                    wt = 1 / (np.take_along_axis(Dt, nn_t, 1) + 1e-12)
-                    gt = (wt * yp[nn_t]).sum(1) / wt.sum(1)
-                    cand[(s_, 'knn')] = (np.abs(gp - yp).mean(), gp, gt)
-                    # ridge on pooled MDS coords (targets in MDS, not fit)
-                    Dall = np.zeros((P + len(tgts), P + len(tgts)),
-                                    np.float32)
-                    Dall[:P, :P] = Dp
-                    Dall[P:, :P] = Dt
-                    Dall[:P, P:] = Dt.T
-                    Dtt = np.sqrt(np.maximum(
-                        Att[:, None] + Att[None]
-                        - 2 * ((Xi_t @ np.einsum(
-                            'qp,jpd->jqd', KQc, Zc[tgts][:, cols],
-                            optimize=True).reshape(len(tgts), -1).T)
-                            / KQc.sum()), 0))
-                    Dall[P:, P:] = Dtt
-                    n_ = P + len(tgts)
-                    J = np.eye(n_) - 1 / n_
-                    Bmm = -0.5 * J @ (Dall ** 2) @ J
-                    ew, ev = np.linalg.eigh(Bmm)
-                    order = np.argsort(ew)[::-1][:16]
-                    Zm = ev[:, order] * np.sqrt(np.maximum(ew[order],
-                                                           1e-12))
-                    Zr, Zt = Zm[:P], Zm[P:]
-                    G = Zr.T @ Zr + 0.1 * np.eye(16)
-                    Gi = np.linalg.inv(G)
-                    beta = Gi @ (Zr.T @ (yp - yp.mean()))
-                    h = np.einsum('jr,rs,js->j', Zr, Gi, Zr)
-                    pr = Zr @ beta + yp.mean()
-                    loo = yp - (yp - pr) / np.maximum(1 - h, 1e-6)
-                    gp_r = np.clip(loo, 0, 1)
-                    gt_r = np.clip(Zt @ beta + yp.mean(), 0, 1)
-                    cand[(s_, 'ridge')] = (np.abs(gp_r - yp).mean(),
-                                           gp_r, gt_r)
-                _, gp, gt = min(cand.values(), key=lambda v: v[0])
-                a = ALPH[int(np.argmin([np.abs(al * irt_p + (1 - al) * gp
-                                               - yp).mean()
-                                        for al in ALPH]))]
-                samp_t = B[np.ix_(tgts, cols)].mean(1)
-                for k, v in (('sample', samp_t), ('irt', irt_t),
-                             ('geom', gt), ('blend', a * irt_t
-                                            + (1 - a) * gt)):
-                    out[m].setdefault(k, np.zeros(len(tgts)))
-                    out[m][k] = out[m][k] + v / len(draws[m])
-        ctx_pred[excl] = (tgts, out)
-        if ci % 200 == 0:
-            print(bench, f'ctx {ci}', flush=True)
+    with get_context('fork').Pool(WORKERS) as pool_:
+        for ci, (excl, tgts, out) in enumerate(
+                pool_.imap_unordered(_ctx_work, items, chunksize=1)):
+            ctx_pred[excl] = (tgts, out)
+            if ci % 25 == 0:
+                print(bench, f'ctx {ci}/{len(items)}', flush=True)
 
     res = {}
     for m in MS:
