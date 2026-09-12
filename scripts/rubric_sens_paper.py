@@ -236,23 +236,24 @@ def render(results):
                        fontsize=SZ['subtitle'])
     ink = hv_style.INK
     legs = (
-        (axes[0], [Line2D([], [], color=hv_style.ROLES['comparator']
+        (.17, [Line2D([], [], color=hv_style.ROLES['comparator']
                           ['color'], lw=2.8, label='generic rubric'),
                    Line2D([], [], color=hv_style.ROLES['focus']['color'],
                           lw=2.8, label='qubric')]),
-        (axes[1], [Line2D([], [], color=ink, lw=2.8, marker='o', ms=4,
+        (.50, [Line2D([], [], color=ink, lw=2.8, marker='o', ms=4,
                           label='average over subsets'),
                    Line2D([], [], color=ink, lw=1.3, alpha=.85,
                           label='best subset')]),
-        (axes[2], [Line2D([], [], color=ink, lw=2.2, ls='-',
+        (.83, [Line2D([], [], color=ink, lw=2.2, ls='-',
                           label='$n = 107$'),
                    Line2D([], [], color=ink, lw=2.2, ls='--',
                           label='$n = 20$')]),
     )
-    for ax, handles in legs:
-        ax.legend(handles=handles, loc='upper right',
-                  fontsize=SZ['legend'] - 1, handlelength=2.6,
-                  frameon=False)
+    for xc, handles in legs:
+        fig.legend(handles=handles, loc='upper center',
+                   bbox_to_anchor=(xc, 0.02), ncol=2,
+                   fontsize=SZ['legend'] - 1, handlelength=2.6,
+                   frameon=False, columnspacing=1.6)
     fig.tight_layout()
     fig.savefig(OUT_PNG, dpi=200, bbox_inches='tight', pad_inches=0.03)
     print('wrote', OUT_PNG)
