@@ -121,15 +121,15 @@ def main():
                        fontsize=SZ['subtitle'])
     axes[3].set_yticklabels([])
 
+    # split legends: MAE series under panels 1-2, ranking series under 3-4
     h1, l1 = axes[0].get_legend_handles_labels()
     h2, l2 = axes[2].get_legend_handles_labels()
-    seen = {}
-    for h, l in zip(h1 + h2, l1 + l2):
-        if l not in seen:
-            seen[l] = h
-    fig.legend(seen.values(), seen.keys(), fontsize=SZ['legend'] - 2,
-               handlelength=3.0, loc='lower center',
-               bbox_to_anchor=(0.5, -0.09), ncol=5, columnspacing=1.1)
+    fig.legend(h1, l1, fontsize=SZ['legend'] - 2, handlelength=3.0,
+               loc='upper center', bbox_to_anchor=(0.26, 0.02), ncol=3,
+               columnspacing=1.1, frameon=False)
+    fig.legend(h2, l2, fontsize=SZ['legend'] - 2, handlelength=3.0,
+               loc='upper center', bbox_to_anchor=(0.76, 0.02), ncol=2,
+               columnspacing=1.1, frameon=False)
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     fig.savefig('figures/fig_cost.png', dpi=200, bbox_inches='tight',
                 pad_inches=0.03)
