@@ -14,8 +14,12 @@ from core import evaluate, normalize_blocks
 
 
 def sha256(path):
+    # py3.10 compat shim (hashlib.file_digest is 3.11+); same digest
+    h = hashlib.sha256()
     with open(path, 'rb') as stream:
-        return hashlib.file_digest(stream, 'sha256').hexdigest()
+        for chunk in iter(lambda: stream.read(1 << 20), b''):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def load_embeddings(path, row_ids):
