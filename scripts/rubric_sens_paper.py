@@ -201,13 +201,12 @@ def render(results):
     import hv_style
     hv_style.apply()
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
 
     SZ = hv_style.SIZES
     fig, axes = plt.subplots(1, 3, figsize=(15.6, 4.8), sharex=True)
     for ax, m0 in zip(axes, ('1', '5', '20')):
-        for arm, nice, role in (('generic', 'generic rubric',
-                                 'comparator'),
-                                ('qspec', 'qubric', 'focus')):
+        for arm, role in (('generic', 'comparator'), ('qspec', 'focus')):
             st = hv_style.ROLES[role]
             old_style = m0 in results[arm]          # pre-n-sweep cache
             variants = ((None, '-'),) if old_style \
@@ -220,16 +219,13 @@ def render(results):
                 rs = np.array(RS)
                 mean = np.array([res[str(r)]['mean'] for r in RS])
                 sem = np.array([res[str(r)].get('sem', 0) for r in RS])
-                lab = nice if old_style else f'{nice} ($n$={n_refs})'
+                best = np.array([res[str(r)]['min'] for r in RS])
                 ax.fill_between(rs, mean - sem, mean + sem,
                                 color=st['color'], alpha=.18, lw=0)
                 ax.plot(rs, mean, color=st['color'], lw=2.8, ls=ls,
-                        marker='o', ms=4, label=lab)
-                if ls == '-':
-                    best = np.array([res[str(r)]['min'] for r in RS])
-                    ax.plot(rs, best, color=st['color'], lw=1.6, ls=':',
-                            label=(f'{nice}: best subset per $r$'
-                                   if m0 == '1' else None))
+                        marker='o', ms=4)
+                ax.plot(rs, best, color=st['color'], lw=1.3, ls=ls,
+                        alpha=.85)
         ax.set_title(f'$m = {m0}$', fontsize=SZ['label'],
                      color=hv_style.INK_TITLE)
         ax.set_xlabel('number of rubric fields $r$',
@@ -238,7 +234,25 @@ def render(results):
         ax.tick_params(labelsize=SZ['tick'])
     axes[0].set_ylabel('MAE$(\\hat{y}, y)$ (paper pipeline)',
                        fontsize=SZ['subtitle'])
-    axes[0].legend(fontsize=SZ['legend'] - 1, handlelength=2.6)
+    ink = hv_style.INK
+    legs = (
+        (axes[0], [Line2D([], [], color=hv_style.ROLES['comparator']
+                          ['color'], lw=2.8, label='generic rubric'),
+                   Line2D([], [], color=hv_style.ROLES['focus']['color'],
+                          lw=2.8, label='qubric')]),
+        (axes[1], [Line2D([], [], color=ink, lw=2.8, marker='o', ms=4,
+                          label='average over subsets'),
+                   Line2D([], [], color=ink, lw=1.3, alpha=.85,
+                          label='best subset')]),
+        (axes[2], [Line2D([], [], color=ink, lw=2.2, ls='-',
+                          label='$n = 107$'),
+                   Line2D([], [], color=ink, lw=2.2, ls='--',
+                          label='$n = 20$')]),
+    )
+    for ax, handles in legs:
+        ax.legend(handles=handles, loc='upper right',
+                  fontsize=SZ['legend'] - 1, handlelength=2.6,
+                  frameon=False)
     fig.tight_layout()
     fig.savefig(OUT_PNG, dpi=200, bbox_inches='tight', pad_inches=0.03)
     print('wrote', OUT_PNG)
