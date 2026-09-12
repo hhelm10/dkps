@@ -35,7 +35,7 @@ EMB = [('openai', 'text-embedding-3-small'),
 SPOKES = [('outcome', 'Correctness', 'keep'), ('task', 'Task', 'keep'),
           ('harness', 'Harness', 'inv'),
           ('vendor', 'Model\nFamily', 'inv'),
-          ('system', 'Identity', 'inv')]
+          ('system', 'System\nIdentity', 'inv')]
 
 
 def main():
