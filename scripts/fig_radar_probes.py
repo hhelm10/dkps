@@ -22,6 +22,7 @@ import hv_style
 hv_style.apply()
 
 RAW = hv_style.ROLES['comparator']
+GEN = hv_style.ROLES['slate']
 QUB = hv_style.ROLES['focus']
 
 EMB = [('openai', 'text-embedding-3-small'),
@@ -38,11 +39,16 @@ SPOKES = [('outcome', 'Correctness', 'keep'), ('task', 'Task', 'keep'),
 
 
 def main():
-    d = json.load(open('figures/radar_probes.json'))
     table = {}
-    for r in d['results']:
-        table[(r['representation'], r['target'])] = (
-            r['balanced_accuracy'], r['chance_balanced_accuracy'])
+    for f in ('figures/radar_probes.json',
+              'figures/radar_probes_gen.json'):
+        try:
+            d = json.load(open(f))
+        except FileNotFoundError:
+            continue
+        for r in d['results']:
+            table[(r['representation'], r['target'])] = (
+                r['balanced_accuracy'], r['chance_balanced_accuracy'])
 
     def coords(rep):
         out = []
@@ -62,8 +68,11 @@ def main():
         ax.set_ylim(0, 1.0)
         ax.set_theta_zero_location('N')
         ax.set_theta_direction(-1)
-        for series, st, lw in ((f'{short}_raw', RAW, 2.4),
-                               (f'{short}_qubric', QUB, 3.2)):
+        series_list = [(f'{short}_raw', RAW, 2.2),
+                       (f'{short}_qubric', QUB, 3.2)]
+        if (f'{short}_generic', 'system') in table:
+            series_list.insert(1, (f'{short}_generic', GEN, 2.6))
+        for series, st, lw in series_list:
             r = coords(series)
             aa = np.concatenate([ang, ang[:1]])
             rr = np.array(r + r[:1])
@@ -84,8 +93,10 @@ def main():
 
     from matplotlib.lines import Line2D
     fig.legend(handles=[
-        Line2D([], [], color=RAW['color'], lw=2.4,
+        Line2D([], [], color=RAW['color'], lw=2.2,
                label='raw trace embedding'),
+        Line2D([], [], color=GEN['color'], lw=2.6,
+               label='generic rubric'),
         Line2D([], [], color=QUB['color'], lw=3.2, label='qubric'),
         Line2D([], [], color=hv_style.REFLINE, lw=1.2, ls='--',
                label='chance-level')],
