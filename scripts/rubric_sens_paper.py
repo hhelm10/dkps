@@ -196,29 +196,34 @@ def render(results):
     import matplotlib.pyplot as plt
 
     SZ = hv_style.SIZES
-    m0 = '5'
-    fig, ax = plt.subplots(figsize=(8.2, 5.0))
-    for arm, nice, role in (('generic', 'generic rubric', 'comparator'),
-                            ('qspec', 'qubric', 'focus')):
-        res = results[arm][m0]
-        rs = np.array(RS)
-        mean = [res[str(r)]['mean'] for r in RS]
-        p10 = [res[str(r)]['p10'] for r in RS]
-        p90 = [res[str(r)]['p90'] for r in RS]
-        st = hv_style.ROLES[role]
-        ax.fill_between(rs, p10, p90, color=st['color'], alpha=.16, lw=0)
-        ax.plot(rs, mean, color=st['color'], lw=2.8, marker='o', ms=4,
-                label=nice)
-        ax.scatter([6], [res['orig6']], marker='D', s=70,
-                   color=st['color'], zorder=5)
-    ax.scatter([], [], marker='D', s=70, color=hv_style.INK_MUTE,
-               label='original six fields')
-    ax.set_xlabel('number of rubric fields $r$', fontsize=SZ['subtitle'])
-    ax.set_ylabel('MAE$(\\hat{y}, y)$ at $m=5$\n(paper pipeline)',
-                  fontsize=SZ['subtitle'])
-    ax.set_xticks(RS)
-    ax.tick_params(labelsize=SZ['tick'])
-    ax.legend(fontsize=SZ['legend'] - 1, handlelength=2.6)
+    fig, axes = plt.subplots(1, 3, figsize=(15.6, 4.8), sharex=True)
+    for ax, m0 in zip(axes, ('1', '5', '20')):
+        for arm, nice, role in (('generic', 'generic rubric',
+                                 'comparator'),
+                                ('qspec', 'qubric', 'focus')):
+            res = results[arm][m0]
+            rs = np.array(RS)
+            mean = [res[str(r)]['mean'] for r in RS]
+            p10 = [res[str(r)]['p10'] for r in RS]
+            p90 = [res[str(r)]['p90'] for r in RS]
+            st = hv_style.ROLES[role]
+            ax.fill_between(rs, p10, p90, color=st['color'], alpha=.16,
+                            lw=0)
+            ax.plot(rs, mean, color=st['color'], lw=2.8, marker='o',
+                    ms=4, label=nice)
+            ax.scatter([6], [res['orig6']], marker='D', s=70,
+                       color=st['color'], zorder=5)
+        ax.set_title(f'$m = {m0}$', fontsize=SZ['label'],
+                     color=hv_style.INK_TITLE)
+        ax.set_xlabel('number of rubric fields $r$',
+                      fontsize=SZ['subtitle'])
+        ax.set_xticks(RS)
+        ax.tick_params(labelsize=SZ['tick'])
+    axes[0].scatter([], [], marker='D', s=70, color=hv_style.INK_MUTE,
+                    label='original six fields')
+    axes[0].set_ylabel('MAE$(\\hat{y}, y)$ (paper pipeline)',
+                       fontsize=SZ['subtitle'])
+    axes[0].legend(fontsize=SZ['legend'] - 1, handlelength=2.6)
     fig.tight_layout()
     fig.savefig(OUT_PNG, dpi=200, bbox_inches='tight', pad_inches=0.03)
     print('wrote', OUT_PNG)
