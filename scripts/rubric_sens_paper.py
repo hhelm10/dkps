@@ -209,29 +209,33 @@ def render(results):
                                  'comparator'),
                                 ('qspec', 'qubric', 'focus')):
             st = hv_style.ROLES[role]
-            for n_refs, ls in (('107', '-'), ('20', '--')):
-                if n_refs not in results[arm]:
+            old_style = m0 in results[arm]          # pre-n-sweep cache
+            variants = ((None, '-'),) if old_style \
+                else (('107', '-'), ('20', '--'))
+            for n_refs, ls in variants:
+                res = (results[arm][m0] if old_style
+                       else results[arm].get(n_refs, {}).get(m0))
+                if res is None:
                     continue
-                res = results[arm][n_refs][m0]
                 rs = np.array(RS)
                 mean = np.array([res[str(r)]['mean'] for r in RS])
                 sem = np.array([res[str(r)].get('sem', 0) for r in RS])
+                lab = nice if old_style else f'{nice} ($n$={n_refs})'
                 ax.fill_between(rs, mean - sem, mean + sem,
                                 color=st['color'], alpha=.18, lw=0)
                 ax.plot(rs, mean, color=st['color'], lw=2.8, ls=ls,
-                        marker='o', ms=4,
-                        label=f'{nice} ($n$={n_refs})')
-                if n_refs == '107':
-                    ax.scatter([6], [res['orig6']], marker='D', s=70,
-                               color=st['color'], zorder=5)
+                        marker='o', ms=4, label=lab)
+                if ls == '-':
+                    best = np.array([res[str(r)]['min'] for r in RS])
+                    ax.plot(rs, best, color=st['color'], lw=1.6, ls=':',
+                            label=(f'{nice}: best subset per $r$'
+                                   if m0 == '1' else None))
         ax.set_title(f'$m = {m0}$', fontsize=SZ['label'],
                      color=hv_style.INK_TITLE)
         ax.set_xlabel('number of rubric fields $r$',
                       fontsize=SZ['subtitle'])
         ax.set_xticks(RS)
         ax.tick_params(labelsize=SZ['tick'])
-    axes[0].scatter([], [], marker='D', s=70, color=hv_style.INK_MUTE,
-                    label='original six fields')
     axes[0].set_ylabel('MAE$(\\hat{y}, y)$ (paper pipeline)',
                        fontsize=SZ['subtitle'])
     axes[0].legend(fontsize=SZ['legend'] - 1, handlelength=2.6)
