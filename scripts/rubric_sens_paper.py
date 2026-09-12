@@ -233,6 +233,7 @@ def render(results):
                       fontsize=SZ['subtitle'])
         ax.set_xticks(RS)
         ax.tick_params(labelsize=SZ['tick'])
+    axes[0].set_yticks((0.07, 0.08, 0.09, 0.10))
     axes[0].set_ylabel('MAE$(\\hat{y}, y)$ (paper pipeline)',
                        fontsize=SZ['subtitle'])
     ink = hv_style.INK
