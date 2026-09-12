@@ -62,7 +62,8 @@ def main():
     fig = plt.figure(figsize=(14.8, 7.6))
     for idx, (short, name) in enumerate(EMB):
         r_, c_ = divmod(idx, 4)
-        ax = fig.add_axes([.035 + c_ * .245, .52 - r_ * .48, .19, .40],
+        x0 = .035 + c_ * .245 + (.1225 if r_ == 1 else 0)
+        ax = fig.add_axes([x0, .55 - r_ * .47, .19, .38],
                           projection='polar')
         ax.set_rorigin(-0.35)
         ax.set_ylim(0, 1.0)
@@ -78,9 +79,6 @@ def main():
             rr = np.array(r + r[:1])
             ax.plot(aa, rr, color=st['color'], lw=lw)
             ax.fill(aa, rr, color=st['color'], alpha=0.15)
-        cc = [0 if kind == 'keep' else 1 for _, _, kind in SPOKES]
-        ax.plot(np.concatenate([ang, ang[:1]]), np.array(cc + cc[:1]), '--',
-                color=hv_style.REFLINE, lw=1.2)
         ax.set_xticks(ang)
         ax.set_xticklabels([lab for _, lab, _ in SPOKES],
                            fontsize=hv_style.SIZES['annot'],
@@ -97,11 +95,10 @@ def main():
                label='raw trace embedding'),
         Line2D([], [], color=GEN['color'], lw=2.6,
                label='generic rubric'),
-        Line2D([], [], color=QUB['color'], lw=3.2, label='qubric'),
-        Line2D([], [], color=hv_style.REFLINE, lw=1.2, ls='--',
-               label='chance-level')],
-        loc='center', bbox_to_anchor=(0.86, 0.26), frameon=False,
-        fontsize=hv_style.SIZES['legend'], handlelength=3.2)
+        Line2D([], [], color=QUB['color'], lw=3.2, label='qubric')],
+        loc='lower center', bbox_to_anchor=(0.5, -0.01), ncol=3,
+        frameon=False, fontsize=hv_style.SIZES['legend'],
+        handlelength=3.2, columnspacing=2.0)
     fig.savefig('figures/radar_all.png', dpi=200, facecolor='white',
                 bbox_inches='tight', pad_inches=0.05)
     print('wrote figures/radar_all.png (linear-probe metric)')
