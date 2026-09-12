@@ -227,11 +227,6 @@ def render(results):
                         marker='o', ms=4)
                 ax.plot(rs, best, color=st['color'], lw=1.3, ls=ls,
                         alpha=.85)
-                if 'orig6' in res:
-                    ax.scatter([6], [res['orig6']], marker='D', s=70,
-                               color=st['color'], zorder=5,
-                               facecolor=st['color'] if ls == '-'
-                               else 'white', lw=1.6)
         ax.set_title(f'$m = {m0}$', fontsize=SZ['label'],
                      color=hv_style.INK_TITLE)
         ax.set_xlabel('number of rubric fields $r$',
@@ -249,9 +244,7 @@ def render(results):
         (.50, [Line2D([], [], color=ink, lw=2.8, marker='o', ms=4,
                           label='average over subsets'),
                    Line2D([], [], color=ink, lw=1.3, alpha=.85,
-                          label='best subset'),
-                   Line2D([], [], color=ink, lw=0, marker='D', ms=8,
-                          label='used rubric')]),
+                          label='best subset')]),
         (.83, [Line2D([], [], color=ink, lw=2.2, ls='-',
                           label='$n = 107$'),
                    Line2D([], [], color=ink, lw=2.2, ls='--',
