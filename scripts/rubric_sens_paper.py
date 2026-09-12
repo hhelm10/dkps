@@ -204,7 +204,8 @@ def render(results):
     from matplotlib.lines import Line2D
 
     SZ = hv_style.SIZES
-    fig, axes = plt.subplots(1, 3, figsize=(15.6, 4.8), sharex=True)
+    fig, axes = plt.subplots(1, 3, figsize=(15.6, 4.8), sharex=True,
+                             sharey=True)
     for ax, m0 in zip(axes, ('1', '5', '20')):
         for arm, role in (('generic', 'comparator'), ('qspec', 'focus')):
             st = hv_style.ROLES[role]
