@@ -22,7 +22,7 @@ import hv_style
 hv_style.apply()
 
 RAW = hv_style.ROLES['comparator']
-GEN = hv_style.ROLES['slate']
+GEN = hv_style.ROLES['generic']
 QUB = hv_style.ROLES['focus']
 
 EMB = [('openai', 'text-embedding-3-small'),

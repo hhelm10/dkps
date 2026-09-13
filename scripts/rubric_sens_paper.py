@@ -207,7 +207,7 @@ def render(results):
     fig, axes = plt.subplots(1, 3, figsize=(15.6, 4.8), sharex=True,
                              sharey=True)
     for ax, m0 in zip(axes, ('1', '5', '20')):
-        for arm, role in (('generic', 'comparator'), ('qspec', 'focus')):
+        for arm, role in (('generic', 'generic'), ('qspec', 'focus')):
             st = hv_style.ROLES[role]
             old_style = '107' not in results[arm]   # pre-n-sweep cache
             variants = ((None, '-'),) if old_style \
@@ -238,7 +238,7 @@ def render(results):
                        fontsize=SZ['subtitle'])
     ink = hv_style.INK
     legs = (
-        (.17, [Line2D([], [], color=hv_style.ROLES['comparator']
+        (.17, [Line2D([], [], color=hv_style.ROLES['generic']
                           ['color'], lw=2.8, label='generic rubric'),
                    Line2D([], [], color=hv_style.ROLES['focus']['color'],
                           lw=2.8, label='qubric')]),

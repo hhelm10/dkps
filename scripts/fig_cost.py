@@ -55,8 +55,8 @@ def main():
         curves = [
             (rand, 'sample', 'Sample Score (random)', 'baseline_gray', '--'),
             (adap, 'sample', 'Sample Score (adaptive)', 'baseline_gray', '-'),
-            (rand, 'irt', 'IRT (random)', 'comparator', '--'),
-            (adap, 'irt', 'IRT (adaptive)', 'comparator', '-'),
+            (rand, 'irt', 'IRT (random)', 'baseline_pale', '--'),
+            (adap, 'irt', 'IRT (adaptive)', 'baseline_pale', '-'),
             (rand, 'blend', 'qubric + IRT blend (random)', 'anchor', '--'),
             (adap, 'blend', 'qubric + IRT blend (adaptive)', 'anchor', '-'),
         ]
@@ -93,7 +93,7 @@ def main():
     # panels 3-4: pairwise decision accuracy (leave-two-out shared pools)
     pw = json.load(open('figures/pairwise_cost.json'))
     PW_SERIES = [('sample', 'Sample Score', 'baseline_gray'),
-                 ('irt', 'IRT (2PL)', 'comparator'),
+                 ('irt', 'IRT (2PL)', 'baseline_pale'),
                  ('geom', 'qubric geometry', 'focus'),
                  ('blend', 'qubric + IRT blend', 'anchor')]
     for ax, (bkey, (title, _, _, full_runs)) in zip(

@@ -7,9 +7,17 @@ dashed = score-only, solid = uses trace embeddings):
   sample score        -> baseline_gray
   IRT (2PL)           -> baseline_pale
   raw-trace geometry  -> comparator
+  generic geometry    -> generic (slate blue, solid: uses embeddings)
   qubric geometry     -> focus
   qubric + IRT blend  -> anchor
   (violet reserve unassigned so far)
+
+COLOR always encodes the method, with the mapping above, in every
+figure. LINESTYLE encodes at most one attribute per figure: by default
+the method's dashed=score-only / solid=uses-embeddings rule (protocol
+grid, ranking panels); figures that sweep a setting instead use
+solid=primary / dashed=secondary uniformly across methods and say so
+in the legend (cost MAE panels: adaptive/random; sensitivity: n=107/20).
 """
 import matplotlib as mpl
 
@@ -27,6 +35,7 @@ ROLES = {
     'baseline_pale': dict(color='#afbec6', ls='--', lw=2.6),
     'comparator':    dict(color='#93aacc', ls='-', lw=2.6),
     'slate':         dict(color='#486884', ls='--', lw=2.6),
+    'generic':       dict(color='#486884', ls='-', lw=2.6),
     'focus':         dict(color='#3596ff', ls='-', lw=2.6),
     'anchor':        dict(color='#114471', ls='-', lw=3.6),
     'reserve':       dict(color='#6d5bd0'),
