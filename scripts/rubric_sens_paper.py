@@ -209,7 +209,7 @@ def render(results):
     for ax, m0 in zip(axes, ('1', '5', '20')):
         for arm, role in (('generic', 'comparator'), ('qspec', 'focus')):
             st = hv_style.ROLES[role]
-            old_style = m0 in results[arm]          # pre-n-sweep cache
+            old_style = '107' not in results[arm]   # pre-n-sweep cache
             variants = ((None, '-'),) if old_style \
                 else (('107', '-'), ('20', '--'))
             for n_refs, ls in variants:
