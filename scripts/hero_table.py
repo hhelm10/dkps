@@ -20,7 +20,7 @@ MS = (1, 5, 20)
 ROWS = [('sample', 'Sample Score'),
         ('raw', 'raw-trace geometry'),
         ('irt', 'IRT (2PL)'),
-        ('generic', 'generic-rubric geometry'),
+        ('generic', 'generic geometry'),
         ('geom', 'qubric geometry'),
         ('blend', 'qubric + IRT blend')]
 SRC = {
