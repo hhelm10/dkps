@@ -65,33 +65,31 @@ def main():
             st = hv_style.ROLES[role]
             lw = 3.4 if role == 'anchor' and filled else 2.4
             mae, sem = series(src, key)
-            ax.plot(cost, mae, color=st['color'], ls=st['ls'], lw=lw,
+            ax.plot(mae, cost, color=st['color'], ls=st['ls'], lw=lw,
                     marker='o', ms=6.5,
                     markerfacecolor=st['color'] if filled else 'white',
                     markeredgecolor=st['color'], markeredgewidth=1.4,
                     zorder=4 if role == 'anchor' else 3)
-            ax.fill_between(cost, mae - sem, mae + sem, color=st['color'],
-                            alpha=.13, lw=0, zorder=2)
-        ax.axvline(full_cost, color=hv_style.REFLINE, ls='--', lw=1.2,
+            ax.fill_betweenx(cost, mae - sem, mae + sem,
+                             color=st['color'], alpha=.13, lw=0, zorder=2)
+        ax.axhline(full_cost, color=hv_style.REFLINE, ls='--', lw=1.2,
                    zorder=1)
-        ax.text(full_cost * .88, .235,
-                f'full benchmark\n\\${full_cost:,.0f}',
+        ax.text(.243, full_cost * .8,
+                f'full benchmark \\${full_cost:,.0f}',
                 ha='right', va='top', fontsize=SZ['annot'],
                 color=hv_style.INK_MUTE)
-        ax.set_xscale('log')
-        ax.set_xticks([2, 10, 40, 200, 1000])
-        ax.set_xticklabels(['\\$2', '\\$10', '\\$40', '\\$200', '\\$1,000'])
-        ax.set_xlim(1.5, max(full_cost * 1.6, 1500))
-        ax.set_ylim(0, .25)
-        ax.set_yticks([0, .1, .2])
+        ax.set_yscale('log')
+        ax.set_yticks([2, 10, 40, 200, 1000])
+        ax.set_yticklabels(['\\$2', '\\$10', '\\$40', '\\$200', '\\$1,000'])
+        ax.set_ylim(1.5, max(full_cost * 1.6, 1500))
+        ax.set_xlim(0, .25)
+        ax.set_xticks([0, .1, .2])
         ax.set_title(title, fontsize=SZ['label'], color=hv_style.INK_TITLE)
-        ax.set_xlabel('evaluation cost per new system '
-                      '(\\$2/agent-run)', fontsize=SZ['subtitle'])
+        ax.set_xlabel('MAE$(\\hat{y}, y)$', fontsize=SZ['subtitle'])
         ax.tick_params(labelsize=SZ['tick'])
-    axes[0].set_ylabel('MAE$(\\hat{y}, y)$', fontsize=SZ['label'])
+    axes[0].set_ylabel('evaluation cost per new system\n(\\$2/agent-run)',
+                       fontsize=SZ['subtitle'])
     axes[1].set_yticklabels([])
-    axes[1].set_ylim(0, .25)
-    axes[0].set_ylim(0, .25)
 
     # panels 3-4: pairwise decision accuracy (leave-two-out shared pools)
     pw = json.load(open('figures/pairwise_cost.json'))
@@ -105,24 +103,25 @@ def main():
         for key, label, role in PW_SERIES:
             st = hv_style.ROLES[role]
             acc = [pw[bkey][str(m)]['gap05'][key] for m in MS]
-            ax.plot(cost, acc, color=st['color'], ls=st['ls'],
+            ax.plot(acc, cost, color=st['color'], ls=st['ls'],
                     lw=st.get('lw', 2.6), marker='o', ms=6.5,
                     markerfacecolor='white',
                     markeredgecolor=st['color'], markeredgewidth=1.4,
                     label=label, zorder=4 if role == 'anchor' else 3)
-        ax.axhline(0.5, color=hv_style.REFLINE, ls=':', lw=1.1, zorder=1)
-        ax.text(cost[-1], .505, 'chance', ha='right', va='bottom',
+        ax.axvline(0.5, color=hv_style.REFLINE, ls=':', lw=1.1, zorder=1)
+        ax.text(.507, cost[-1], 'chance', ha='left', va='top', rotation=90,
                 fontsize=SZ['annot'] - 1, color=hv_style.INK_MUTE)
-        ax.set_xscale('log')
-        ax.set_xticks([2, 10, 40])
-        ax.set_xticklabels(['\\$2', '\\$10', '\\$40'])
-        ax.set_ylim(.45, 1.0)
+        ax.set_yscale('log')
+        ax.set_yticks([2, 10, 40])
+        ax.set_yticklabels(['\\$2', '\\$10', '\\$40'])
+        ax.set_ylim(1.6, 50)
+        ax.set_xlim(.45, 1.0)
         ax.set_title(f'{title}\n(ranking, random probes)',
                      fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
-        ax.set_xlabel('cost per system (\\$2/run)',
+        ax.set_xlabel('pairwise accuracy (true gap $\\geq 0.05$)',
                       fontsize=SZ['subtitle'] - 1)
         ax.tick_params(labelsize=SZ['tick'])
-    axes[2].set_ylabel('pairwise accuracy\n(true gap $\\geq 0.05$)',
+    axes[2].set_ylabel('cost per system (\\$2/run)',
                        fontsize=SZ['subtitle'])
     axes[3].set_yticklabels([])
 
