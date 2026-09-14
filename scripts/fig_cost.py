@@ -53,19 +53,19 @@ def main():
         # in this figure line style encodes the probe regime:
         # dashed = random probes, solid = adaptive probes
         curves = [
-            (rand, 'sample', 'Sample Score (random)', 'baseline_gray', '--'),
-            (adap, 'sample', 'Sample Score (adaptive)', 'baseline_gray', '-'),
-            (rand, 'irt', 'IRT (random)', 'baseline_pale', '--'),
-            (adap, 'irt', 'IRT (adaptive)', 'baseline_pale', '-'),
-            (rand, 'blend', 'qubric + IRT blend (random)', 'anchor', '--'),
-            (adap, 'blend', 'qubric + IRT blend (adaptive)', 'anchor', '-'),
+            (rand, 'sample', 'baseline_gray', '--'),
+            (adap, 'sample', 'baseline_gray', '-'),
+            (rand, 'irt', 'baseline_pale', '--'),
+            (adap, 'irt', 'baseline_pale', '-'),
+            (rand, 'blend', 'anchor', '--'),
+            (adap, 'blend', 'anchor', '-'),
         ]
-        for src, key, label, role, ls in curves:
+        for src, key, role, ls in curves:
             st = hv_style.ROLES[role]
             lw = 3.4 if role == 'anchor' and ls == '-' else 2.4
             mae, sem = series(src, key)
             ax.plot(cost, mae, color=st['color'], ls=ls, lw=lw,
-                    marker='o', ms=4, label=label,
+                    marker='o', ms=4,
                     zorder=4 if role == 'anchor' else 3)
             ax.fill_between(cost, mae - sem, mae + sem, color=st['color'],
                             alpha=.13, lw=0, zorder=2)
@@ -121,14 +121,26 @@ def main():
                        fontsize=SZ['subtitle'])
     axes[3].set_yticklabels([])
 
-    # split legends: MAE series under panels 1-2, ranking series under 3-4
-    h1, l1 = axes[0].get_legend_handles_labels()
+    # split legends (orthogonal factors): method (color) + probe regime
+    # (line style) under panels 1-2; ranking methods under panels 3-4
+    from matplotlib.lines import Line2D
+    ink = hv_style.INK
+    meth = [Line2D([], [], color=hv_style.ROLES[r]['color'], lw=lw_,
+                   label=lab) for r, lw_, lab in
+            (('baseline_gray', 2.4, 'Sample Score'),
+             ('baseline_pale', 2.4, 'IRT (2PL)'),
+             ('anchor', 3.4, 'qubric + IRT blend'))]
+    reg = [Line2D([], [], color=ink, lw=2.4, ls='-', label='adaptive probes'),
+           Line2D([], [], color=ink, lw=2.4, ls='--', label='random probes')]
     h2, l2 = axes[2].get_legend_handles_labels()
-    fig.legend(h1, l1, fontsize=SZ['legend'] - 2, handlelength=3.0,
-               loc='upper center', bbox_to_anchor=(0.26, 0.02), ncol=3,
+    fig.legend(handles=meth, fontsize=SZ['legend'] - 2, handlelength=3.0,
+               loc='upper center', bbox_to_anchor=(0.26, 0.035), ncol=3,
+               columnspacing=1.1, frameon=False)
+    fig.legend(handles=reg, fontsize=SZ['legend'] - 2, handlelength=3.0,
+               loc='upper center', bbox_to_anchor=(0.26, -0.035), ncol=2,
                columnspacing=1.1, frameon=False)
     fig.legend(h2, l2, fontsize=SZ['legend'] - 2, handlelength=3.0,
-               loc='upper center', bbox_to_anchor=(0.76, 0.02), ncol=2,
+               loc='upper center', bbox_to_anchor=(0.76, 0.035), ncol=2,
                columnspacing=1.1, frameon=False)
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     fig.savefig('figures/fig_cost.png', dpi=200, bbox_inches='tight',
