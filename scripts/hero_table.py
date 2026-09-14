@@ -101,9 +101,15 @@ def build_md(t):
 
 
 def build_tex(t):
-    out = [r'\newcommand{\tablehero}{',
+    out = [r'% requires booktabs + graphicx; bold = column best,',
+           r'% underline = significantly better than IRT (paired, p<.05)',
+           r'\begin{table}[t]',
+           r'\centering',
+           r'\caption{MAE of estimated benchmark scores under '
+           r'leave-one-family-out.}',
+           r'\label{tab:hero}',
            r'\resizebox{\textwidth}{!}{%',
-           r'\begin{tabular}{l' + 'S[table-format=1.3]' * 12 + '}',
+           r'\begin{tabular}{l' + 'c' * 12 + '}',
            r'\toprule',
            r' & \multicolumn{6}{c}{\textbf{SWE-bench Verified}} & '
            r'\multicolumn{6}{c}{\textbf{Terminal-Bench 2.0}} \\',
@@ -131,7 +137,7 @@ def build_tex(t):
                     cells.append(s)
         out.append(label.replace('+', '$+$') + ' & '
                    + ' & '.join(cells) + r' \\')
-    out += [r'\bottomrule', r'\end{tabular}}', '}']
+    out += [r'\bottomrule', r'\end{tabular}}', r'\end{table}']
     return '\n'.join(out)
 
 

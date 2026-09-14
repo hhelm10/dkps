@@ -1,6 +1,11 @@
-\newcommand{\tablehero}{
+% requires booktabs + graphicx; bold = column best,
+% underline = significantly better than IRT (paired, p<.05)
+\begin{table}[t]
+\centering
+\caption{MAE of estimated benchmark scores under leave-one-family-out.}
+\label{tab:hero}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lS[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]}
+\begin{tabular}{lcccccccccccc}
 \toprule
  & \multicolumn{6}{c}{\textbf{SWE-bench Verified}} & \multicolumn{6}{c}{\textbf{Terminal-Bench 2.0}} \\
 \cmidrule(lr){2-7} \cmidrule(lr){8-13}
@@ -16,4 +21,4 @@ qubric geometry & {\underline{0.081}} & {\underline{0.069}} & 0.060 & 0.068 & 0.
 qubric $+$ IRT blend & {\underline{0.081}} & {\underline{\bfseries 0.063}} & {\underline{\bfseries 0.043}} & {\underline{\bfseries 0.062}} & {\underline{\bfseries 0.048}} & \bfseries 0.034 & {\underline{\bfseries 0.122}} & {\underline{\bfseries 0.090}} & \bfseries 0.050 & {\underline{\bfseries 0.099}} & \bfseries 0.059 & \bfseries 0.037 \\
 \bottomrule
 \end{tabular}}
-}
+\end{table}
