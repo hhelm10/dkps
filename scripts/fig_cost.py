@@ -120,8 +120,8 @@ def main():
         ax.set_yticklabels(['\\$2', '\\$10', '\\$40'])
         ax.set_ylim(1.6, 50)
         ax.set_xlim(.45, 1.0)
-        ax.set_title(f'{title}\n(ranking, random probes)',
-                     fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
+        ax.set_title(title, fontsize=SZ['label'],
+                     color=hv_style.INK_TITLE)
         ax.set_xlabel('pairwise acc.\n(gap $\\geq 0.05$)',
                       fontsize=SZ['subtitle'] - 1)
         ax.tick_params(labelsize=SZ['tick'])
@@ -129,31 +129,25 @@ def main():
                        fontsize=SZ['subtitle'])
     axes[3].set_yticklabels([])
 
-    # split legends (orthogonal factors): method (color) + probe regime
-    # (line style) under panels 1-2; ranking methods under panels 3-4
+    # one legend for the whole figure: 4 methods + the 2 marker fills
     from matplotlib.lines import Line2D
     ink = hv_style.INK
-    meth = [Line2D([], [], color=hv_style.ROLES[r]['color'], lw=lw_,
-                   ls=hv_style.ROLES[r]['ls'], label=lab)
-            for r, lw_, lab in
-            (('baseline_gray', 2.4, 'Sample Score'),
-             ('baseline_pale', 2.4, 'IRT (2PL)'),
-             ('anchor', 3.4, 'qubric + IRT blend'))]
-    reg = [Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,
-                  markerfacecolor=ink, label='adaptive probes'),
-           Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,
-                  markerfacecolor='white', markeredgecolor=ink,
-                  markeredgewidth=1.4, label='random probes')]
-    h2, l2 = axes[2].get_legend_handles_labels()
-    fig.legend(handles=meth, fontsize=SZ['legend'] - 2, handlelength=3.0,
-               loc='upper center', bbox_to_anchor=(0.26, 0.035), ncol=3,
-               columnspacing=1.1, frameon=False)
-    fig.legend(handles=reg, fontsize=SZ['legend'] - 2, handlelength=3.0,
-               loc='upper center', bbox_to_anchor=(0.26, -0.035), ncol=2,
-               columnspacing=1.1, frameon=False)
-    fig.legend(h2, l2, fontsize=SZ['legend'] - 2, handlelength=3.0,
-               loc='upper center', bbox_to_anchor=(0.76, 0.035), ncol=2,
-               columnspacing=1.1, frameon=False)
+    handles = [Line2D([], [], color=hv_style.ROLES[r]['color'], lw=lw_,
+                      ls=hv_style.ROLES[r]['ls'], label=lab)
+               for r, lw_, lab in
+               (('baseline_gray', 2.4, 'Sample Score'),
+                ('baseline_pale', 2.4, 'IRT (2PL)'),
+                ('focus', 2.6, 'qubric geometry'),
+                ('anchor', 3.4, 'qubric + IRT blend'))]
+    handles += [Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,
+                       markerfacecolor=ink, label='adaptive probes'),
+                Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,
+                       markerfacecolor='white', markeredgecolor=ink,
+                       markeredgewidth=1.4, label='random probes')]
+    fig.legend(handles=handles, fontsize=SZ['legend'] - 2,
+               handlelength=2.6, loc='upper center',
+               bbox_to_anchor=(0.5, 0.035), ncol=6,
+               columnspacing=1.0, frameon=False)
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     fig.savefig('figures/fig_cost.png', dpi=200, bbox_inches='tight',
                 pad_inches=0.03)
