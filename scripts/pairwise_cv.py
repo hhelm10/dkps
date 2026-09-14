@@ -27,7 +27,8 @@ from dkps.traces.qubric import consensus_center  # noqa: E402
 MS = (1, 3, 5, 10, 20)
 N_DRAW = 10
 SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
-RIDGE = ((16, 0.1), (16, 1.0), (8, 0.1))
+KS = (3, 5, 7, 10, 15)
+RIDGE = ((8, 0.1), (16, 0.1), (16, 1.0), (32, 0.1))
 ALPH = np.linspace(0, 1, 101)
 WORKERS = 20
 
@@ -54,6 +55,21 @@ def _ctx_work(item):
             for s_ in SIGS:
                 Ds = D_of[(s_, m, di)][np.ix_(sub, sub)]
                 n_ = len(sub)
+                # kNN family (full k grid; shared argsort)
+                Dp = Ds[:P, :P].copy()
+                np.fill_diagonal(Dp, np.inf)
+                Dt = Ds[P:, :P]
+                ord_p = np.argsort(Dp, 1)
+                ord_t = np.argsort(Dt, 1)
+                for k in KS:
+                    nn_p = ord_p[:, :k]
+                    w = 1 / (np.take_along_axis(Dp, nn_p, 1) + 1e-12)
+                    gp = (w * yp[nn_p]).sum(1) / w.sum(1)
+                    nn_t = ord_t[:, :k]
+                    wt = 1 / (np.take_along_axis(Dt, nn_t, 1) + 1e-12)
+                    gt = (wt * yp[nn_t]).sum(1) / wt.sum(1)
+                    cand[(s_, 'k', k)] = (np.abs(gp - yp).mean(), gp, gt)
+                # ridge family (shared eigh)
                 J = np.eye(n_, dtype=np.float32) - np.float32(1 / n_)
                 Bmm = -0.5 * J @ (Ds ** 2) @ J
                 ew, ev = np.linalg.eigh(Bmm)
@@ -71,8 +87,8 @@ def _ctx_work(item):
                     loo = yp - (yp - pr) / np.maximum(1 - h, 1e-6)
                     gp = np.clip(loo, 0, 1)
                     gt = np.clip(Zt @ beta + yp.mean(), 0, 1)
-                    cand[(s_, r_dim, alpha)] = (np.abs(gp - yp).mean(),
-                                                gp, gt)
+                    cand[(s_, 'r', r_dim, alpha)] = \
+                        (np.abs(gp - yp).mean(), gp, gt)
             _, gp, gt = min(cand.values(), key=lambda v: v[0])
             a = ALPH[int(np.argmin([np.abs(al * irt_p + (1 - al) * gp
                                            - yp).mean()
@@ -83,6 +99,11 @@ def _ctx_work(item):
                                         + (1 - a) * gt)):
                 out[m].setdefault(k, np.zeros(len(tgts)))
                 out[m][k] = out[m][k] + v / len(draws[m])
+            # every fixed config, for the oracle analysis
+            cfg = out[m].setdefault('_cfg', {})
+            for ck, (_, _, gt_c) in cand.items():
+                cfg.setdefault(ck, np.zeros(len(tgts)))
+                cfg[ck] = cfg[ck] + gt_c / len(draws[m])
     return excl, tgts, out
 
 
@@ -194,6 +215,7 @@ def run(bench):
         den = dict.fromkeys(num, 0)
         num_all = dict(num)
         den_all = dict(num)
+        cfg_num, cfg_den = {}, {}
         for excl, (tgts, out) in ctx_pred.items():
             gs = list(excl)
             if len(gs) == 2:
@@ -215,10 +237,23 @@ def run(bench):
                     if gap >= 0.05:
                         num[k] += ok
                         den[k] += 1
+                if gap >= 0.05:
+                    for ck, gt_c in out[m]['_cfg'].items():
+                        ok = int(np.sign(gt_c[a] - gt_c[b]) == td)
+                        cfg_num[ck] = cfg_num.get(ck, 0) + ok
+                        cfg_den[ck] = cfg_den.get(ck, 0) + 1
+        cfg_acc = {'|'.join(map(str, ck)): round(cfg_num[ck]
+                                                 / cfg_den[ck], 4)
+                   for ck in cfg_num}
+        best_ck = max(cfg_acc, key=cfg_acc.get)
         res[m] = {'gap05': {k: round(num[k] / den[k], 4) for k in num},
                   'all': {k: round(num_all[k] / den_all[k], 4)
-                          for k in num}}
-        print(bench, m, res[m]['gap05'], flush=True)
+                          for k in num},
+                  'configs': cfg_acc,
+                  'oracle': {'config': best_ck,
+                             'acc': cfg_acc[best_ck]}}
+        print(bench, m, res[m]['gap05'], 'oracle',
+              res[m]['oracle'], flush=True)
     return res
 
 
