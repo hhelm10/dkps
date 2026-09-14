@@ -63,7 +63,7 @@ def main():
     for idx, (short, name) in enumerate(EMB):
         r_, c_ = divmod(idx, 4)
         x0 = .035 + c_ * .245 + (.1225 if r_ == 1 else 0)
-        ax = fig.add_axes([x0, .55 - r_ * .47, .19, .38],
+        ax = fig.add_axes([x0, .56 - r_ * .52, .19, .37],
                           projection='polar')
         ax.set_rorigin(-0.35)
         ax.set_ylim(0, 1.0)
@@ -96,7 +96,7 @@ def main():
         Line2D([], [], color=GEN['color'], lw=2.6,
                label='generic rubric'),
         Line2D([], [], color=QUB['color'], lw=3.2, label='qubric')],
-        loc='lower center', bbox_to_anchor=(0.5, -0.01), ncol=3,
+        loc='lower center', bbox_to_anchor=(0.5, -0.045), ncol=3,
         frameon=False, fontsize=hv_style.SIZES['legend'],
         handlelength=3.2, columnspacing=2.0)
     fig.savefig('figures/radar_all.png', dpi=200, facecolor='white',
