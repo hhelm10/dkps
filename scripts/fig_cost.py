@@ -50,22 +50,25 @@ def main():
         cost = np.array(MS) * COST_RUN
         full_cost = full_runs * COST_RUN
 
-        # in this figure line style encodes the probe regime:
-        # dashed = random probes, solid = adaptive probes
+        # line style = house method rule (dashed score-only, solid
+        # embeddings); marker fill = probe regime (filled adaptive,
+        # open random) -- consistent across all four panels
         curves = [
-            (rand, 'sample', 'baseline_gray', '--'),
-            (adap, 'sample', 'baseline_gray', '-'),
-            (rand, 'irt', 'baseline_pale', '--'),
-            (adap, 'irt', 'baseline_pale', '-'),
-            (rand, 'blend', 'anchor', '--'),
-            (adap, 'blend', 'anchor', '-'),
+            (rand, 'sample', 'baseline_gray', False),
+            (adap, 'sample', 'baseline_gray', True),
+            (rand, 'irt', 'baseline_pale', False),
+            (adap, 'irt', 'baseline_pale', True),
+            (rand, 'blend', 'anchor', False),
+            (adap, 'blend', 'anchor', True),
         ]
-        for src, key, role, ls in curves:
+        for src, key, role, filled in curves:
             st = hv_style.ROLES[role]
-            lw = 3.4 if role == 'anchor' and ls == '-' else 2.4
+            lw = 3.4 if role == 'anchor' and filled else 2.4
             mae, sem = series(src, key)
-            ax.plot(cost, mae, color=st['color'], ls=ls, lw=lw,
-                    marker='o', ms=4,
+            ax.plot(cost, mae, color=st['color'], ls=st['ls'], lw=lw,
+                    marker='o', ms=6.5,
+                    markerfacecolor=st['color'] if filled else 'white',
+                    markeredgecolor=st['color'], markeredgewidth=1.4,
                     zorder=4 if role == 'anchor' else 3)
             ax.fill_between(cost, mae - sem, mae + sem, color=st['color'],
                             alpha=.13, lw=0, zorder=2)
@@ -102,9 +105,11 @@ def main():
         for key, label, role in PW_SERIES:
             st = hv_style.ROLES[role]
             acc = [pw[bkey][str(m)]['gap05'][key] for m in MS]
-            ax.plot(cost, acc, color=st['color'], ls='--',
-                    lw=st.get('lw', 2.6), marker='o', ms=4, label=label,
-                    zorder=4 if role == 'anchor' else 3)
+            ax.plot(cost, acc, color=st['color'], ls=st['ls'],
+                    lw=st.get('lw', 2.6), marker='o', ms=6.5,
+                    markerfacecolor='white',
+                    markeredgecolor=st['color'], markeredgewidth=1.4,
+                    label=label, zorder=4 if role == 'anchor' else 3)
         ax.axhline(0.5, color=hv_style.REFLINE, ls=':', lw=1.1, zorder=1)
         ax.text(cost[-1], .505, 'chance', ha='right', va='bottom',
                 fontsize=SZ['annot'] - 1, color=hv_style.INK_MUTE)
@@ -126,12 +131,16 @@ def main():
     from matplotlib.lines import Line2D
     ink = hv_style.INK
     meth = [Line2D([], [], color=hv_style.ROLES[r]['color'], lw=lw_,
-                   label=lab) for r, lw_, lab in
+                   ls=hv_style.ROLES[r]['ls'], label=lab)
+            for r, lw_, lab in
             (('baseline_gray', 2.4, 'Sample Score'),
              ('baseline_pale', 2.4, 'IRT (2PL)'),
              ('anchor', 3.4, 'qubric + IRT blend'))]
-    reg = [Line2D([], [], color=ink, lw=2.4, ls='-', label='adaptive probes'),
-           Line2D([], [], color=ink, lw=2.4, ls='--', label='random probes')]
+    reg = [Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,
+                  markerfacecolor=ink, label='adaptive probes'),
+           Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,
+                  markerfacecolor='white', markeredgecolor=ink,
+                  markeredgewidth=1.4, label='random probes')]
     h2, l2 = axes[2].get_legend_handles_labels()
     fig.legend(handles=meth, fontsize=SZ['legend'] - 2, handlelength=3.0,
                loc='upper center', bbox_to_anchor=(0.26, 0.035), ncol=3,
