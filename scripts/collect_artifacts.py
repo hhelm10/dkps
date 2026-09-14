@@ -19,5 +19,6 @@ MANIFEST = {
 }
 
 for src, dst in MANIFEST.items():
-    shutil.copy2(src, dst)
+    # copyfile, not copy2: a fresh mtime so the sync time is visible
+    shutil.copyfile(src, dst)
     print(f'{src} -> {dst}')
