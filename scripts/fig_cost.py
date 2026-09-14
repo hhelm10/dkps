@@ -72,11 +72,15 @@ def main():
                     zorder=4 if role == 'anchor' else 3)
             ax.fill_betweenx(cost, mae - sem, mae + sem,
                              color=st['color'], alpha=.13, lw=0, zorder=2)
-        ax.axhline(full_cost, color=hv_style.REFLINE, ls='--', lw=1.2,
-                   zorder=1)
-        ax.text(.243, full_cost * .8,
+        # full benchmark = exact scores (MAE 0) at full cost: a star,
+        # not a reference line
+        ax.plot([0], [full_cost], marker='*', ms=22, ls='none',
+                markerfacecolor='#f59e0b',
+                markeredgecolor=hv_style.INK_TITLE, markeredgewidth=1.1,
+                zorder=5, clip_on=False)
+        ax.text(.012, full_cost,
                 f'full benchmark \\${full_cost:,.0f}',
-                ha='right', va='top', fontsize=SZ['annot'],
+                ha='left', va='center', fontsize=SZ['annot'],
                 color=hv_style.INK_MUTE)
         ax.set_yscale('log')
         ax.set_yticks([2, 10, 40, 200, 1000])
