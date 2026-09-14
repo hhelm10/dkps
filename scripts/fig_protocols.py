@@ -447,7 +447,7 @@ def main_render(src=OUT_JSON, dst=OUT_PNG):
     tb = None
     if os.path.exists('figures/tb2_protocols.json'):
         tb = json.load(open('figures/tb2_protocols.json'))
-    fig, axes = plt.subplots(2, 3, figsize=(13, 7.6), sharex=True,
+    fig, axes = plt.subplots(2, 3, figsize=(13, 6.6), sharex=True,
                              sharey='row')
 
     def draw_row(r, data):

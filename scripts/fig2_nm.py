@@ -93,7 +93,7 @@ def main():
     norm = matplotlib.colors.TwoSlopeNorm(vcenter=float(y.mean()),
                                           vmin=float(y.min()),
                                           vmax=float(y.max()))
-    fig, axes = plt.subplots(2, 3, figsize=(9.4, 5.7))
+    fig, axes = plt.subplots(2, 3, figsize=(13, 6.4))
     fig.subplots_adjust(left=.085, right=.90, top=.80, bottom=.06,
                         wspace=.06, hspace=.10)
     # row references: qubric's full configuration anchors the figure; the

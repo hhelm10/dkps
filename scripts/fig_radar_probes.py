@@ -59,7 +59,7 @@ def main():
         return out
 
     ang = np.linspace(0, 2 * np.pi, len(SPOKES), endpoint=False)
-    fig = plt.figure(figsize=(14.8, 7.6))
+    fig = plt.figure(figsize=(14.8, 7.0))
     for idx, (short, name) in enumerate(EMB):
         r_, c_ = divmod(idx, 4)
         x0 = .035 + c_ * .245 + (.1225 if r_ == 1 else 0)

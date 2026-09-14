@@ -43,7 +43,7 @@ def series(by_m, key):
 
 def main():
     SZ = hv_style.SIZES
-    fig, axes = plt.subplots(1, 4, figsize=(22, 4.9))
+    fig, axes = plt.subplots(1, 4, figsize=(14.2, 3.7))
     for ax, (title, rand_f, adap_f, full_runs) in zip(axes[:2], PANELS):
         rand = json.load(open(rand_f))['protocols']['family']['by_m']
         adap = json.load(open(adap_f))['by_m']
@@ -122,7 +122,7 @@ def main():
         ax.set_xlim(.45, 1.0)
         ax.set_title(f'{title}\n(ranking, random probes)',
                      fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
-        ax.set_xlabel('pairwise accuracy (true gap $\\geq 0.05$)',
+        ax.set_xlabel('pairwise acc.\n(gap $\\geq 0.05$)',
                       fontsize=SZ['subtitle'] - 1)
         ax.tick_params(labelsize=SZ['tick'])
     axes[2].set_ylabel('cost per system (\\$2/run)',
