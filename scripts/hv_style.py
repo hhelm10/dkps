@@ -13,11 +13,12 @@ dashed = score-only, solid = uses trace embeddings):
   (violet reserve unassigned so far)
 
 COLOR always encodes the method, with the mapping above, in every
-figure. LINESTYLE encodes at most one attribute per figure: by default
-the method's dashed=score-only / solid=uses-embeddings rule (protocol
-grid, ranking panels); figures that sweep a setting instead use
-solid=primary / dashed=secondary uniformly across methods and say so
-in the legend (cost MAE panels: adaptive/random; sensitivity: n=107/20).
+figure. LINESTYLE follows the method's dashed=score-only /
+solid=uses-embeddings rule everywhere. A second swept factor gets a
+separate channel with its own legend: marker fill (filled=adaptive /
+open=random probes, cost figure) or, where markers are unavailable,
+figure-wide solid=primary / dashed=secondary declared in the legend
+(sensitivity: n=107 / n=20). Orthogonal factors -> separate legends.
 """
 import matplotlib as mpl
 
