@@ -1,16 +1,14 @@
-"""Leave-two-out pairwise ranking with the PAPER estimator (per HH: the
-lite fixed-kernel run made qubric geometry look weak; this adds the same
-per-draw pooled CV as the MAE evals).
+"""Leave-two-out pairwise ranking, matched to the paper MAE pipeline
+(per HH 2026-09-14): consensus centering (global, as in fig_protocols /
+tb2_eval), full paper sigma grid, ridge-on-MDS only (no kNN, per HH),
+three ridge configs, per-draw pooled CV from LOO-honest pool errors,
+alpha on the 101-point grid.
 
-Per pool context (both systems' LLM/family groups excluded) and probe
-draw: candidates = sigma in {2,4,8} x {kNN-5, ridge(16,0.1) LOO-honest},
-selected by pool reference error; blend alpha fit on pool with the
-selected store. Overwrites figures/pairwise_cost.json (same schema; the
-fig_cost renderer is unchanged).
-
-Contexts are independent -> parallelized over a fork Pool (the serial
-run was ~60-90 s/context x 1463 contexts). Launch with
-OPENBLAS_NUM_THREADS=2; the pool provides the outer parallelism.
+Fast path: with global centering the M x M PKPS distance matrix per
+(sigma, m, draw) is context-independent -> precomputed once in the
+parent and shared with fork workers. Per context the work is just a
+2PL fit + submatrix MDS/ridge per candidate. Overwrites
+figures/pairwise_cost.json (same schema; fig_cost.py unchanged).
 """
 import json
 import os
@@ -28,97 +26,53 @@ from dkps.traces.qubric import consensus_center  # noqa: E402
 
 MS = (1, 3, 5, 10, 20)
 N_DRAW = 10
-SIGS = (2, 4, 8)
-ALPH = np.linspace(0, 1, 21)
-WORKERS = 12
+SIGS = (1, 2, 4, 8, 16, 32, 64, 128, 256)
+RIDGE = ((16, 0.1), (16, 1.0), (8, 0.1))
+ALPH = np.linspace(0, 1, 101)
+WORKERS = 20
 
 G = {}  # read-only worker state, inherited via fork
 
 
 def _ctx_work(item):
     excl, tgts = item
-    M, X, B, y = G['M'], G['X'], G['B'], G['y']
-    tag, KQs, draws = G['tag'], G['KQs'], G['draws']
+    M, B, y, tag = G['M'], G['B'], G['y'], G['tag']
+    D_of, draws = G['D_of'], G['draws']
     pool = np.array([i for i in range(M) if tag[i] not in excl])
     P = len(pool)
-    med_p = np.median(X[pool], axis=0, keepdims=True)
-    Zc = X - med_p
-    Zc = (Zc / np.maximum(np.linalg.norm(Zc, axis=-1, keepdims=True),
-                          1e-9)).astype(np.float32)
-    im = ItemModel(B[pool], y[pool], 10.0)
-    Ws = {s_: np.einsum('qp,jpd->jqd', KQs[s_], Zc[pool],
-                        optimize=True) for s_ in SIGS}
-    Arrs = {s_: np.einsum('jqd,jqd->j', Zc[pool], Ws[s_]) / KQs[s_].sum()
-            for s_ in SIGS}
-    out = {m: {} for m in MS}
+    sub = np.concatenate([pool, tgts])
     yp = y[pool]
+    im = ItemModel(B[pool], yp, 10.0)
+    out = {m: {} for m in MS}
     for m in MS:
-        for cols in draws[m]:
+        for di, cols in enumerate(draws[m]):
             irt_t = np.array([im.predict(cols, B[t, cols])
                               for t in tgts])
             irt_p = np.array([im.predict(cols, B[p, cols])
                               for p in pool])
             cand = {}
             for s_ in SIGS:
-                KQ = KQs[s_]
-                Wp = Ws[s_][:, cols].reshape(P, -1)
-                Xi_t = Zc[tgts][:, cols].reshape(len(tgts), -1)
-                Xi_p = Zc[pool][:, cols].reshape(P, -1)
-                At = (Xi_t @ Wp.T) / KQ[cols].sum()
-                Ap = (Xi_p @ Wp.T) / KQ[cols].sum()
-                KQc = KQ[np.ix_(cols, cols)]
-                Wc = np.einsum('qp,jpd->jqd', KQc, Zc[pool][:, cols],
-                               optimize=True)
-                App = np.einsum('jqd,jqd->j', Zc[pool][:, cols], Wc) \
-                    / KQc.sum()
-                Wct = np.einsum('qp,jpd->jqd', KQc, Zc[tgts][:, cols],
-                                optimize=True)
-                Att = np.einsum('jqd,jqd->j', Zc[tgts][:, cols], Wct) \
-                    / KQc.sum()
-                Arr = Arrs[s_]
-                Dt = np.sqrt(np.maximum(
-                    Att[:, None] + Arr[None] - 2 * At, 0))
-                Dp = np.sqrt(np.maximum(
-                    App[:, None] + Arr[None] - 2 * Ap, 0))
-                # kNN-5
-                Dp2 = Dp.copy()
-                np.fill_diagonal(Dp2, np.inf)
-                nn_p = np.argsort(Dp2, 1)[:, :5]
-                w = 1 / (np.take_along_axis(Dp2, nn_p, 1) + 1e-12)
-                gp = (w * yp[nn_p]).sum(1) / w.sum(1)
-                nn_t = np.argsort(Dt, 1)[:, :5]
-                wt = 1 / (np.take_along_axis(Dt, nn_t, 1) + 1e-12)
-                gt = (wt * yp[nn_t]).sum(1) / wt.sum(1)
-                cand[(s_, 'knn')] = (np.abs(gp - yp).mean(), gp, gt)
-                # ridge on pooled MDS coords (targets in MDS, not fit)
-                Dall = np.zeros((P + len(tgts), P + len(tgts)),
-                                np.float32)
-                Dall[:P, :P] = Dp
-                Dall[P:, :P] = Dt
-                Dall[:P, P:] = Dt.T
-                Dtt = np.sqrt(np.maximum(
-                    Att[:, None] + Att[None]
-                    - 2 * ((Xi_t @ Wct.reshape(len(tgts), -1).T)
-                           / KQc.sum()), 0))
-                Dall[P:, P:] = Dtt
-                n_ = P + len(tgts)
-                J = np.eye(n_) - 1 / n_
-                Bmm = -0.5 * J @ (Dall ** 2) @ J
+                Ds = D_of[(s_, m, di)][np.ix_(sub, sub)]
+                n_ = len(sub)
+                J = np.eye(n_, dtype=np.float32) - np.float32(1 / n_)
+                Bmm = -0.5 * J @ (Ds ** 2) @ J
                 ew, ev = np.linalg.eigh(Bmm)
-                order = np.argsort(ew)[::-1][:16]
-                Zm = ev[:, order] * np.sqrt(np.maximum(ew[order],
-                                                       1e-12))
-                Zr, Zt = Zm[:P], Zm[P:]
-                Gm = Zr.T @ Zr + 0.1 * np.eye(16)
-                Gi = np.linalg.inv(Gm)
-                beta = Gi @ (Zr.T @ (yp - yp.mean()))
-                h = np.einsum('jr,rs,js->j', Zr, Gi, Zr)
-                pr = Zr @ beta + yp.mean()
-                loo = yp - (yp - pr) / np.maximum(1 - h, 1e-6)
-                gp_r = np.clip(loo, 0, 1)
-                gt_r = np.clip(Zt @ beta + yp.mean(), 0, 1)
-                cand[(s_, 'ridge')] = (np.abs(gp_r - yp).mean(),
-                                       gp_r, gt_r)
+                order = np.argsort(ew)[::-1]
+                for r_dim, alpha in RIDGE:
+                    o = order[:r_dim]
+                    Z = ev[:, o] * np.sqrt(np.maximum(ew[o], 1e-12))
+                    Zr, Zt = Z[:P], Z[P:]
+                    Gm = Zr.T @ Zr + alpha * np.eye(r_dim,
+                                                    dtype=np.float32)
+                    Gi = np.linalg.inv(Gm)
+                    beta = Gi @ (Zr.T @ (yp - yp.mean()))
+                    h = np.einsum('jr,rs,js->j', Zr, Gi, Zr)
+                    pr = Zr @ beta + yp.mean()
+                    loo = yp - (yp - pr) / np.maximum(1 - h, 1e-6)
+                    gp = np.clip(loo, 0, 1)
+                    gt = np.clip(Zt @ beta + yp.mean(), 0, 1)
+                    cand[(s_, r_dim, alpha)] = (np.abs(gp - yp).mean(),
+                                                gp, gt)
             _, gp, gt = min(cand.values(), key=lambda v: v[0])
             a = ALPH[int(np.argmin([np.abs(al * irt_p + (1 - al) * gp
                                            - yp).mean()
@@ -142,7 +96,9 @@ def run(bench):
                           labels[s].get('metadata_yaml', ''), re.M)
             tags.append(m.group(1).strip() if m else f'__solo__{s}')
         M, Q = B.shape
-        X = np.load('data/judge/q100_emb_openai_small.npz')['X'] \
+        X = consensus_center(
+            np.load('data/judge/q100_emb_openai_small.npz')['X'],
+            np.tile(np.arange(Q), M)) \
             .reshape(M, Q, -1).astype(np.float32)
         z = np.load('data/leaderboard/query_vecs_64.npz', allow_pickle=True)
         ids = [str(x) for x in z['ids']]
@@ -187,13 +143,33 @@ def run(bench):
     tag = np.array(tags)
     groups = sorted(set(tags))
     gidx = {g: np.where(tag == g)[0] for g in groups}
+    M = len(tag)
+    Q = B.shape[1]
     D2q = ((V[:, None] - V[None]) ** 2).sum(-1)
     med = np.median(D2q)
-    KQs = {s_: np.exp(-D2q / (2 * med / s_)).astype(np.float32)
-           for s_ in SIGS}
     rng = np.random.default_rng(0)
     draws = {m: [rng.choice(Q, m, replace=False) for _ in range(N_DRAW)]
              for m in MS}
+
+    # global-centering fast path: PKPS distances are context-independent
+    D_of = {}
+    for s_ in SIGS:
+        KQ = np.exp(-D2q / (2 * med / s_)).astype(np.float32)
+        W = np.einsum('qp,jpd->jqd', KQ, X, optimize=True)
+        Arr = np.einsum('jqd,jqd->j', X, W) / KQ.sum()
+        for m in MS:
+            for di, cols in enumerate(draws[m]):
+                Xi = X[:, cols].reshape(M, -1)
+                A_tr = (Xi @ W[:, cols].reshape(M, -1).T) / KQ[cols].sum()
+                KQc = KQ[np.ix_(cols, cols)]
+                Wc = np.einsum('qp,jpd->jqd', KQc, X[:, cols],
+                               optimize=True)
+                Att = np.einsum('jqd,jqd->j', X[:, cols], Wc) / KQc.sum()
+                D_of[(s_, m, di)] = np.sqrt(np.maximum(
+                    Att[:, None] + Arr[None] - 2 * A_tr, 0)) \
+                    .astype(np.float32)
+    print(bench, 'distance matrices ready', flush=True)
+
     contexts = {}
     for ga, gb in combinations(groups, 2):
         contexts[frozenset((ga, gb))] = np.concatenate([gidx[ga], gidx[gb]])
@@ -202,14 +178,14 @@ def run(bench):
             contexts[frozenset((g,))] = gidx[g]
     print(bench, len(contexts), 'contexts', flush=True)
 
-    G.update(M=M, X=X, B=B, y=y, tag=tag, KQs=KQs, draws=draws)
+    G.update(M=M, B=B, y=y, tag=tag, D_of=D_of, draws=draws)
     items = list(contexts.items())
     ctx_pred = {}
     with get_context('fork').Pool(WORKERS) as pool_:
         for ci, (excl, tgts, out) in enumerate(
-                pool_.imap_unordered(_ctx_work, items, chunksize=1)):
+                pool_.imap_unordered(_ctx_work, items, chunksize=4)):
             ctx_pred[excl] = (tgts, out)
-            if ci % 25 == 0:
+            if ci % 100 == 0:
                 print(bench, f'ctx {ci}/{len(items)}', flush=True)
 
     res = {}
