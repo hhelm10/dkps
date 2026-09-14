@@ -122,7 +122,7 @@ def main():
         ax.set_xlim(.45, 1.0)
         ax.set_title(title, fontsize=SZ['label'],
                      color=hv_style.INK_TITLE)
-        ax.set_xlabel('pairwise acc.\n(gap $\\geq 0.05$)',
+        ax.set_xlabel('pairwise accuracy',
                       fontsize=SZ['subtitle'] - 1)
         ax.tick_params(labelsize=SZ['tick'])
     axes[2].set_ylabel('cost per system (\\$2/run)',
