@@ -78,15 +78,15 @@ def main():
                 markerfacecolor='#f59e0b',
                 markeredgecolor=hv_style.INK_TITLE, markeredgewidth=1.1,
                 zorder=5, clip_on=False)
-        ax.text(.012, full_cost,
-                f'full benchmark \\${full_cost:,.0f}',
+        ax.text(.014, full_cost,
+                f'full benchmark\n(~\\${full_cost:,.0f})',
                 ha='left', va='center', fontsize=SZ['annot'],
                 color=hv_style.INK_MUTE)
         ax.set_yscale('log')
         ax.set_yticks([2, 10, 40, 200, 1000])
         ax.set_yticklabels(['\\$2', '\\$10', '\\$40', '\\$200', '\\$1,000'])
         ax.set_ylim(1.5, max(full_cost * 1.6, 1500))
-        ax.set_xlim(0, .25)
+        ax.set_xlim(-0.014, .25)
         ax.set_xticks([0, .1, .2])
         ax.set_title(title, fontsize=SZ['label'], color=hv_style.INK_TITLE)
         ax.set_xlabel('MAE$(\\hat{y}, y)$', fontsize=SZ['subtitle'])
