@@ -130,7 +130,7 @@ def main():
                 ax.set_xlabel('PKPS 1', fontsize=SZ['tick'], labelpad=2)
         axes[r, 0].set_ylabel('PKPS 2', fontsize=SZ['tick'], labelpad=2)
     for r, rname in enumerate(('raw', 'qubric')):
-        fig.text(.022, .62 - .385 * r, rname, rotation=90,
+        fig.text(.048, .62 - .385 * r, rname, rotation=90,
                  fontsize=SZ['label'], color=hv_style.INK,
                  va='center', ha='center')
     cb = fig.colorbar(sc, ax=axes, shrink=.85, pad=.025, aspect=28)
