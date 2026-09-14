@@ -510,9 +510,9 @@ def main_render(src=OUT_JSON, dst=OUT_PNG):
                           fontsize=SZ['label'])
     handles, labels_ = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels_, fontsize=SZ['legend'], handlelength=3.2,
-               loc='lower center', bbox_to_anchor=(0.5, -0.015), ncol=5,
+               loc='upper center', bbox_to_anchor=(0.5, 0.02), ncol=5,
                columnspacing=1.4)
-    fig.tight_layout(rect=(0, 0.05, 1, 1))
+    fig.tight_layout(rect=(0, 0.02, 1, 1))
     fig.savefig(dst, dpi=200, bbox_inches='tight', pad_inches=0.02)
     print(f'wrote {dst}')
 

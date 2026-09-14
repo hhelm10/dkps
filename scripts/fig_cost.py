@@ -91,7 +91,7 @@ def main():
         ax.set_title(title, fontsize=SZ['label'], color=hv_style.INK_TITLE)
         ax.set_xlabel('MAE$(\\hat{y}, y)$', fontsize=SZ['subtitle'])
         ax.tick_params(labelsize=SZ['tick'])
-    axes[0].set_ylabel('evaluation cost per new system\n(\\$2/agent-run)',
+    axes[0].set_ylabel('cost per new system\n(\\$2/agent-run)',
                        fontsize=SZ['subtitle'])
     axes[1].set_yticklabels([])
 
@@ -146,9 +146,9 @@ def main():
                        markeredgewidth=1.4, label='random probes')]
     fig.legend(handles=handles, fontsize=SZ['legend'] - 2,
                handlelength=2.6, loc='upper center',
-               bbox_to_anchor=(0.5, 0.035), ncol=6,
+               bbox_to_anchor=(0.5, 0.02), ncol=6,
                columnspacing=1.0, frameon=False)
-    fig.tight_layout(rect=(0, 0.05, 1, 1))
+    fig.tight_layout(rect=(0, 0.02, 1, 1))
     fig.savefig('figures/fig_cost.png', dpi=200, bbox_inches='tight',
                 pad_inches=0.03)
     print('wrote figures/fig_cost.png')
