@@ -258,6 +258,8 @@ def render(results):
                    frameon=False, columnspacing=1.6)
     fig.tight_layout()
     fig.savefig(OUT_PNG, dpi=200, bbox_inches='tight', pad_inches=0.03)
+    fig.savefig(OUT_PNG.replace('.png', '.pdf'), bbox_inches='tight',
+                pad_inches=0.03)
     print('wrote', OUT_PNG)
 
 

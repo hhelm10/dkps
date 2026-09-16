@@ -152,14 +152,14 @@ def build_png(t):
     n_data_rows = len(ROWS)
     fig, ax = plt.subplots(figsize=(14.2, 0.66 * (n_data_rows + 3) + 0.3))
     ax.axis('off')
-    LAB_W = .19
+    LAB_W = .21
     col_w = (1 - LAB_W) / 12
     xs = [LAB_W + col_w * j for j in range(13)]     # 12 data col edges
     n_rows = n_data_rows + 3                        # 2 header rows + m row
     row_h = 1 / (n_rows + 0.05)
     ys = [1 - row_h * r for r in range(n_rows + 1)]  # row top edges
 
-    def cell(cx, cy, s, weight='normal', color=hv_style.INK, size=13.5,
+    def cell(cx, cy, s, weight='normal', color=hv_style.INK, size=14.9,
              ha='center'):
         ax.text(cx, cy, s, weight=weight, color=color, fontsize=size,
                 ha=ha, va='center', transform=ax.transAxes)
@@ -177,18 +177,18 @@ def build_png(t):
 
     # header text
     cell((xs[0] + xs[6]) / 2, (ys[0] + ys[1]) / 2, 'SWE-bench Verified',
-         'bold', hv_style.INK_TITLE, 14.5)
+         'bold', hv_style.INK_TITLE, 16.0)
     cell((xs[6] + xs[12]) / 2, (ys[0] + ys[1]) / 2, 'Terminal-Bench 2.0',
-         'bold', hv_style.INK_TITLE, 14.5)
+         'bold', hv_style.INK_TITLE, 16.0)
     for j0, lab in ((0, 'random'), (3, 'adaptive'), (6, 'random'),
                     (9, 'adaptive')):
         cell((xs[j0] + xs[j0 + 3]) / 2, (ys[1] + ys[2]) / 2, lab,
-             color=hv_style.INK_MUTE, size=13.5)
+             color=hv_style.INK_MUTE, size=14.9)
     cell(.008, (ys[2] + ys[3]) / 2, 'method  /  $m$ =', 'bold',
-         hv_style.INK_MUTE, 13, ha='left')
+         hv_style.INK_MUTE, 14.3, ha='left')
     for j in range(12):
         cell((xs[j] + xs[j + 1]) / 2, (ys[2] + ys[3]) / 2, str(MS[j % 3]),
-             color=hv_style.INK_MUTE, size=13.5)
+             color=hv_style.INK_MUTE, size=14.9)
 
     # data cells
     for r, (key, label) in enumerate(ROWS):
@@ -196,7 +196,7 @@ def build_png(t):
         is_anchor = key == 'blend'
         cell(.008, cy, label, 'bold' if is_anchor else 'normal',
              hv_style.ROLES['anchor']['color'] if is_anchor else hv_style.INK,
-             12.5, ha='left')
+             13.8, ha='left')
         j = 0
         for b, _ in BENCH:
             for reg in ('random', 'adaptive'):
@@ -209,7 +209,7 @@ def build_png(t):
                     col = (hv_style.ROLES['anchor']['color'] if isbest
                            else hv_style.INK)
                     cell((xs[j] + xs[j + 1]) / 2, cy, s,
-                         'bold' if isbest else 'normal', col, 13.5)
+                         'bold' if isbest else 'normal', col, 14.9)
                     if sig.get(key):
                         cxm = (xs[j] + xs[j + 1]) / 2
                         ax.plot([cxm - .0235, cxm + .0235],
@@ -240,8 +240,9 @@ def build_png(t):
                 lw=1.2 if major else (1.0 if block else .6),
                 transform=ax.transAxes, clip_on=False, zorder=3)
 
-    fig.savefig('figures/hero_table.png', dpi=250, bbox_inches='tight',
-                pad_inches=0.08)
+    for ext in ('png', 'pdf'):
+        fig.savefig(f'figures/hero_table.{ext}', dpi=250,
+                    bbox_inches='tight', pad_inches=0.08)
     print('wrote figures/hero_table.png')
 
 

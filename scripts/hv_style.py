@@ -42,8 +42,8 @@ ROLES = {
     'reserve':       dict(color='#6d5bd0'),
 }
 
-SIZES = dict(suptitle=17.5, panel_letter=16.2, label=15.6, subtitle=13.8,
-             legend=13.8, tick=13.1, annot=11.5)
+SIZES = dict(suptitle=19.3, panel_letter=17.8, label=17.2, subtitle=15.2,
+             legend=15.2, tick=14.4, annot=12.7)
 
 # sequential single-hue ramp in the brand blue (light -> navy)
 CMAP_BLUE = mpl.colors.LinearSegmentedColormap.from_list(

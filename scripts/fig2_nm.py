@@ -137,8 +137,9 @@ def main():
     cb.set_label('benchmark score $y$', fontsize=SZ['tick'])
     cb.ax.tick_params(labelsize=SZ['annot'])
     cb.outline.set_edgecolor(hv_style.SPINE)
-    fig.savefig('figures/fig2_nm.png', dpi=250, bbox_inches='tight',
-                pad_inches=0.02)
+    for ext in ('png', 'pdf'):
+        fig.savefig(f'figures/fig2_nm.{ext}', dpi=250,
+                    bbox_inches='tight', pad_inches=0.02)
     print('wrote figures/fig2_nm.png')
 
 

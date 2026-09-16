@@ -514,6 +514,8 @@ def main_render(src=OUT_JSON, dst=OUT_PNG):
                columnspacing=1.4)
     fig.tight_layout(rect=(0, 0.02, 1, 1))
     fig.savefig(dst, dpi=200, bbox_inches='tight', pad_inches=0.02)
+    fig.savefig(dst.replace('.png', '.pdf'), bbox_inches='tight',
+                pad_inches=0.02)
     print(f'wrote {dst}')
 
 

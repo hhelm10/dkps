@@ -8,15 +8,18 @@ artifacts/ stays the single uncrowded source of truth for the paper.
 import shutil
 
 MANIFEST = {
-    'figures/hero_table.png': 'artifacts/table1_hero.png',
     'figures/hero_table.md': 'artifacts/table1_hero.md',
     'notes/tables_hero.tex': 'artifacts/table1_hero.tex',
-    'figures/radar_all.png': 'artifacts/fig1_radar.png',
-    'figures/fig2_nm.png': 'artifacts/fig2_pkps.png',
-    'figures/fig2_protocols.png': 'artifacts/fig3_protocols.png',
-    'figures/fig_cost.png': 'artifacts/fig4_cost.png',
-    'figures/fig_sensitivity_paper.png': 'artifacts/fig5_sensitivity.png',
 }
+for src, dst in (
+        ('figures/hero_table', 'artifacts/table1_hero'),
+        ('figures/radar_all', 'artifacts/fig1_radar'),
+        ('figures/fig2_nm', 'artifacts/fig2_pkps'),
+        ('figures/fig2_protocols', 'artifacts/fig3_protocols'),
+        ('figures/fig_cost', 'artifacts/fig4_cost'),
+        ('figures/fig_sensitivity_paper', 'artifacts/fig5_sensitivity')):
+    for ext in ('.png', '.pdf'):
+        MANIFEST[src + ext] = dst + ext
 
 for src, dst in MANIFEST.items():
     # copyfile, not copy2: a fresh mtime so the sync time is visible

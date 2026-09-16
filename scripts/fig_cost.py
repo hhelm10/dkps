@@ -149,8 +149,9 @@ def main():
                bbox_to_anchor=(0.5, 0.02), ncol=6,
                columnspacing=1.0, frameon=False)
     fig.tight_layout(rect=(0, 0.02, 1, 1))
-    fig.savefig('figures/fig_cost.png', dpi=200, bbox_inches='tight',
-                pad_inches=0.03)
+    for ext in ('png', 'pdf'):
+        fig.savefig(f'figures/fig_cost.{ext}', dpi=200,
+                    bbox_inches='tight', pad_inches=0.03)
     print('wrote figures/fig_cost.png')
 
 

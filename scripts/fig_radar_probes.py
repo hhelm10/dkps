@@ -99,8 +99,10 @@ def main():
         loc='lower center', bbox_to_anchor=(0.5, -0.045), ncol=3,
         frameon=False, fontsize=hv_style.SIZES['legend'],
         handlelength=3.2, columnspacing=2.0)
-    fig.savefig('figures/radar_all.png', dpi=200, facecolor='white',
-                bbox_inches='tight', pad_inches=0.05)
+    for ext in ('png', 'pdf'):
+        fig.savefig(f'figures/radar_all.{ext}', dpi=200,
+                    facecolor='white', bbox_inches='tight',
+                    pad_inches=0.05)
     print('wrote figures/radar_all.png (linear-probe metric)')
 
 
