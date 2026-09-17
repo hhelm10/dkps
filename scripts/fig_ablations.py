@@ -199,7 +199,8 @@ def stage_nsweep(out):
     res = out.setdefault('nsweepA', {})
     for n in NS:
         rn = res.setdefault(str(n), {})
-        todo = [m for m in MS_A if str(m) not in rn]
+        todo = [m for m in MS_A if str(m) not in rn
+                or 'blend' not in rn[str(m)]]
         if not todo:
             print(f'A n={n}: cached', flush=True)
             continue
@@ -207,14 +208,18 @@ def stage_nsweep(out):
         models = [ItemModel(B[allow_n[i]], y[allow_n[i]], 10.0)
                   for i in range(M)]
         for m in todo:
-            acc = {k: np.zeros(M) for k in ('irt', 'geom')}
+            acc = {k: np.zeros(M) for k in ('irt', 'geom', 'blend')}
             for cols in draws[m]:
+                cols_of = {i: cols for i in range(M)}
                 irt_t = np.array([models[i].predict(cols, B[i, cols])
                                   for i in range(M)])
                 store = geom_store(X, kern, y, allow_n, cols)
+                a = pooled_alpha(models, B, y, allow_n, cols_of, store)
                 geo_t = np.array([store[i][i] for i in range(M)])
                 acc['irt'] += np.abs(irt_t - y) / B_DRAWS
                 acc['geom'] += np.abs(geo_t - y) / B_DRAWS
+                acc['blend'] += np.abs(a * irt_t + (1 - a) * geo_t
+                                       - y) / B_DRAWS
             rn[str(m)] = {k: summarize(v, M) for k, v in acc.items()}
             json.dump(out, open(OUT_JSON, 'w'), indent=1)
             print(f'A n={n} m={m}:',
@@ -234,10 +239,14 @@ def stage_regime20(out):
               for i in range(M)]
 
     res = out.setdefault('regime20', {})
+    if 'random' in res and 'geom' not in res['random']['1']:
+        del res['random']
+    if 'adaptive' in res and 'geom' not in res['adaptive']['1']:
+        del res['adaptive']
     if 'random' not in res:
         rr = {}
         for m in MS:
-            acc = {k: np.zeros(M) for k in ('irt', 'blend')}
+            acc = {k: np.zeros(M) for k in ('irt', 'geom', 'blend')}
             for cols in draws[m]:
                 cols_of = {i: cols for i in range(M)}
                 irt_t = np.array([models[i].predict(cols, B[i, cols])
@@ -246,6 +255,7 @@ def stage_regime20(out):
                 a = pooled_alpha(models, B, y, allow_n, cols_of, store)
                 geo_t = np.array([store[i][i] for i in range(M)])
                 acc['irt'] += np.abs(irt_t - y) / B_DRAWS
+                acc['geom'] += np.abs(geo_t - y) / B_DRAWS
                 acc['blend'] += np.abs(a * irt_t + (1 - a) * geo_t
                                        - y) / B_DRAWS
             rr[str(m)] = {k: summarize(v, M) for k, v in acc.items()}
@@ -265,6 +275,7 @@ def stage_regime20(out):
             a = pooled_alpha(models, B, y, allow_n, cols_of, store)
             geo_t = np.array([store[i][i] for i in range(M)])
             e = {'irt': np.abs(irt_t - y),
+                 'geom': np.abs(geo_t - y),
                  'blend': np.abs(a * irt_t + (1 - a) * geo_t - y)}
             ra[str(m)] = {k: summarize(v, M) for k, v in e.items()}
             print(f'B adap20 m={m}:',
@@ -327,7 +338,8 @@ def render(out):
     # panel A: reference-library size; m as weight/alpha gradient
     ax = axes[0]
     ns = [int(n) for n in NS]
-    for key, role in (('irt', 'baseline_pale'), ('geom', 'focus')):
+    for key, role in (('irt', 'baseline_pale'), ('geom', 'focus'),
+                      ('blend', 'anchor')):
         st = hv_style.ROLES[role]
         for m in MS_A:
             mae = np.array([out['nsweepA'][str(n)][str(m)][key]['mae']
@@ -356,23 +368,21 @@ def render(out):
     srcs = {('random', 107): rand107, ('adaptive', 107): adap107,
             ('random', 20): out['regime20']['random'],
             ('adaptive', 20): out['regime20']['adaptive']}
+    st = hv_style.ROLES['focus']
     for (regime, n), src in srcs.items():
-        for key, role in (('irt', 'baseline_pale'), ('blend', 'anchor')):
-            st = hv_style.ROLES[role]
-            mae = np.array([src[str(m)][key]['mae'] for m in MS])
-            filled = regime == 'adaptive'
-            ax.plot(MS, mae, color=st['color'],
-                    ls='-' if n == 107 else '--',
-                    lw=st.get('lw', 2.6) if n == 107 else 2.0,
-                    marker='o', ms=6,
-                    markerfacecolor=st['color'] if filled else 'white',
-                    markeredgecolor=st['color'], markeredgewidth=1.3)
+        mae = np.array([src[str(m)]['geom']['mae'] for m in MS])
+        filled = regime == 'adaptive'
+        ax.plot(MS, mae, color=st['color'],
+                ls='-' if n == 107 else '--',
+                lw=2.6 if n == 107 else 2.0, marker='o', ms=6,
+                markerfacecolor=st['color'] if filled else 'white',
+                markeredgecolor=st['color'], markeredgewidth=1.3)
     ax.set_xscale('log')
     ax.set_xticks(MS)
     ax.set_xticklabels(MS)
     ax.set_xlabel('number of tasks $m$', fontsize=SZ['subtitle'])
-    ax.set_title('probe selection', fontsize=SZ['subtitle'],
-                 color=hv_style.INK_TITLE)
+    ax.set_title('probe selection (qubric geometry)',
+                 fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
 
     # panel C: embedding model; style = n
     ax = axes[2]
