@@ -290,19 +290,24 @@ def render(out):
     # panel C: embedding model (qubric geometry only)
     ax = axes[2]
     shades = hv_style.CMAP_BLUE(np.linspace(.35, 1.0, len(EMB)))
+    SHORT = {'openai': 'text-emb-3-small', 'nomic': 'nomic-v1.5',
+             'bge': 'bge-large', 'gte': 'gte-large', 'e5': 'e5-large',
+             'mpnet': 'mpnet-base', 'minilm': 'MiniLM-L6'}
     for (short, nice, _, _), col in zip(EMB, shades):
         r = out['embedders'][short]
         mae = np.array([r[str(m)]['mae'] for m in MS])
         lw = 3.0 if short == 'openai' else 1.8
-        ax.plot(MS, mae, color=col, lw=lw, marker='o', ms=4, label=nice)
+        ax.plot(MS, mae, color=col, lw=lw, marker='o', ms=4,
+                label=SHORT[short])
     ax.set_xscale('log')
     ax.set_xticks(MS)
     ax.set_xticklabels(MS)
     ax.set_xlabel('number of tasks $m$', fontsize=SZ['subtitle'])
     ax.set_title('embedding model (qubric geometry)',
                  fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
-    ax.legend(fontsize=SZ['annot'] - 1, ncol=1, frameon=False,
-              handlelength=1.8, labelspacing=.3, loc='upper right')
+    ax.legend(fontsize=SZ['annot'] - 2, ncol=2, frameon=False,
+              handlelength=1.4, labelspacing=.25, columnspacing=.8,
+              loc='lower left', bbox_to_anchor=(0.02, 0.02))
 
     for ax in axes:
         ax.tick_params(labelsize=SZ['tick'])

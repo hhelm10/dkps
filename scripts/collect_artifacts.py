@@ -16,8 +16,9 @@ for src, dst in (
         ('figures/radar_all', 'artifacts/fig1_radar'),
         ('figures/fig2_nm', 'artifacts/fig2_pkps'),
         ('figures/fig2_protocols', 'artifacts/fig3_protocols'),
-        ('figures/fig_cost', 'artifacts/fig4_cost'),
-        ('figures/fig_sensitivity_paper', 'artifacts/fig5_sensitivity')):
+        ('figures/fig_ablations', 'artifacts/fig4_ablations'),
+        ('figures/fig_cost', 'artifacts/fig5_cost'),
+        ('figures/fig_sensitivity_paper', 'artifacts/fig6_sensitivity')):
     for ext in ('.png', '.pdf'):
         MANIFEST[src + ext] = dst + ext
 
