@@ -381,8 +381,8 @@ def render(out):
     ax.set_xticks(MS)
     ax.set_xticklabels(MS)
     ax.set_xlabel('number of tasks $m$', fontsize=SZ['subtitle'])
-    ax.set_title('probe selection (qubric geometry)',
-                 fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
+    ax.set_title('task selection', fontsize=SZ['subtitle'],
+                 color=hv_style.INK_TITLE)
 
     # panel C: embedding model; style = n
     ax = axes[2]
@@ -400,8 +400,8 @@ def render(out):
     ax.set_xticks(MS)
     ax.set_xticklabels(MS)
     ax.set_xlabel('number of tasks $m$', fontsize=SZ['subtitle'])
-    ax.set_title('embedding model (qubric geometry)',
-                 fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
+    ax.set_title('embedding model', fontsize=SZ['subtitle'],
+                 color=hv_style.INK_TITLE)
     ax.legend(fontsize=SZ['annot'] - 2, ncol=2, frameon=False,
               handlelength=1.4, labelspacing=.25, columnspacing=.8,
               loc='lower left', bbox_to_anchor=(0.02, 0.02))
