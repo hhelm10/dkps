@@ -351,8 +351,8 @@ def render(out):
     ax.set_xticklabels(ns)
     ax.set_xlabel('number of reference systems $n$',
                   fontsize=SZ['subtitle'])
-    ax.set_title('reference-library size', fontsize=SZ['subtitle'],
-                 color=hv_style.INK_TITLE)
+    ax.set_title('Number of reference systems',
+                 fontsize=SZ['subtitle'], color=hv_style.INK_TITLE)
     ax.set_ylabel('MAE$(\\hat{y}, y)$', fontsize=SZ['subtitle'])
     ax.legend(handles=[Line2D([], [], color=ink, label=f'$m={m}$',
                               **M_STYLE[m]) for m in MS_A],
@@ -381,7 +381,7 @@ def render(out):
     ax.set_xticks(MS)
     ax.set_xticklabels(MS)
     ax.set_xlabel('number of tasks $m$', fontsize=SZ['subtitle'])
-    ax.set_title('task selection', fontsize=SZ['subtitle'],
+    ax.set_title('Task selection', fontsize=SZ['subtitle'],
                  color=hv_style.INK_TITLE)
 
     # panel C: embedding model; style = n
@@ -400,7 +400,7 @@ def render(out):
     ax.set_xticks(MS)
     ax.set_xticklabels(MS)
     ax.set_xlabel('number of tasks $m$', fontsize=SZ['subtitle'])
-    ax.set_title('embedding model', fontsize=SZ['subtitle'],
+    ax.set_title('Embedding model', fontsize=SZ['subtitle'],
                  color=hv_style.INK_TITLE)
     ax.legend(fontsize=SZ['annot'] - 2, ncol=2, frameon=False,
               handlelength=1.4, labelspacing=.25, columnspacing=.8,
