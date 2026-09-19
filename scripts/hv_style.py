@@ -32,7 +32,7 @@ WASH = '#eef2f7'
 REFLINE = '#94a3b8'
 
 ROLES = {
-    'baseline_gray': dict(color='#9ca3af', ls='--', lw=2.6),
+    'baseline_gray': dict(color='#6b7280', ls='--', lw=2.6),
     'baseline_pale': dict(color='#afbec6', ls='--', lw=2.6),
     'comparator':    dict(color='#93aacc', ls='-', lw=2.6),
     'slate':         dict(color='#486884', ls='--', lw=2.6),
