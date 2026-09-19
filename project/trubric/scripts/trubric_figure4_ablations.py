@@ -414,9 +414,9 @@ def render(out):
     meth = [Line2D([], [], color=hv_style.ROLES[r]['color'],
                    ls=hv_style.ROLES[r]['ls'],
                    lw=hv_style.ROLES[r].get('lw', 2.6), label=lab)
-            for r, lab in (('baseline_pale', 'IRT (2PL)'),
-                           ('focus', 'trubric geometry'),
-                           ('anchor', 'trubric + IRT blend'))]
+            for r, lab in (('baseline_pale', 'IRT'),
+                           ('focus', 'trubric'),
+                           ('anchor', 'IRT + trubric'))]
     reg = [Line2D([], [], color=ink, lw=0, marker='o', ms=6,
                   markerfacecolor=ink, label='adaptive probes'),
            Line2D([], [], color=ink, lw=0, marker='o', ms=6,

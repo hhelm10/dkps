@@ -96,9 +96,9 @@ def main():
     from matplotlib.lines import Line2D
     fig.legend(handles=[
         Line2D([], [], color=RAW['color'], lw=2.2,
-               label='raw trace embedding'),
+               label='raw trace'),
         Line2D([], [], color=GEN['color'], lw=2.6,
-               label='generic rubric'),
+               label='generic'),
         Line2D([], [], color=QUB['color'], lw=3.2, label='trubric')],
         loc='lower center', bbox_to_anchor=(0.5, -0.045), ncol=3,
         frameon=False, fontsize=hv_style.SIZES['legend'],

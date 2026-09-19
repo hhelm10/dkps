@@ -99,10 +99,10 @@ def main():
 
     # panels 3-4: pairwise decision accuracy (leave-two-out shared pools)
     pw = json.load(open('project/trubric/data/pairwise_cost.json'))
-    PW_SERIES = [('sample', 'Sample Score', 'baseline_gray'),
-                 ('irt', 'IRT (2PL)', 'baseline_pale'),
-                 ('geom', 'trubric geometry', 'focus'),
-                 ('blend', 'trubric + IRT blend', 'anchor')]
+    PW_SERIES = [('sample', 'sample score', 'baseline_gray'),
+                 ('irt', 'IRT', 'baseline_pale'),
+                 ('geom', 'trubric', 'focus'),
+                 ('blend', 'IRT + trubric', 'anchor')]
     for ax, (bkey, (title, _, _, full_runs)) in zip(
             axes[2:], zip(('swe', 'tb2'), PANELS)):
         cost = np.array(MS) * COST_RUN
@@ -137,10 +137,10 @@ def main():
     handles = [Line2D([], [], color=hv_style.ROLES[r]['color'], lw=lw_,
                       ls=hv_style.ROLES[r]['ls'], label=lab)
                for r, lw_, lab in
-               (('baseline_gray', 2.4, 'Sample Score'),
-                ('baseline_pale', 2.4, 'IRT (2PL)'),
-                ('focus', 2.6, 'trubric geometry'),
-                ('anchor', 3.4, 'trubric + IRT blend'))]
+               (('baseline_gray', 2.4, 'sample score'),
+                ('baseline_pale', 2.4, 'IRT'),
+                ('focus', 2.6, 'trubric'),
+                ('anchor', 3.4, 'IRT + trubric'))]
     handles += [Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,
                        markerfacecolor=ink, label='adaptive probes'),
                 Line2D([], [], color=ink, lw=0, marker='o', ms=6.5,

@@ -236,7 +236,7 @@ def render(results):
     ink = hv_style.INK
     legs = (
         (.17, [Line2D([], [], color=hv_style.ROLES['generic']
-                          ['color'], lw=2.8, label='generic rubric'),
+                          ['color'], lw=2.8, label='generic'),
                    Line2D([], [], color=hv_style.ROLES['focus']['color'],
                           lw=2.8, label='trubric')]),
         (.50, [Line2D([], [], color=ink, lw=2.8, marker='o', ms=4,

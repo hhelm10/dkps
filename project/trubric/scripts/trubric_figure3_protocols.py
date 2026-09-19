@@ -422,11 +422,11 @@ COLS = [('system', 'Leave-one-system-out'),
         ('harness', 'Leave-one-harness-out')]
 # Helivan Blues roles; dashed = score-only, solid = uses trace embeddings
 import hv_style  # noqa: E402
-SERIES = [('sample', 'Sample Score', 'baseline_gray'),
-          ('irt', 'IRT (2PL)', 'baseline_pale'),
-          ('raw', 'raw-trace geometry', 'comparator'),
-          ('geom', 'trubric geometry', 'focus'),
-          ('blend', 'trubric + IRT blend', 'anchor')]
+SERIES = [('sample', 'sample score', 'baseline_gray'),
+          ('irt', 'IRT', 'baseline_pale'),
+          ('raw', 'raw trace', 'comparator'),
+          ('geom', 'trubric', 'focus'),
+          ('blend', 'IRT + trubric', 'anchor')]
 
 
 def main_render(src=OUT_JSON, name='trubric_figure3_protocols'):

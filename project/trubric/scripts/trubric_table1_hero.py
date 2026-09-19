@@ -21,12 +21,12 @@ import numpy as np
 
 
 MS = (1, 5, 20)
-ROWS = [('sample', 'Sample Score'),
-        ('raw', 'raw-trace geometry'),
-        ('irt', 'IRT (2PL)'),
-        ('generic', 'generic geometry'),
-        ('geom', 'trubric geometry'),
-        ('blend', 'trubric + IRT blend')]
+ROWS = [('sample', 'sample score'),
+        ('raw', 'raw trace'),
+        ('irt', 'IRT'),
+        ('generic', 'generic'),
+        ('geom', 'trubric'),
+        ('blend', 'IRT + trubric')]
 SRC = {
     ('swe', 'random'): ('project/trubric/data/q100_protocols.json', 'family'),
     ('swe', 'adaptive'): ('project/trubric/data/q100_adaptive_family.json', None),

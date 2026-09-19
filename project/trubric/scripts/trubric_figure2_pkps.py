@@ -126,7 +126,7 @@ def main():
             if r == 1:
                 ax.set_xlabel('PKPS 1', fontsize=SZ['tick'], labelpad=2)
         axes[r, 0].set_ylabel('PKPS 2', fontsize=SZ['tick'], labelpad=2)
-    for r, rname in enumerate(('raw', 'trubric')):
+    for r, rname in enumerate(('raw trace', 'trubric')):
         fig.text(.048, .62 - .385 * r, rname, rotation=90,
                  fontsize=SZ['label'], color=hv_style.INK,
                  va='center', ha='center')
