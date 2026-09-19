@@ -1,36 +1,26 @@
+"""Figure 3: protocol-robustness MAE grid.
+
+Rows = {SWE-bench Verified, Terminal-Bench 2.0}; columns = reference-
+exclusion protocols {leave-one-system-out, leave-one-FAMILY-out
+(canonical), leave-one-harness-out}. Series: sample score, IRT (2PL),
+raw-trace geometry, trubric geometry, trubric + IRT blend; B=50 shared
+random draws, per-draw pooled CV, +/-1 SEM bands.
+
+Stages: compute | raw | render | adaptive (SWE compute writes
+project/trubric/data/q100_protocols.json; the TB2 row comes from
+scripts/tb2_eval.py). Default `all` runs compute+raw+render.
+"""
 import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
 
-"""Figure 2: protocol-robustness grid (per HH 2026-09-08).
-
-Row 1 = SWE-bench Verified (q100 era); row 2 = Terminal-Bench (to be run;
-rendered as placeholders). Columns = reference-exclusion protocols:
-  col 1  leave-one-system-out   (only the target itself excluded;
-                                 same-LLM and same-harness siblings allowed)
-  col 2  leave-one-LLM-out      (canonical: references sharing the target's
-                                 underlying LLM excluded)
-  col 3  leave-one-harness-out  (references sharing the target's scaffold
-                                 excluded; same-LLM allowed)
-
-Each panel: MAE vs probe budget m under random probes (B=20 shared draws
-across protocols) for population mean, sample score, 2PL IRT, trubric PKPS
-geometry, and trubric + IRT blend. Kernel (sigma, k) and blend alpha are
-pooled-selected per protocol per draw from honest reference errors, exactly
-as in q100_loho.py / q100_final_table.py.
-
-Stages: compute -> project/trubric/data/q100_protocols.json; render -> figures/fig2_protocols.png.
-Usage: python scripts/fig_protocols.py [compute|render|all]
-"""
 import json
 import os
 import sys
 
 import numpy as np
 
-sys.path.insert(0, '.')
-sys.path.insert(0, 'scripts')
 from outcome_baselines import ItemModel, load_panel  # noqa: E402
 from pillars import harness_tag, vendor_tag  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
@@ -41,7 +31,6 @@ ALPHAS = np.linspace(0, 1, 101)
 MS = (1, 3, 5, 10, 20)
 B_DRAWS = 50
 OUT_JSON = 'project/trubric/data/q100_protocols.json'
-OUT_PNG = 'figures/fig2_protocols.png'
 
 
 def build_masks(systems, allowed_llm):

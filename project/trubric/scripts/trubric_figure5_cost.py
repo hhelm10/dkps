@@ -1,21 +1,19 @@
+"""Figure 5: cost-to-achieve, 1 x 4.
+
+Panels 1-2: evaluation cost per new system (log y, $2/agent-run nominal)
+vs MAE for {sample, IRT, trubric+IRT blend}; marker fill = probe regime;
+gold star = full benchmark (exact scores at full cost). Panels 3-4:
+cost vs leave-two-out pairwise accuracy (true gap >= 0.05) for {sample,
+IRT, trubric geometry, blend}, random probes.
+
+Render-only: reads the protocol/adaptive/pairwise caches in
+project/trubric/data/.
+"""
 import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
 
-"""Artifact 6a: cost vs error, two panels (SWE-bench Verified,
-Terminal-Bench 2.0), random and adaptive on the same axes.
-
-X: dollars to evaluate one new system at a nominal $2/agent-run (HAL
-aggregate $1.84/rollout; published range ~$0.13-4), log scale, with the
-full-benchmark cost as a reference line. Y: MAE (+/- 1 SEM bands).
-Curves: Sample Score (random), adaptive IRT (score-only frontier),
-blend random (focus), blend adaptive (anchor). Protocol:
-leave-one-family-out.
-
-Reads figures/{q100,tb2}_protocols.json + {q100,tb2}_adaptive_family.json.
-Writes figures/fig_cost.png.
-"""
 import json
 import sys
 
@@ -23,7 +21,6 @@ import matplotlib
 matplotlib.use('Agg')
 import numpy as np
 
-sys.path.insert(0, 'scripts')
 import hv_style
 hv_style.apply()
 import matplotlib.pyplot as plt

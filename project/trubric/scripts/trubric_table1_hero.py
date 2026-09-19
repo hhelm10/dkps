@@ -1,25 +1,24 @@
+"""Table 1: hero MAE table.
+
+Rows: sample score, raw-trace geometry, IRT (2PL), generic geometry,
+trubric geometry, trubric + IRT blend. Columns: {SWE-bench Verified,
+Terminal-Bench 2.0} x {random, adaptive} x m in {1,5,20}, leave-one-
+family-out. Bold = column best; underline = significantly better than
+IRT (paired bootstrap on stored per-system errors, p<0.05).
+
+Render-only (reads project/trubric/data/); writes png+pdf, markdown,
+and a self-contained LaTeX table/tabular environment.
+"""
 import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
 
-"""Hero table (artifact 1, per HH: without the additional baselines).
-
-Rows: raw-trace geometry, IRT (2PL), trubric geometry, trubric+IRT blend.
-Columns: {SWE-bench Verified, Terminal-Bench 2.0} x {random, adaptive}
-x m in {1, 5, 20}. Protocol: leave-one-family-out. Random = B=50 shared
-draws; adaptive = per-target simulated CAT. Bold = best per column;
-dagger on blend where the paired blend-IRT 95% CI excludes zero.
-
-Reads figures/{q100,tb2}_protocols.json + {q100,tb2}_adaptive_family.json.
-Writes figures/hero_table.md, notes/tables_hero.tex, figures/hero_table.png.
-"""
 import json
 import sys
 
 import numpy as np
 
-sys.path.insert(0, 'scripts')
 
 MS = (1, 5, 20)
 ROWS = [('sample', 'Sample Score'),

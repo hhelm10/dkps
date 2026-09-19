@@ -1,30 +1,23 @@
+"""Figure 6: rubric field-count sensitivity under the real pipeline.
+
+Bank of 32 fields, r in {1..32}, <=200 seeded subsets per r (additive
+Gram terms make the sweep tractable); m in {1,5,20} panels; reference
+libraries n=107 (solid) and n=20 (dashed); mean over subsets (thick)
+and best subset (thin), +/-1 SEM.
+
+`main()` recomputes project/trubric/data/rubric_sens_paper.json from
+the bank-32 embedding caches (hours); `render(json)` is cheap.
+"""
 import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
 
-"""Field-count sensitivity under the REAL paper pipeline (per HH: the
-3-NN sweep made generic look >= trubric; the paper stack is where they
-differ, so the figure must use it).
-
-Pipeline: leave-one-FAMILY-out, consensus centering, PKPS kernel over
-q20 qvecs, per-draw pooled CV over sigma x {kNN-k5, ridge(16,0.1) with
-LOO-honest refs}. Additivity of the kernel Gram terms over fields makes
-the subset sweep tractable: per-(field, sigma, draw) M x M terms are
-precomputed once; a subset's distance matrix is a slice-sum.
-
-Scope: bank 32, r in {1,2,4,6,8,12,16,24,32}, <=200 subsets per r
-(first 200 of the frozen manifest masks; shared across arms),
-m in {1, 5, 20} (20 singletons / 30 draws / full panel).
-Writes project/trubric/data/rubric_sens_paper.json + figures/fig_sensitivity_paper.png.
-"""
 import json
 import sys
 
 import numpy as np
 
-sys.path.insert(0, '.')
-sys.path.insert(0, 'scripts')
 from rubric16 import bank, panel  # noqa: E402
 from pillars import vendor_tag  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
@@ -37,7 +30,6 @@ NS = (107, 20)          # reference-library sizes; 20 = seeded subsample
 N_SUB = 200
 SIGS = (2, 4, 8)
 OUT_JSON = 'project/trubric/data/rubric_sens_paper.json'
-OUT_PNG = 'figures/fig_sensitivity_paper.png'
 
 
 def main():

@@ -10,7 +10,7 @@ CAT paths (identical family-out 2PL fits as adaptive_family).
 Appends 'generic' (mae/ci/sem + errs) into:
   project/trubric/data/q100_protocols.json          protocols.family.by_m[m]
   project/trubric/data/tb2_protocols.json           protocols.family.by_m[m]
-  figures/{q100,tb2}_adaptive_family.json   by_m[m]
+  project/trubric/data/{q100,tb2}_adaptive_family.json   by_m[m]
 
 Usage: python scripts/generic_eval.py swe|tb2
 """

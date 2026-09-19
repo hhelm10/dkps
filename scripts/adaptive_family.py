@@ -7,7 +7,7 @@ and raw), pooled alpha blend. Deterministic (no draws); bootstrap CIs
 over systems; paired blend-IRT deltas.
 
 Usage: python scripts/adaptive_family.py swe|tb2
-Writes figures/{q100,tb2}_adaptive_family.json.
+Writes project/trubric/data/{q100,tb2}_adaptive_family.json.
 """
 import json
 import os

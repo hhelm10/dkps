@@ -1,27 +1,24 @@
+"""Figure 4: ablations under the FIXED canonical protocol
+(leave-one-family-out, SWE-bench Verified).
+
+  panel A  Number of reference systems: x = n in {10,20,40,70,107};
+           IRT / trubric geometry / blend; m in {1,5,20} as a
+           line-weight/alpha gradient
+  panel B  Task selection: trubric geometry vs m; filled = adaptive,
+           open = random; solid n=107, dashed n=20
+  panel C  Embedding model: trubric geometry vs m for 7 text encoders;
+           solid n=107, dashed n=20
+
+Estimator stack identical to figure 3; shared rng(0) draw stream;
+n-subsets nested (seeded rng(11)).
+
+Stages: nsweep | regime20 | embedders | render (default `all`).
+"""
 import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
 
-"""Ablations under the FIXED canonical protocol (leave-one-family-out,
-SWE-bench Verified) — figure 4, rev 2 (per HH 2026-09-17):
-
-  panel A  reference-library size: x = n in {10,20,40,70,107};
-           IRT + trubric geometry only (no blend); m in {1,5,20} as a
-           line-weight/alpha gradient per method
-  panel B  probe selection: x = m; IRT + blend; filled = adaptive,
-           open = random; solid n=107, dashed n=20
-  panel C  embedding model: x = m; trubric geometry per encoder;
-           solid n=107, dashed n=20
-
-Estimator stack identical to fig_protocols: consensus centering, PKPS
-kernel, per-draw pooled CV over sigma x ({kNN 3,5} u ridge-on-MDS
-LOO-honest), pooled alpha blend, shared rng(0) draw stream. n-subsets
-are nested (seeded rng(11) permutation).
-
-Stages: python scripts/fig_ablations.py nsweep|regime20|embedders|render|all
-Writes project/trubric/data/ablations.json + figures/fig_ablations.{png,pdf}.
-"""
 import json
 import os
 import sys
@@ -29,8 +26,6 @@ from multiprocessing import get_context
 
 import numpy as np
 
-sys.path.insert(0, '.')
-sys.path.insert(0, 'scripts')
 from outcome_baselines import ItemModel, load_panel  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
 

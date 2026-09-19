@@ -1,19 +1,19 @@
+"""Figure 1: linear-probe radars.
+
+Spokes are held-out balanced accuracy of class-balanced linear ridge
+probes (experiments/linear_probes), chance-normalized so desirable is
+OUTSIDE: content spokes (Correctness, Task) plot (acc-chance)/(1-chance);
+authorship spokes (Harness, Model Family, System Identity) plot the
+complement. 7 embedder panels x {raw, generic, trubric}.
+
+Reads project/trubric/data/radar_probes{,_gen}.json (probe-runner
+output schema). Render-only.
+"""
 import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
 
-"""Radars on the collaborator's linear-probe metric (adopted per HH
-2026-09-11): spokes are held-out balanced accuracy of a class-balanced
-linear ridge probe (experiments/linear_probes), normalized
-desirable-OUTSIDE. Content spokes (Task, Correctness) plot
-(acc - chance)/(1 - chance); authorship spokes (Identity, Model Family,
-Harness) plot 1 - (acc - chance)/(1 - chance), so chance sits at the rim.
-Dashed ring = chance on every spoke. 7 embedder panels, raw vs trubric.
-
-Reads project/trubric/data/radar_probes.json (their runner's output schema).
-Writes figures/radar_all.png.
-"""
 import json
 import sys
 
@@ -22,7 +22,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-sys.path.insert(0, 'scripts')
 import hv_style
 hv_style.apply()
 

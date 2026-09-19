@@ -1,31 +1,23 @@
+"""Figure 2: system-level PKPS geometry, raw vs trubric, as (n, m) grows.
+
+2 x 3 grid colored by full-benchmark score y (helivan_div):
+  row 1  raw trace embeddings (median-centered + L2)
+  row 2  trubric embeddings (consensus-centered)
+  cols   (n=20, m=3), (n=20, m=100), (n=107, m=100), nested seeded subsets
+
+Each panel: classical MDS of the PKPS distance matrix (sigma^2=med/4),
+Procrustes-aligned within row to the full-panel configuration; LOSO MAE
+badge top-left. Computes from the q100 embedding caches (~1 min).
+"""
 import os as _os
 import sys as _sys
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
 
-"""Figure 2 (per HH 2026-09-09, rev 2): system-level embeddings, raw vs
-trubric, as (n, m) grows.
-
-  2 x 3 grid, colored by full-benchmark score y:
-    row 1  raw trace embeddings (median-centered + L2)
-    row 2  trubric embeddings (consensus-centered + L2)
-    col 1  small n, small m   (n=25,  m=3)
-    col 2  small n, large m   (n=25,  m=100)
-    col 3  large n, large m   (n=107, m=100)
-
-Each panel: classical MDS of the PKPS distance matrix over the m tasks
-for the n systems (sigma^2 = med/4). Within a row, panels are Procrustes-
-aligned to that row's full (107, 100) configuration restricted to the
-panel's systems. System/task subsets are nested and seeded.
-
-Writes figures/fig2_nm.png.
-"""
 import sys
 
 import numpy as np
 
-sys.path.insert(0, '.')
-sys.path.insert(0, 'scripts')
 from outcome_baselines import load_panel  # noqa: E402
 from dkps.traces.qubric import consensus_center  # noqa: E402
 
