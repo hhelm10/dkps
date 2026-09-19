@@ -47,7 +47,7 @@ def load_swe():
     V = np.asarray(z['vecs'], np.float32)[[ids.index(q) for q in q100]]
     ks = (3, 5)
     return y, B, allowed, Xq, Xr.astype(np.float32), V, ks, \
-        'figures/q100_adaptive_family.json'
+        'project/trubric/data/q100_adaptive_family.json'
 
 
 def load_tb2():
@@ -92,7 +92,7 @@ def load_tb2():
     V = np.asarray(z['vecs'], np.float32)[[ids.index(t) for t in tasks]]
     ks = (3, 5, 7, 10, 15)
     return y, B, allowed, Xq, Xr.astype(np.float32), V, ks, \
-        'figures/tb2_adaptive_family.json'
+        'project/trubric/data/tb2_adaptive_family.json'
 
 
 def main(bench):

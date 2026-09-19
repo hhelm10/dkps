@@ -8,8 +8,8 @@ dashed = score-only, solid = uses trace embeddings):
   IRT (2PL)           -> baseline_pale
   raw-trace geometry  -> comparator
   generic geometry    -> generic (slate blue, solid: uses embeddings)
-  qubric geometry     -> focus
-  qubric + IRT blend  -> anchor
+  trubric geometry    -> focus
+  trubric + IRT blend -> anchor
   (violet reserve unassigned so far)
 
 COLOR always encodes the method, with the mapping above, in every

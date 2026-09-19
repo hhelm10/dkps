@@ -8,7 +8,7 @@ Fast path: with global centering the M x M PKPS distance matrix per
 (sigma, m, draw) is context-independent -> precomputed once in the
 parent and shared with fork workers. Per context the work is just a
 2PL fit + submatrix MDS/ridge per candidate. Overwrites
-figures/pairwise_cost.json (same schema; fig_cost.py unchanged).
+project/trubric/data/pairwise_cost.json (same schema; fig_cost.py unchanged).
 """
 import json
 import os
@@ -259,5 +259,5 @@ def run(bench):
 
 if __name__ == '__main__':
     out = {b: run(b) for b in ('swe', 'tb2')}
-    json.dump(out, open('figures/pairwise_cost.json', 'w'), indent=1)
-    print('wrote figures/pairwise_cost.json')
+    json.dump(out, open('project/trubric/data/pairwise_cost.json', 'w'), indent=1)
+    print('wrote project/trubric/data/pairwise_cost.json')

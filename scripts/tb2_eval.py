@@ -6,7 +6,7 @@ y = official all-trials mean; B = the judged replicate's binary reward
 (fallback: rounded panel mean where the chosen trial lacked a result).
 Series: sample, IRT (2PL), raw-trace geometry, qubric geometry, qubric +
 IRT blend -- pooled (sigma, k, alpha) per draw from honest reference
-errors, bootstrap CIs. Writes figures/tb2_protocols.json (same schema as
+errors, bootstrap CIs. Writes project/trubric/data/tb2_protocols.json (same schema as
 q100_protocols.json).
 """
 import json
@@ -29,7 +29,7 @@ B_DRAWS = 50
 DROP = {'Droid__GPT-5.3-Codex', 'Droid__Claude-Opus-4.6',
         'just-another-coding-agent__GLM-5'}
 MIN_COV = 0.9
-OUT = 'figures/tb2_protocols.json'
+OUT = 'project/trubric/data/tb2_protocols.json'
 
 
 def main():

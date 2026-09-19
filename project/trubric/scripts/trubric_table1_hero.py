@@ -1,0 +1,261 @@
+import os as _os
+import sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from trubric_common import DATA, ART, save_artifact, save_text_artifact  # noqa
+
+"""Hero table (artifact 1, per HH: without the additional baselines).
+
+Rows: raw-trace geometry, IRT (2PL), trubric geometry, trubric+IRT blend.
+Columns: {SWE-bench Verified, Terminal-Bench 2.0} x {random, adaptive}
+x m in {1, 5, 20}. Protocol: leave-one-family-out. Random = B=50 shared
+draws; adaptive = per-target simulated CAT. Bold = best per column;
+dagger on blend where the paired blend-IRT 95% CI excludes zero.
+
+Reads figures/{q100,tb2}_protocols.json + {q100,tb2}_adaptive_family.json.
+Writes figures/hero_table.md, notes/tables_hero.tex, figures/hero_table.png.
+"""
+import json
+import sys
+
+import numpy as np
+
+sys.path.insert(0, 'scripts')
+
+MS = (1, 5, 20)
+ROWS = [('sample', 'Sample Score'),
+        ('raw', 'raw-trace geometry'),
+        ('irt', 'IRT (2PL)'),
+        ('generic', 'generic geometry'),
+        ('geom', 'trubric geometry'),
+        ('blend', 'trubric + IRT blend')]
+SRC = {
+    ('swe', 'random'): ('project/trubric/data/q100_protocols.json', 'family'),
+    ('swe', 'adaptive'): ('project/trubric/data/q100_adaptive_family.json', None),
+    ('tb2', 'random'): ('project/trubric/data/tb2_protocols.json', 'family'),
+    ('tb2', 'adaptive'): ('project/trubric/data/tb2_adaptive_family.json', None),
+}
+BENCH = [('swe', 'SWE-bench Verified'), ('tb2', 'Terminal-Bench 2.0')]
+
+
+def load_cell(bench, regime):
+    path, proto = SRC[(bench, regime)]
+    d = json.load(open(path))
+    by_m = (d['protocols'][proto]['by_m'] if proto else d['by_m'])
+    return by_m
+
+
+def sig_vs_irt(errs, rng):
+    """{method: True if paired (method - irt) 95% CI upper < 0}."""
+    out = {}
+    e_irt = np.array(errs['irt'])
+    M = len(e_irt)
+    for k in errs:
+        if k == 'irt':
+            out[k] = False
+            continue
+        d = np.array(errs[k]) - e_irt
+        v = np.array([d[rng.integers(0, M, M)].mean() for _ in range(2000)])
+        out[k] = float(np.percentile(v, 97.5)) < 0
+    return out
+
+
+def collect():
+    """-> table[bench][regime][m] = (vals, sig) with sig per method."""
+    rng = np.random.default_rng(1)
+    t = {}
+    for b, _ in BENCH:
+        t[b] = {}
+        for reg in ('random', 'adaptive'):
+            by_m = load_cell(b, reg)
+            t[b][reg] = {}
+            for m in MS:
+                cell = by_m[str(m)]
+                vals = {k: cell[k]['mae'] for k, _ in ROWS if k in cell}
+                sig = sig_vs_irt(cell['errs'], rng) if 'errs' in cell \
+                    else {k: False for k in vals}
+                t[b][reg][m] = (vals, sig)
+    return t
+
+
+def fmt(v, best):
+    s = f'{v:.3f}'
+    return f'**{s}**' if best else s
+
+
+def build_md(t):
+    hdr = ['Method']
+    for b, bl in BENCH:
+        for reg in ('random', 'adaptive'):
+            for m in MS:
+                hdr.append(f'{bl.split()[0]} {reg[:4]}. m={m}')
+    lines = ['| ' + ' | '.join(hdr) + ' |',
+             '|' + '---|' * len(hdr)]
+    for key, label in ROWS:
+        row = [label]
+        for b, _ in BENCH:
+            for reg in ('random', 'adaptive'):
+                for m in MS:
+                    vals, sig = t[b][reg][m]
+                    best = min(vals.values())
+                    s = fmt(vals[key], abs(vals[key] - best) < 5e-4)
+                    if sig.get(key):
+                        s = f'<u>{s}</u>'
+                    row.append(s)
+        lines.append('| ' + ' | '.join(row) + ' |')
+    return '\n'.join(lines)
+
+
+def build_tex(t):
+    out = [r'% requires booktabs + graphicx; bold = column best,',
+           r'% underline = significantly better than IRT (paired, p<.05)',
+           r'\begin{table}[t]',
+           r'\centering',
+           r'\caption{MAE of estimated benchmark scores under '
+           r'leave-one-family-out.}',
+           r'\label{tab:hero}',
+           r'\resizebox{\textwidth}{!}{%',
+           r'\begin{tabular}{l' + 'c' * 12 + '}',
+           r'\toprule',
+           r' & \multicolumn{6}{c}{\textbf{SWE-bench Verified}} & '
+           r'\multicolumn{6}{c}{\textbf{Terminal-Bench 2.0}} \\',
+           r'\cmidrule(lr){2-7} \cmidrule(lr){8-13}',
+           r' & \multicolumn{3}{c}{random} & \multicolumn{3}{c}{adaptive}'
+           r' & \multicolumn{3}{c}{random} & \multicolumn{3}{c}{adaptive} \\',
+           r'\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} '
+           r'\cmidrule(lr){11-13}',
+           r'\textit{Num.\ tasks $m$} & ' + ' & '.join(
+               ['{%d}' % m for m in MS] * 4) + r' \\',
+           r'\midrule']
+    for key, label in ROWS:
+        cells = []
+        for b, _ in BENCH:
+            for reg in ('random', 'adaptive'):
+                for m in MS:
+                    vals, sig = t[b][reg][m]
+                    best = min(vals.values())
+                    v = vals[key]
+                    s = f'{v:.3f}'
+                    if abs(v - best) < 5e-4:
+                        s = r'\bfseries ' + s
+                    if sig.get(key):
+                        s = r'{\underline{' + s + '}}'
+                    cells.append(s)
+        out.append(label.replace('+', '$+$') + ' & '
+                   + ' & '.join(cells) + r' \\')
+    out += [r'\bottomrule', r'\end{tabular}}', r'\end{table}']
+    return '\n'.join(out)
+
+
+def build_png(t):
+    import matplotlib
+    matplotlib.use('Agg')
+    import hv_style
+    hv_style.apply()
+    import matplotlib.patches as mpatches
+    import matplotlib.pyplot as plt
+
+    n_data_rows = len(ROWS)
+    fig, ax = plt.subplots(figsize=(14.2, 0.66 * (n_data_rows + 3) + 0.3))
+    ax.axis('off')
+    LAB_W = .21
+    col_w = (1 - LAB_W) / 12
+    xs = [LAB_W + col_w * j for j in range(13)]     # 12 data col edges
+    n_rows = n_data_rows + 3                        # 2 header rows + m row
+    row_h = 1 / (n_rows + 0.05)
+    ys = [1 - row_h * r for r in range(n_rows + 1)]  # row top edges
+
+    def cell(cx, cy, s, weight='normal', color=hv_style.INK, size=14.9,
+             ha='center'):
+        ax.text(cx, cy, s, weight=weight, color=color, fontsize=size,
+                ha=ha, va='center', transform=ax.transAxes)
+
+    def rect(x0, y0, w, h, fc):
+        ax.add_patch(mpatches.Rectangle((x0, y0), w, h, fc=fc, ec='none',
+                                        transform=ax.transAxes, zorder=0))
+
+    # header wash
+    rect(0, ys[3], 1, ys[0] - ys[3], hv_style.WASH)
+    # zebra stripes on data rows
+    for r in range(n_data_rows):
+        if r % 2 == 1:
+            rect(0, ys[4 + r], 1, row_h, '#f7f9fc')
+
+    # header text
+    cell((xs[0] + xs[6]) / 2, (ys[0] + ys[1]) / 2, 'SWE-bench Verified',
+         'bold', hv_style.INK_TITLE, 16.0)
+    cell((xs[6] + xs[12]) / 2, (ys[0] + ys[1]) / 2, 'Terminal-Bench 2.0',
+         'bold', hv_style.INK_TITLE, 16.0)
+    for j0, lab in ((0, 'random'), (3, 'adaptive'), (6, 'random'),
+                    (9, 'adaptive')):
+        cell((xs[j0] + xs[j0 + 3]) / 2, (ys[1] + ys[2]) / 2, lab,
+             color=hv_style.INK_MUTE, size=14.9)
+    cell(.008, (ys[2] + ys[3]) / 2, 'method  /  $m$ =', 'bold',
+         hv_style.INK_MUTE, 14.3, ha='left')
+    for j in range(12):
+        cell((xs[j] + xs[j + 1]) / 2, (ys[2] + ys[3]) / 2, str(MS[j % 3]),
+             color=hv_style.INK_MUTE, size=14.9)
+
+    # data cells
+    for r, (key, label) in enumerate(ROWS):
+        cy = ys[3 + r] - row_h / 2
+        is_anchor = key == 'blend'
+        cell(.008, cy, label, 'bold' if is_anchor else 'normal',
+             hv_style.ROLES['anchor']['color'] if is_anchor else hv_style.INK,
+             13.8, ha='left')
+        j = 0
+        for b, _ in BENCH:
+            for reg in ('random', 'adaptive'):
+                for m in MS:
+                    vals, sig = t[b][reg][m]
+                    best = min(vals.values())
+                    v = vals[key]
+                    isbest = abs(v - best) < 5e-4
+                    s = f'{v:.3f}'
+                    col = (hv_style.ROLES['anchor']['color'] if isbest
+                           else hv_style.INK)
+                    cell((xs[j] + xs[j + 1]) / 2, cy, s,
+                         'bold' if isbest else 'normal', col, 14.9)
+                    if sig.get(key):
+                        cxm = (xs[j] + xs[j + 1]) / 2
+                        ax.plot([cxm - .0235, cxm + .0235],
+                                [cy - row_h * .30] * 2, color=col, lw=1.6,
+                                transform=ax.transAxes, clip_on=False,
+                                zorder=4)
+                    j += 1
+
+    # rules: horizontal
+    def hline(yy, lw, color):
+        ax.plot([0, 1], [yy, yy], color=color, lw=lw,
+                transform=ax.transAxes, clip_on=False, zorder=3)
+    hline(ys[0], 1.6, hv_style.INK_MUTE)
+    hline(ys[1], .8, hv_style.EDGE)
+    hline(ys[2], .8, hv_style.EDGE)
+    hline(ys[3], 1.2, hv_style.INK_MUTE)
+    for r in range(1, n_data_rows):
+        hline(ys[3 + r], .7, hv_style.EDGE)
+    hline(ys[3 + n_data_rows], 1.6, hv_style.INK_MUTE)
+    # rules: vertical -- light between m columns, heavier between blocks
+    for j in range(13):
+        top = ys[1] if j % 3 == 0 else ys[2]
+        major = j in (0, 6, 12)
+        block = j % 3 == 0
+        ax.plot([xs[j], xs[j]], [ys[3 + n_data_rows], top],
+                color=hv_style.INK_MUTE if major else
+                (hv_style.SPINE if block else hv_style.EDGE),
+                lw=1.2 if major else (1.0 if block else .6),
+                transform=ax.transAxes, clip_on=False, zorder=3)
+
+    save_artifact(fig, 'trubric_table1_hero', dpi=250, pad=0.08)
+
+
+def main():
+    t = collect()
+    md = build_md(t)
+    save_text_artifact('trubric_table1_hero', 'md', md + '\n')
+    save_text_artifact('trubric_table1_hero', 'tex',
+                       build_tex(t) + '\n')
+    build_png(t)
+
+
+if __name__ == '__main__':
+    main()

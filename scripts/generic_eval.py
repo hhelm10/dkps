@@ -8,8 +8,8 @@ consensus centering, PKPS kernel, per-draw pooled CV over sigma x
 CAT paths (identical family-out 2PL fits as adaptive_family).
 
 Appends 'generic' (mae/ci/sem + errs) into:
-  figures/q100_protocols.json          protocols.family.by_m[m]
-  figures/tb2_protocols.json           protocols.family.by_m[m]
+  project/trubric/data/q100_protocols.json          protocols.family.by_m[m]
+  project/trubric/data/tb2_protocols.json           protocols.family.by_m[m]
   figures/{q100,tb2}_adaptive_family.json   by_m[m]
 
 Usage: python scripts/generic_eval.py swe|tb2
@@ -48,7 +48,7 @@ def load_swe():
     ids = [str(x) for x in z['ids']]
     V = np.asarray(z['vecs'], np.float32)[[ids.index(q) for q in q100]]
     return y, B, allowed, Xg, V, (3, 5), \
-        'figures/q100_protocols.json', 'figures/q100_adaptive_family.json'
+        'project/trubric/data/q100_protocols.json', 'project/trubric/data/q100_adaptive_family.json'
 
 
 def load_tb2():
@@ -88,7 +88,7 @@ def load_tb2():
     ids = [str(x) for x in z['ids']]
     V = np.asarray(z['vecs'], np.float32)[[ids.index(t) for t in tasks]]
     return y, B, allowed, Xg, V, (3, 5, 7, 10, 15), \
-        'figures/tb2_protocols.json', 'figures/tb2_adaptive_family.json'
+        'project/trubric/data/tb2_protocols.json', 'project/trubric/data/tb2_adaptive_family.json'
 
 
 def main(bench):
