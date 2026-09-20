@@ -331,7 +331,7 @@ def render(out):
 
     SZ = hv_style.SIZES
     ink = hv_style.INK
-    fig, axes = plt.subplots(1, 3, figsize=(14.2, 3.9), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(14.2, 3.7), sharey=True)
     M_STYLE = {1: dict(lw=1.5, alpha=.5), 5: dict(lw=2.4, alpha=.75),
                20: dict(lw=3.3, alpha=1.0)}
 
@@ -357,8 +357,8 @@ def render(out):
     ax.legend(handles=[Line2D([], [], color=ink, label=f'$m={m}$',
                               **M_STYLE[m]) for m in MS_A],
               fontsize=SZ['annot'] - 1, frameon=False, handlelength=1.9,
-              labelspacing=.3, loc='lower left',
-              bbox_to_anchor=(0.02, 0.02))
+              ncol=3, columnspacing=.9, loc='lower center',
+              bbox_to_anchor=(0.5, 0.01))
 
     # panel B: probe selection; fill = regime, style = n
     ax = axes[1]

@@ -201,7 +201,7 @@ def render(results):
     from matplotlib.lines import Line2D
 
     SZ = hv_style.SIZES
-    fig, axes = plt.subplots(1, 3, figsize=(14.2, 3.9), sharex=True,
+    fig, axes = plt.subplots(1, 3, figsize=(14.2, 3.7), sharex=True,
                              sharey=True)
     for ax, m0 in zip(axes, ('1', '5', '20')):
         for arm, role in (('generic', 'generic'), ('qspec', 'focus')):

@@ -63,7 +63,7 @@ def main():
         return out
 
     ang = np.linspace(0, 2 * np.pi, len(SPOKES), endpoint=False)
-    fig = plt.figure(figsize=(14.8, 7.0))
+    fig = plt.figure(figsize=(14.8, 6.8))
     for idx, (short, name) in enumerate(EMB):
         r_, c_ = divmod(idx, 4)
         x0 = .035 + c_ * .245 + (.1225 if r_ == 1 else 0)
@@ -100,7 +100,7 @@ def main():
         Line2D([], [], color=GEN['color'], lw=2.6,
                label='generic'),
         Line2D([], [], color=QUB['color'], lw=3.2, label='trubric')],
-        loc='lower center', bbox_to_anchor=(0.5, -0.045), ncol=3,
+        loc='upper center', bbox_to_anchor=(0.5, -0.02), ncol=3,
         frameon=False, fontsize=hv_style.SIZES['legend'],
         handlelength=3.2, columnspacing=2.0)
     save_artifact(fig, 'trubric_figure1_radar', dpi=200, pad=0.05,

@@ -45,7 +45,7 @@ def series(by_m, key):
 
 def main():
     SZ = hv_style.SIZES
-    fig, axes = plt.subplots(1, 4, figsize=(14.2, 3.7))
+    fig, axes = plt.subplots(1, 4, figsize=(14.2, 3.6))
     for ax, (title, rand_f, adap_f, full_runs) in zip(axes[:2], PANELS):
         rand = json.load(open(rand_f))['protocols']['family']['by_m']
         adap = json.load(open(adap_f))['by_m']
@@ -127,8 +127,8 @@ def main():
         ax.set_xlabel('pairwise accuracy',
                       fontsize=SZ['subtitle'] - 1)
         ax.tick_params(labelsize=SZ['tick'])
-    axes[2].set_ylabel('cost per system (\\$2/run)',
-                       fontsize=SZ['subtitle'])
+    axes[2].set_ylabel('cost per system\n(\\$2/run)',
+                       fontsize=SZ['subtitle'] - 1)
     axes[3].set_yticklabels([])
 
     # one legend for the whole figure: 4 methods + the 2 marker fills

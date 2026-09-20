@@ -90,7 +90,7 @@ def main():
     norm = matplotlib.colors.TwoSlopeNorm(vcenter=float(y.mean()),
                                           vmin=float(y.min()),
                                           vmax=float(y.max()))
-    fig, axes = plt.subplots(2, 3, figsize=(13, 6.4))
+    fig, axes = plt.subplots(2, 3, figsize=(13, 6.1))
     fig.subplots_adjust(left=.085, right=.90, top=.80, bottom=.06,
                         wspace=.06, hspace=.10)
     # row references: trubric's full configuration anchors the figure; the

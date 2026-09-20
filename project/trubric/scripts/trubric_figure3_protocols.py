@@ -441,7 +441,7 @@ def main_render(src=OUT_JSON, name='trubric_figure3_protocols'):
     tb = None
     if os.path.exists('project/trubric/data/tb2_protocols.json'):
         tb = json.load(open('project/trubric/data/tb2_protocols.json'))
-    fig, axes = plt.subplots(2, 3, figsize=(13, 6.6), sharex=True,
+    fig, axes = plt.subplots(2, 3, figsize=(13, 6.2), sharex=True,
                              sharey='row')
 
     def draw_row(r, data):
@@ -499,9 +499,9 @@ def main_render(src=OUT_JSON, name='trubric_figure3_protocols'):
                     color=hv_style.INK_MUTE, fontsize=SZ['subtitle'])
             ax.set_xlabel('Number of tasks $m$', fontsize=SZ['label'])
     axes[0, 0].set_ylabel('SWE-bench Verified\nMAE$(\\hat{y}, y)$',
-                          fontsize=SZ['label'])
+                          fontsize=SZ['subtitle'])
     axes[1, 0].set_ylabel('Terminal-Bench 2.0\nMAE$(\\hat{y}, y)$',
-                          fontsize=SZ['label'])
+                          fontsize=SZ['subtitle'])
     handles, labels_ = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels_, fontsize=SZ['legend'], handlelength=3.2,
                loc='upper center', bbox_to_anchor=(0.5, 0.02), ncol=5,
