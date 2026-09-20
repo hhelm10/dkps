@@ -22,8 +22,8 @@ import numpy as np
 
 MS = (1, 5, 20)
 ROWS = [('sample', 'sample score'),
-        ('raw', 'raw trace'),
         ('irt', 'IRT'),
+        ('raw', 'raw trace'),
         ('generic', 'generic'),
         ('geom', 'trubric'),
         ('blend', 'IRT + trubric')]
