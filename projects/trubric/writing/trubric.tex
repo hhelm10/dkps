@@ -37,17 +37,17 @@ These results indicate that trace geometry and correctness outcomes carry comple
 \section{Introduction}
 \label{sec:intro}
 
-The dominant paradigm of generative model use is increasingly agentic: systems that plan, invoke tools, observe intermediate results, and iterate over long horizons \citep{yang2024sweagent, wang2025openhands}.
+The dominant paradigm of generative model use is increasingly agentic: systems plan, invoke tools, observe intermediate results, and iterate over long horizons to complete complex tasks \citep{yang2024sweagent, wang2025openhands}.
 As agentic capabilities increase, so does the range of settings in which a given system might be deployed -- and, with it, the number of benchmarks on which the system must be evaluated before it can be trusted with consequential work \citep{kapoor2025hal}.
 Agentic evaluation, however, is expensive: each task execution requires a properly sandboxed environment and a single execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
-At reported per-task costs of \$0.13--\$4 \citep{kapoor2025hal}, the cost of evaluating a single system on a single benchmark regularly exceeds \$2{,}000.
+At reported per-task costs of \$0.13--\$4 \citep{kapoor2025hal}, the cost of evaluating a single system on a single benchmark can regularly exceed \$2{,}000.
 Given this cost, efficient evaluation is necessary to increase the evaluation coverage of a system.
 
-Task-efficient (or query-efficient) evaluation methods -- via benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, leveraging cached responses \citep{helm2026query}, etc. -- exploit the structure in item-level information from previously-evaluated reference systems to reduce the number of required executions.
-Some query-efficient evaluation methods require only the item-level scores of each reference system \citep{vivek2024anchor, kipnis2025metabench}.
-Others leverage the content of cached responses and therefore require an embedding function that captures the relevant similarity between model artifacts \citep{duderstadt2023data, zhuang2025embedllm, helm2026query}.
-Notably, agentic workflows often produce non-graded artifacts when executing a task -- file diffs, tool invocations, intermediate plans, and error messages -- recorded together in an execution trace.
-Unfortunately, methods that could exploit this information rely on off-the-shelf embedding functions, and we find these poorly suited to traces: linear probes recover the identity of the system that generated a raw trace embedding with balanced accuracy up to $0.89$, indicating representations dominated by system identity-, model family-, and harness-related signals rather than by the content of the work performed.
+Task-efficient evaluation methods -- via benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, leveraging cached responses \citep{helm2026query}, etc. -- address this problem by finding structure in item-level information available from previously-evaluated reference systems.
+Some task-efficient evaluation methods require only the item-level scores of each reference system \citep{vivek2024anchor, kipnis2025metabench}.
+Others leverage the content of cached artifacts, such as the natural language responses or residual streams, to measure the similarity between systems beyond its score on a set of tasks \citep{duderstadt2023data, helm2026jailbreak, helm2026query}.
+Notably, agentic workflows often produce artifacts when executing a task -- file diffs, tool invocations, intermediate plans, and error messages -- recorded together in an execution trace that could be used to this effect.
+Unfortunately, existing methods for using this non-score information rely on off-the-shelf embedding functions that are not immediately well-suited to embedding traces.
 
 In this paper, we propose \trubric{} (\emph{trace rubric}): a trace representation constructed by extracting a structured, rubric-guided summary of each trace with an LLM and embedding the summary with a standard text encoder.
 
