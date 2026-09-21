@@ -67,10 +67,15 @@ Let $s: \mathcal{X} \to \{0, 1\}$ denote the harness's trace-level scoring funct
 We refer to $y(f, Q^{*})$ as $y$ when the context is clear.
 
 As described above, full evaluation of $f$ on all queries may be infeasible.
-Instead, we assume access to previously-evaluated (system, score) pairs $(f_{1}, y_{1}), \hdots, (f_{n}, y_{n})$, along with each reference system's trace and trace-level score for every query.
+Instead, we assume access to $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$ for which we observe both the execution artifacts and the item-level scores on every query:
+\begin{equation*}
+\mathcal{D} = \left\{ \{ (x_{ij}, y_{ij}) \}_{j=1}^{M} \right\}_{i=1}^{n},
+\end{equation*}
+where $x_{ij} \sim f_{i}(q_{j})$ is the trace of reference system $f_{i}$ on query $q_{j}$ and $y_{ij} = s(x_{ij}) \in \{0, 1\}$ is its trace-level score.
+The benchmark score of reference system $f_{i}$ is $y_{i} = \frac{1}{M} \sum_{j=1}^{M} y_{ij}$.
 Such reference caches exist publicly at scale.\footnote{The SWE-bench Verified leaderboard archive contains traces and outcomes for over one hundred systems; we estimate it embodies \$50K--\$100K of agent compute contributed by submitters.}
-Given this additional information, our goal is to estimate $y$ with $m \ll M$ queries.
-That is, we seek to identify an estimate $\hat{y}$ that predicts the full benchmark score of $f$ from its traces (and, optionally, its trace-level scores) on a subset $Q \in 2^{Q^{*}}$ and the information available from the previously-evaluated systems.
+Given $\mathcal{D}$, our goal is to estimate $y$ with $m \ll M$ queries.
+That is, we seek an estimate $\hat{y}$ that predicts the full benchmark score of $f$ from its traces (and, optionally, its trace-level scores) on a subset $Q \subset Q^{*}$ with $|Q| = m$, together with $\mathcal{D}$.
 
 Two aspects distinguish this setting from the short-response setting of \citet{helm2026query}.
 First, the observation associated with each query is not a short response but a trace of $10^{4}$--$10^{6}$ tokens in one of many mutually incompatible harness formats.
