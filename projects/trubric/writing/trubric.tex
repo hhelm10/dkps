@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage{iclr2027_conference,times}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{url}
+
+\iclrfinalcopy
+
+\title{Embedding Agentic Traces for Efficient Evaluation}
+
+\author{Anonymous\thanks{Author block TBD (Helivan, Jataware, Johns Hopkins).}\\
+Helivan Research
+}
+
+\newcommand{\trubric}{\textsc{trubric}}
+
+% Notation: systems f in F, benchmark Q* = {q_1,...,q_M}, trace-level scorer s,
+% benchmark score y, references (f_i, y_i), budget m << M. Artifacts live in
+% ../artifacts/ (trubric_table1_hero.tex, trubric_figure{1..6}_*.pdf).
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Efficient benchmarking estimates a system's full-benchmark performance from a small number of task executions.
+Standard approaches rely solely on the binary correctness of executions from a collection of already-evaluated reference systems.
+An agentic system, however, produces a rich trace for each execution that can reveal substantially more about its capabilities.
+Exploiting this information requires useful trace representations.
+We propose representing a trace by extracting a structured, rubric-guided summary of it with an LLM and embedding the summary with a standard text encoder.
+We show that these representations preserve correctness- and task-related signal while minimizing the presence of system identity-, model family-, and harness-related signals that dominate raw trace embeddings.
+Given this representation for each task execution from all reference systems, we construct low-dimensional representations of the systems, predict a new system's score from its position among the reference systems, and combine the resulting geometric prediction with a two-parameter logistic item-response model.
+On SWE-bench Verified and Terminal-Bench 2.0, the proposed estimator reduces mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$), respectively, when provided a single random executed task relative to an item-response model alone.
+The same estimator correctly orders 88\% of system pairs versus 79\% for scores alone at this budget, and is never less accurate than its score-only counterpart at any execution budget we consider.
+These results indicate that trace geometry and correctness outcomes carry complementary predictive signal and enable more accurate benchmark score estimation from limited agent executions.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+The dominant paradigm of generative model use is increasingly agentic: systems that plan, invoke tools, observe intermediate results, and iterate over long horizons rather than emit a single response \citep{yang2024sweagent, wang2025openhands}.
+As agentic capabilities increase, so does the range of settings in which a given system might be deployed -- and, with it, the number of benchmarks on which the system must be evaluated before it can be trusted with consequential work \citep{kapoor2025hal}.
+Agentic evaluation, however, is expensive: each task execution requires a properly sandboxed environment, the tasks themselves are complex and long-horizon, and a single execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
+At reported per-task costs of \$0.13--\$4 (an aggregate \$1.84 per rollout across 21{,}730 rollouts in \citealp{kapoor2025hal}), fully evaluating a single system costs roughly \$100--\$2{,}000 per benchmark, and the sensitivity of agentic systems to prompts, scaffolds, and underlying model versions means there is always another variant to evaluate \citep{kapoor2024agents}.
+Notably, executing an agentic task produces more than a grade: file diffs, tool invocations, intermediate plans, and error messages are all created along the way.
+These execution artifacts carry information about a system's capabilities well beyond the binary ``correct'' or ``not correct'' that standard evaluation pipelines retain.
+
+Given the cost of a single full evaluation, efficient evaluation is necessary for increasing the evaluation coverage of a system.
+Task-efficient (or query-efficient) evaluation -- benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized} -- reduces the number of required executions by exploiting structure in the item-level scores of previously-evaluated reference systems.
+These methods typically use only the binary correctness of each execution.
+A complementary family of methods leverages additional item-level information -- such as cached responses or traces -- to further improve the modeling of system behavior: responses are embedded with an off-the-shelf embedding function, systems are represented as points in the resulting low-dimensional geometry, and benchmark prediction is cast as inference in that space \citep{duderstadt2023data, helm2025statistical, zhuang2025embedllm, helm2026query}.
+Critically, these methods rely on the embedding function to capture what it means for two artifacts to be \emph{similar}.
+For short natural-language responses, off-the-shelf semantic encoders fill this role well \citep{reimers2019sbert}.
+Agentic traces are different: they are long, semi-structured logs whose surface form is dominated by harness formatting, tool-call syntax, and model-family idiosyncrasies \citep{sun2025idiosyncrasies}.
+Indeed, we find that linear probes recover the identity of the system that generated a raw trace embedding with balanced accuracy up to $0.89$ -- while representations of what the agent actually did remain comparatively impoverished -- making off-the-shelf embedding functions poorly suited for extending geometry-based efficient evaluation to the agentic setting.
+
+\noindent \textbf{Contributions.} We make two primary contributions.
+\begin{enumerate}[itemsep=0pt, topsep=0pt, parsep=2pt]
+\item \textbf{Methodological:} We introduce \trubric{} (\emph{trace rubric}), a representation that extracts a structured, rubric-guided summary of each trace with an LLM and embeds the summary with a standard text encoder.
+Across seven embedding functions, linear probes show that \trubric{} representations preserve correctness- and task-related signal while collapsing system-identity decodability from $0.89$ to $0.20$ balanced accuracy -- selective attenuation of confounders rather than erasure of content.
+\item \textbf{Empirical:} We demonstrate that \trubric{}-based estimators are query-efficient on SWE-bench Verified (107 systems) and Terminal-Bench 2.0 (65 systems) under a conservative leave-one-model-family-out protocol.
+Blended with an item-response model, \trubric{} geometry reduces single-task MAE from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks respectively, correctly orders 88\% of system pairs versus 79\% for scores alone, and is never less accurate than its score-only counterpart at any budget.
+Ablations show the gains grow with the reference library, compose with adaptive task selection, and are insensitive to the choice of embedding function.
+\end{enumerate}
+
+\subsection{Problem statement}
+\label{sec:problem}
+
+Given an agentic system $f$, we consider the problem of predicting its score on a benchmark $Q^{*} = \{q_{1}, \hdots, q_{M}\}$.
+For our purposes, a system $f \in \mathcal{F}$ is a random mapping from a query space $\mathcal{Q}$ to a trace space $\mathcal{X}$: executing $f$ on query $q$ yields a trace $f(q)$, a long, semi-structured log of the system's actions, observations, and outputs.
+Let $s: \mathcal{X} \to \{0, 1\}$ denote the harness's trace-level scoring function and $y: \mathcal{F} \times 2^{Q^{*}} \to [0,1]$ denote the benchmark scoring function, $y(f, Q) = \frac{1}{|Q|} \sum_{q \in Q} \mathbb{E}[s(f(q))]$.
+We refer to $y(f, Q^{*})$ as $y$ when the context is clear.
+
+As described above, full evaluation of $f$ on all queries may be infeasible.
+Instead, we assume access to previously-evaluated (system, score) pairs $(f_{1}, y_{1}), \hdots, (f_{n}, y_{n})$, along with each reference system's trace and trace-level score for every query.
+Such reference caches exist publicly at scale.\footnote{The SWE-bench Verified leaderboard archive contains traces and outcomes for over one hundred systems; we estimate it embodies \$50K--\$100K of agent compute contributed by submitters.}
+Given this additional information, our goal is to estimate $y$ with $m \ll M$ queries.
+That is, we seek to identify an estimate $\hat{y}$ that predicts the full benchmark score of $f$ from its traces (and, optionally, its trace-level scores) on a subset $Q \in 2^{Q^{*}}$ and the information available from the previously-evaluated systems.
+
+Two aspects distinguish this setting from the short-response setting of \citet{helm2026query}.
+First, the observation associated with each query is not a short response but a trace of $10^{4}$--$10^{6}$ tokens in one of many mutually incompatible harness formats.
+Whether and how traces can be embedded usefully is the central question of this paper.
+Second, the reference population is confounded: reference systems that share the target's underlying language model or harness permit trivially accurate prediction via score-copying.
+We therefore evaluate under a leave-one-model-family-out protocol -- references sharing the target's underlying model family are excluded -- and verify robustness under a leave-one-harness-out protocol.
+The query subset $Q$ may be fixed, drawn at random, or selected adaptively per target; we report all three regimes.
+
+\section{Method}
+\label{sec:method}
+% TODO: trubric construction (rubric-guided extraction, embedding, consensus
+% centering, PKPS geometry, estimators, IRT blend).
+
+\section{Trace representations encode confounders}
+\label{sec:probes}
+% TODO: linear-probe analysis (Figure 1), PKPS geometry (Figure 2).
+
+\section{Efficient evaluation}
+\label{sec:results}
+% TODO: hero table (Table 1), protocol grid (Figure 3), ablations (Figure 4),
+% cost and ranking (Figure 5), rubric sensitivity (Figure 6).
+
+\section{Related work}
+\label{sec:related}
+% TODO.
+
+\section{Discussion}
+\label{sec:discussion}
+% TODO.
+
+\bibliography{paper_refs}
+\bibliographystyle{iclr2027_conference}
+
+\end{document}
