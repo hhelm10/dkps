@@ -15,7 +15,7 @@
 Helivan Research
 }
 
-\newcommand{\qubric}{\textsc{qubric}}
+\newcommand{\trubric}{\textsc{trubric}}
 
 % Notation follows arXiv:2605.07096: systems f \in F, benchmark Q* = {q_1,...,q_M},
 % response-level scorer s, benchmark score y, references (f_i, y_i), budget m << M.
@@ -25,43 +25,44 @@ Helivan Research
 \maketitle
 
 \begin{abstract}
-Evaluating a new agentic system on an existing benchmark is often necessary to understand its behavior before deployment.
-For modern agentic evaluation frameworks, generating and grading a trace for every task can be prohibitively expensive -- often hundreds to thousands of dollars for a single system.
-In practice, traces from previously-evaluated systems are often cached -- creating a potential opportunity to use this additional information to decrease the number of tasks required to accurately evaluate a new system.
-In this paper, we extend an approach for predicting benchmark performance from cached responses to the agentic setting, where the central challenge is representing the trace itself.
-We first demonstrate that off-the-shelf semantic embeddings of traces are dominated by evaluation-irrelevant confounders -- harness, model family, and exact configuration -- rather than by the content of the work performed, and that predictions based on them do not improve with additional probe tasks.
-We then introduce \qubric{}, a query-specific-rubric transformation that converts off-the-shelf embedding functions into content-based, confounder-invariant trace representations.
-Empirically, on SWE-bench Verified (107 systems), combining the resulting trace geometry with item response theory predicts full-benchmark resolve rates within 0.066 mean absolute error from a single probe task and 0.032 from twenty, achieving the best or near-best error at every probe budget under a conservative leave-one-LLM-out protocol.
-We conclude by quantifying the corresponding evaluation savings and releasing the reference geometry, which is constructed from public archives for approximately \$26.
+Efficient benchmarking estimates a system's full-benchmark performance from a small number of task executions.
+Standard approaches rely solely on the binary correctness of executions from a collection of already-evaluated reference systems.
+An agentic system, however, produces a rich trace for each execution that can reveal substantially more about its capabilities.
+Exploiting this information requires useful trace representations.
+We propose representing a trace by extracting a structured, rubric-guided summary of it with an LLM and embedding the summary with a standard text encoder.
+We show that these representations preserve correctness- and task-related signal while minimizing the presence of system identity-, model family-, and harness-related signals that dominate raw trace embeddings.
+Given this representation for each task execution from all reference systems, we construct low-dimensional representations of the systems, predict a new system's score from its position among the reference systems, and combine the resulting geometric prediction with a two-parameter logistic item-response model.
+On SWE-bench Verified and Terminal-Bench 2.0, the proposed estimator reduces mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$), respectively, when provided a single random executed task relative to an item-response model alone.
+The same estimator correctly orders 88\% of system pairs versus 79\% for scores alone at this budget, and is never less accurate than its score-only counterpart at any execution budget we consider.
+These results indicate that trace geometry and correctness outcomes carry complementary predictive signal and enable more accurate benchmark score estimation from limited agent executions.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-The dominant paradigm of generative model use is increasingly agentic: systems that plan, invoke tools, observe results, and iterate over long horizons rather than emit a single response.
-Evaluation is a necessary part of understanding an agentic system's capabilities and limitations before deployment.
-As these systems become more capable and are trusted with more consequential work, the tasks on which they must be evaluated become correspondingly complex.
-For example, recent agentic benchmarks such as SWE-bench \citep{jimenez2024swebench, openai2024verified}, Terminal-Bench \citep{tbench2026}, ARC-AGI \citep{chollet2019measure}, and multi-benchmark agent suites \citep{kapoor2025hal} require generating up to hundreds of thousands of tokens per task\footnote{In the SWE-bench Verified leaderboard archive we measure a median of $\sim$40K tokens per trace, with a heavy tail exceeding 700K tokens.} and evaluate each system on roughly one hundred to two thousand tasks.
-At reported per-task costs of \$0.13--\$4 (an aggregate \$1.84 per rollout across 21{,}730 rollouts in \citealp{kapoor2025hal}), fully evaluating a single system costs roughly \$100--\$2{,}000, and multi-benchmark sweeps cost tens of thousands of dollars.
-At the same time, agentic systems are sensitive to changes in system prompts, retrieval databases, scaffold parameters, and underlying model versions -- making it infeasible to fully evaluate each new variant.
-The result is systematic under-evaluation: most checkpoints, ablations, and configurations are never scored \citep{kapoor2024agents}.
+The dominant paradigm of generative model use is increasingly agentic: systems that plan, invoke tools, observe intermediate results, and iterate over long horizons rather than emit a single response \citep{yang2024sweagent, wang2025openhands}.
+As agentic capabilities increase, so does the range of settings in which a given system might be deployed -- and, with it, the number of benchmarks on which the system must be evaluated before it can be trusted with consequential work \citep{kapoor2025hal}.
+Agentic evaluation, however, is expensive: each task execution requires a properly sandboxed environment, the tasks themselves are complex and long-horizon, and a single execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
+At reported per-task costs of \$0.13--\$4 (an aggregate \$1.84 per rollout across 21{,}730 rollouts in \citealp{kapoor2025hal}), fully evaluating a single system costs roughly \$100--\$2{,}000 per benchmark, and the sensitivity of agentic systems to prompts, scaffolds, and underlying model versions means there is always another variant to evaluate \citep{kapoor2024agents}.
+Notably, executing an agentic task produces more than a grade: file diffs, tool invocations, intermediate plans, and error messages are all created along the way.
+These execution artifacts carry information about a system's capabilities well beyond the binary ``correct'' or ``not correct'' that standard evaluation pipelines retain.
 
-These trends motivate query-efficient alternatives to full benchmark evaluation.
-In other evaluation settings, several such alternatives exist: benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, and performance prediction from observational records \citep{ruan2024observational, zhuang2025embedllm}.
-One line of work uses off-the-shelf embedding functions to construct low-dimensional representations of the models themselves and casts benchmark prediction as an inference problem in the resulting space \citep{duderstadt2023data, helm2025statistical, helm2026query}.
-These methods require only black-box access, require no additional labeled data, and leverage the response caches that evaluation ecosystems already produce.
-Extending them to the agentic setting requires an embedding function for traces.
-Unfortunately, off-the-shelf embedding functions do not yet exist for agentic traces.
-Further, we find that semantic embedding functions applied to traces without modification are not appropriate for efficient evaluation: the resulting representations are dominated by evaluation-irrelevant \emph{confounders} -- harness, model family, and exact configuration -- rather than by the content of the work performed.
-In this paper, we introduce \qubric{} (\emph{query-specific rubrics}), a transformation that converts off-the-shelf embedding functions into content-based, confounder-invariant trace representations suitable for efficient evaluation.
+Given the cost of a single full evaluation, efficient evaluation is necessary for increasing the evaluation coverage of a system.
+Task-efficient (or query-efficient) evaluation -- benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized} -- reduces the number of required executions by exploiting structure in the item-level scores of previously-evaluated reference systems.
+These methods typically use only the binary correctness of each execution.
+A complementary family of methods leverages additional item-level information -- such as cached responses or traces -- to further improve the modeling of system behavior: responses are embedded with an off-the-shelf embedding function, systems are represented as points in the resulting low-dimensional geometry, and benchmark prediction is cast as inference in that space \citep{duderstadt2023data, helm2025statistical, zhuang2025embedllm, helm2026query}.
+Critically, these methods rely on the embedding function to capture what it means for two artifacts to be \emph{similar}.
+For short natural-language responses, off-the-shelf semantic encoders fill this role well \citep{reimers2019sbert}.
+Agentic traces are different: they are long, semi-structured logs whose surface form is dominated by harness formatting, tool-call syntax, and model-family idiosyncrasies \citep{sun2025idiosyncrasies}.
+Indeed, we find that linear probes recover the identity of the system that generated a raw trace embedding with balanced accuracy up to $0.89$ -- while representations of what the agent actually did remain comparatively impoverished -- making off-the-shelf embedding functions poorly suited for extending geometry-based efficient evaluation to the agentic setting.
 
-\noindent \textbf{Contribution.} We make two primary contributions.
+\noindent \textbf{Contributions.} We make two primary contributions.
 \begin{enumerate}[itemsep=0pt, topsep=0pt, parsep=2pt]
-\item \textbf{Methodological:} We introduce \qubric{}, which extracts and embeds trace content according to a query-specific rubric.
-Whereas off-the-shelf trace representations recover harness, model family, and exact configuration at well above chance while remaining near chance on outcome, \qubric{} representations collapse the confounder axes to approximately chance while retaining task and behavioral signal, robustly across seven embedding functions.
-\item \textbf{Empirical:} We demonstrate that \qubric{}-based methods are query-efficient.
-Combined with item-response-theoretic estimators, they achieve the best or near-best mean absolute error at every probe budget and are significantly better where graded evidence is scarce -- e.g., 0.066 MAE from a single probe task.
-We release the reference geometry, code, and judged-trace corpus -- constructed from public archives for approximately \$26 -- to support future work on trace-based evaluation.
+\item \textbf{Methodological:} We introduce \trubric{} (\emph{trace rubric}), a representation that extracts a structured, rubric-guided summary of each trace with an LLM and embeds the summary with a standard text encoder.
+Across seven embedding functions, linear probes show that \trubric{} representations preserve correctness- and task-related signal while collapsing system-identity decodability from $0.89$ to $0.20$ balanced accuracy -- selective attenuation of confounders rather than erasure of content.
+\item \textbf{Empirical:} We demonstrate that \trubric{}-based estimators are query-efficient on SWE-bench Verified (107 systems) and Terminal-Bench 2.0 (65 systems) under a conservative leave-one-model-family-out protocol.
+Blended with an item-response model, \trubric{} geometry reduces single-task MAE from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks respectively, correctly orders 88\% of system pairs versus 79\% for scores alone, and is never less accurate than its score-only counterpart at any budget.
+Ablations show the gains grow with the reference library, compose with adaptive task selection, and are insensitive to the choice of embedding function.
 \end{enumerate}
 
 \subsection{Problem statement}
@@ -110,7 +111,7 @@ General-purpose text embedding functions \citep{reimers2019sbert} fix one notion
 Instruction-conditioned variants \citep{su2023instructor} honor only coarse, trained-in task tags, and conditional similarity \citep{deshpande2023csts} formalizes similarity-under-a-criterion at the sentence scale.
 A related family of methods embeds LLM-generated text in place of the original object: answers to an instruction \citep{peng2024inbedder}, answer vectors to question batteries \citep{benara2024qaemb}, and generated descriptions \citep{ravfogel2024description}.
 Embeddings of interaction data exist for short dialogues \citep{liu2022dial2vec} and for reinforcement learning trajectories \citep{ge2025trajectory} -- the latter observing that trajectory embeddings encode agent ``style,'' precisely the confounder our setting must remove.
-\qubric{} differs from these approaches in that it re-represents very long, heterogeneous logs at inference time without training, includes an explicit invariance mechanism (per-query consensus centering), and is evaluated with respect to confounder invariance rather than assuming it.
+\trubric{} differs from these approaches in that it re-represents very long, heterogeneous logs at inference time without training, includes an explicit invariance mechanism (per-query consensus centering), and is evaluated with respect to confounder invariance rather than assuming it.
 
 \section{qubric}
 \label{sec:method}
