@@ -36,3 +36,10 @@ B=50 shared draws, +/-1 SEM. Style canon: `scripts/hv_style.py`
 (color = method; dashed = score-only, solid = uses embeddings;
 marker fill = probe regime; solid/dashed = reference-library size
 where swept).
+
+## Building the paper
+
+`writing/trubric.tex` is the paper; `trubric.pdf` is committed alongside
+it. A pre-commit hook (`.githooks/pre-commit`) rebuilds the PDF whenever
+the tex/bib/style sources are staged — enable it once per clone with
+`git config core.hooksPath .githooks`.
