@@ -37,26 +37,22 @@ These results indicate that trace geometry and correctness outcomes carry comple
 \section{Introduction}
 \label{sec:intro}
 
-The dominant paradigm of generative model use is increasingly agentic: systems that plan, invoke tools, observe intermediate results, and iterate over long horizons rather than emit a single response \citep{yang2024sweagent, wang2025openhands}.
+The dominant paradigm of generative model use is increasingly agentic: systems that plan, invoke tools, observe intermediate results, and iterate over long horizons \citep{yang2024sweagent, wang2025openhands}.
 As agentic capabilities increase, so does the range of settings in which a given system might be deployed -- and, with it, the number of benchmarks on which the system must be evaluated before it can be trusted with consequential work \citep{kapoor2025hal}.
-Agentic evaluation, however, is expensive: each task execution requires a properly sandboxed environment, the tasks themselves are complex and long-horizon, and a single execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
-At reported per-task costs of \$0.13--\$4 (an aggregate \$1.84 per rollout across 21{,}730 rollouts in \citealp{kapoor2025hal}), fully evaluating a single system costs roughly \$100--\$2{,}000 per benchmark, and the sensitivity of agentic systems to prompts, scaffolds, and underlying model versions means there is always another variant to evaluate \citep{kapoor2024agents}.
-Notably, executing an agentic task produces more than a grade: file diffs, tool invocations, intermediate plans, and error messages are all created along the way.
-These execution artifacts carry information about a system's capabilities well beyond the binary ``correct'' or ``not correct'' that standard evaluation pipelines retain.
+Agentic evaluation, however, is expensive: each task execution requires a properly sandboxed environment and a single execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
+At reported per-task costs of \$0.13--\$4 \citep{kapoor2025hal}, the cost of evaluating a single system on a single benchmark regularly exceeds \$2{,}000.
+Given this cost, efficient evaluation is necessary to increase the evaluation coverage of a system.
 
-Given the cost of a single full evaluation, efficient evaluation is necessary for increasing the evaluation coverage of a system.
-Task-efficient (or query-efficient) evaluation -- benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized} -- reduces the number of required executions by exploiting structure in the item-level scores of previously-evaluated reference systems.
-These methods typically use only the binary correctness of each execution.
-A complementary family of methods leverages additional item-level information -- such as cached responses or traces -- to further improve the modeling of system behavior: responses are embedded with an off-the-shelf embedding function, systems are represented as points in the resulting low-dimensional geometry, and benchmark prediction is cast as inference in that space \citep{duderstadt2023data, helm2025statistical, zhuang2025embedllm, helm2026query}.
-Critically, these methods rely on the embedding function to capture what it means for two artifacts to be \emph{similar}.
-For short natural-language responses, off-the-shelf semantic encoders fill this role well \citep{reimers2019sbert}.
-Agentic traces are different: they are long, semi-structured logs whose surface form is dominated by harness formatting, tool-call syntax, and model-family idiosyncrasies \citep{sun2025idiosyncrasies}.
-Indeed, we find that linear probes recover the identity of the system that generated a raw trace embedding with balanced accuracy up to $0.89$ -- while representations of what the agent actually did remain comparatively impoverished -- making off-the-shelf embedding functions poorly suited for extending geometry-based efficient evaluation to the agentic setting.
+Task-efficient (or query-efficient) evaluation methods -- via benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, leveraging cached responses \citep{helm2026query}, etc. -- exploit the structure in item-level information from previously-evaluated reference systems to reduce the number of required executions.
+Some query-efficient evaluation methods require only the item-level scores of each reference system \citep{vivek2024anchor, kipnis2025metabench}.
+Others leverage the content of cached responses and therefore require an embedding function that captures the relevant similarity between model artifacts \citep{duderstadt2023data, zhuang2025embedllm, helm2026query}.
+Notably, agentic workflows often produce non-graded artifacts when executing a task -- file diffs, tool invocations, intermediate plans, and error messages -- recorded together in an execution trace.
+Unfortunately, methods that could exploit this information rely on off-the-shelf embedding functions, and we find these poorly suited to traces: linear probes recover the identity of the system that generated a raw trace embedding with balanced accuracy up to $0.89$, indicating representations dominated by system identity-, model family-, and harness-related signals rather than by the content of the work performed.
 
+In this paper, we propose \trubric{} (\emph{trace rubric}): a trace representation constructed by extracting a structured, rubric-guided summary of each trace with an LLM and embedding the summary with a standard text encoder.
 \noindent \textbf{Contributions.} We make two primary contributions.
 \begin{enumerate}[itemsep=0pt, topsep=0pt, parsep=2pt]
-\item \textbf{Methodological:} We introduce \trubric{} (\emph{trace rubric}), a representation that extracts a structured, rubric-guided summary of each trace with an LLM and embeds the summary with a standard text encoder.
-Across seven embedding functions, linear probes show that \trubric{} representations preserve correctness- and task-related signal while collapsing system-identity decodability from $0.89$ to $0.20$ balanced accuracy -- selective attenuation of confounders rather than erasure of content.
+\item \textbf{Methodological:} We introduce \trubric{} and show that, across seven embedding functions, its representations preserve correctness- and task-related signal while collapsing system-identity decodability from $0.89$ to $0.20$ balanced accuracy -- selective attenuation of confounders rather than erasure of content.
 \item \textbf{Empirical:} We demonstrate that \trubric{}-based estimators are query-efficient on SWE-bench Verified (107 systems) and Terminal-Bench 2.0 (65 systems) under a conservative leave-one-model-family-out protocol.
 Blended with an item-response model, \trubric{} geometry reduces single-task MAE from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks respectively, correctly orders 88\% of system pairs versus 79\% for scores alone, and is never less accurate than its score-only counterpart at any budget.
 Ablations show the gains grow with the reference library, compose with adaptive task selection, and are insensitive to the choice of embedding function.
