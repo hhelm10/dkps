@@ -9,11 +9,9 @@
 
 \iclrfinalcopy
 
-\title{Embedding Agentic Traces for Efficient Evaluation}
+\title{Task-efficient agent evaluation using cached traces}
 
-\author{Anonymous\thanks{Author block TBD (Helivan, Jataware, Johns Hopkins).}\\
-Helivan Research
-}
+\author{Anonymous}
 
 \newcommand{\trubric}{\textsc{trubric}}
 
@@ -30,10 +28,9 @@ Standard approaches rely solely on the binary correctness of executions from a c
 An agentic system, however, produces a rich trace for each execution that can reveal substantially more about its capabilities.
 Exploiting this information requires useful trace representations.
 We propose representing a trace by extracting a structured, rubric-guided summary of it with an LLM and embedding the summary with a standard text encoder.
-We show that these representations preserve correctness- and task-related signal while minimizing the presence of system identity-, model family-, and harness-related signals that dominate raw trace embeddings.
+These representations preserve correctness- and task-related signal while minimizing the presence of system identity-, model family-, and harness-related signals that dominate raw trace embeddings.
 Given this representation for each task execution from all reference systems, we construct low-dimensional representations of the systems, predict a new system's score from its position among the reference systems, and combine the resulting geometric prediction with a two-parameter logistic item-response model.
 On SWE-bench Verified and Terminal-Bench 2.0, the proposed estimator reduces mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$), respectively, when provided a single random executed task relative to an item-response model alone.
-The same estimator correctly orders 88\% of system pairs versus 79\% for scores alone at this budget, and is never less accurate than its score-only counterpart at any execution budget we consider.
 These results indicate that trace geometry and correctness outcomes carry complementary predictive signal and enable more accurate benchmark score estimation from limited agent executions.
 \end{abstract}
 
