@@ -7,7 +7,7 @@ cost vs leave-two-out pairwise accuracy (true gap >= 0.05) for {sample,
 IRT, trubric geometry, blend}, random probes.
 
 Render-only: reads the protocol/adaptive/pairwise caches in
-project/trubric/data/.
+projects/trubric/data/.
 """
 import os as _os
 import sys as _sys
@@ -28,10 +28,10 @@ import matplotlib.pyplot as plt
 COST_RUN = 2.0
 MS = (1, 3, 5, 10, 20)
 PANELS = [
-    ('SWE-bench Verified', 'project/trubric/data/q100_protocols.json',
-     'project/trubric/data/q100_adaptive_family.json', 500),
-    ('Terminal-Bench 2.0', 'project/trubric/data/tb2_protocols.json',
-     'project/trubric/data/tb2_adaptive_family.json', 89 * 5),
+    ('SWE-bench Verified', 'projects/trubric/data/q100_protocols.json',
+     'projects/trubric/data/q100_adaptive_family.json', 500),
+    ('Terminal-Bench 2.0', 'projects/trubric/data/tb2_protocols.json',
+     'projects/trubric/data/tb2_adaptive_family.json', 89 * 5),
 ]
 
 
@@ -98,7 +98,7 @@ def main():
     axes[1].set_yticklabels([])
 
     # panels 3-4: pairwise decision accuracy (leave-two-out shared pools)
-    pw = json.load(open('project/trubric/data/pairwise_cost.json'))
+    pw = json.load(open('projects/trubric/data/pairwise_cost.json'))
     PW_SERIES = [('sample', 'sample score', 'baseline_gray'),
                  ('irt', 'IRT', 'baseline_pale'),
                  ('geom', 'trubric', 'focus'),

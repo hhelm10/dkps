@@ -4,17 +4,16 @@ The paper project ("trubric" = *trace rubric*; formerly "qubric").
 Everything the paper needs lives here:
 
 ```
-project/trubric/
+projects/trubric/
   scripts/     one script per artifact (below) + trubric_common.py
-  artifacts/   generated figures/tables: <script-name>_<counter>.<ext>
+  artifacts/   generated figures/tables (canonical names; git = versioning)
   writing/     paper.tex, references, style files, one-pagers
   data/        cached result JSONs the scripts render from
 ```
 
-Artifacts are versioned by a content-aware counter: re-running a script
-overwrites the latest counter when nothing changed and bumps it when
-the artifact differs. PNG (200-250 dpi) and vector PDF are written
-together; use the PDFs in the paper.
+Each script writes its artifact under a canonical name (PNG preview +
+vector PDF together; use the PDFs in the paper). Git history is the
+version control.
 
 | Artifact | Script | Compute stages |
 |---|---|---|

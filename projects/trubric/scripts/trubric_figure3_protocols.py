@@ -7,7 +7,7 @@ raw-trace geometry, trubric geometry, trubric + IRT blend; B=50 shared
 random draws, per-draw pooled CV, +/-1 SEM bands.
 
 Stages: compute | raw | render | adaptive (SWE compute writes
-project/trubric/data/q100_protocols.json; the TB2 row comes from
+projects/trubric/data/q100_protocols.json; the TB2 row comes from
 scripts/tb2_eval.py). Default `all` runs compute+raw+render.
 """
 import os as _os
@@ -30,7 +30,7 @@ KS = (3, 5)
 ALPHAS = np.linspace(0, 1, 101)
 MS = (1, 3, 5, 10, 20)
 B_DRAWS = 50
-OUT_JSON = 'project/trubric/data/q100_protocols.json'
+OUT_JSON = 'projects/trubric/data/q100_protocols.json'
 
 
 def build_masks(systems, allowed_llm):
@@ -319,9 +319,9 @@ def main_adaptive():
     trubric geometry, and the trubric+IRT blend on the per-target panels
     with pooled (sigma, k, alpha) from honest reference errors -- the
     adaptive analogue of main_compute. Writes
-    project/trubric/data/q100_protocols_adaptive.json.
+    projects/trubric/data/q100_protocols_adaptive.json.
     """
-    OUT = 'project/trubric/data/q100_protocols_adaptive.json'
+    OUT = 'projects/trubric/data/q100_protocols_adaptive.json'
     systems, q100, y, B, allowed_llm, Xc, Xr, V = load_embeddings()
     M, Q = B.shape
     masks = build_masks(systems, allowed_llm)
@@ -439,8 +439,8 @@ def main_render(src=OUT_JSON, name='trubric_figure3_protocols'):
     d = json.load(open(src))
     ms = d['ms']
     tb = None
-    if os.path.exists('project/trubric/data/tb2_protocols.json'):
-        tb = json.load(open('project/trubric/data/tb2_protocols.json'))
+    if os.path.exists('projects/trubric/data/tb2_protocols.json'):
+        tb = json.load(open('projects/trubric/data/tb2_protocols.json'))
     fig, axes = plt.subplots(2, 3, figsize=(13, 6.2), sharex=True,
                              sharey='row')
 
@@ -521,5 +521,5 @@ if __name__ == '__main__':
     if stage == 'adaptive':
         main_adaptive()
     if stage in ('adaptive', 'adaptive-render'):
-        main_render('project/trubric/data/q100_protocols_adaptive.json',
+        main_render('projects/trubric/data/q100_protocols_adaptive.json',
                     'trubric_figure3b_protocols_adaptive')

@@ -6,7 +6,7 @@ Terminal-Bench 2.0} x {random, adaptive} x m in {1,5,20}, leave-one-
 family-out. Bold = column best; underline = significantly better than
 IRT (paired bootstrap on stored per-system errors, p<0.05).
 
-Render-only (reads project/trubric/data/); writes png+pdf, markdown,
+Render-only (reads projects/trubric/data/); writes png+pdf, markdown,
 and a self-contained LaTeX table/tabular environment.
 """
 import os as _os
@@ -28,10 +28,10 @@ ROWS = [('sample', 'sample score'),
         ('geom', 'trubric'),
         ('blend', 'IRT + trubric')]
 SRC = {
-    ('swe', 'random'): ('project/trubric/data/q100_protocols.json', 'family'),
-    ('swe', 'adaptive'): ('project/trubric/data/q100_adaptive_family.json', None),
-    ('tb2', 'random'): ('project/trubric/data/tb2_protocols.json', 'family'),
-    ('tb2', 'adaptive'): ('project/trubric/data/tb2_adaptive_family.json', None),
+    ('swe', 'random'): ('projects/trubric/data/q100_protocols.json', 'family'),
+    ('swe', 'adaptive'): ('projects/trubric/data/q100_adaptive_family.json', None),
+    ('tb2', 'random'): ('projects/trubric/data/tb2_protocols.json', 'family'),
+    ('tb2', 'adaptive'): ('projects/trubric/data/tb2_adaptive_family.json', None),
 }
 BENCH = [('swe', 'SWE-bench Verified'), ('tb2', 'Terminal-Bench 2.0')]
 

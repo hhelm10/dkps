@@ -37,7 +37,7 @@ MS = (1, 3, 5, 10, 20)
 MS_A = (1, 5, 20)
 NS = (10, 20, 40, 70, 107)
 B_DRAWS = 50
-OUT_JSON = 'project/trubric/data/ablations.json'
+OUT_JSON = 'projects/trubric/data/ablations.json'
 EMB = [('openai', 'text-emb-3-small',
         'data/judge/q100_emb_openai_small.npz', 'X'),
        ('nomic', 'nomic-v1.5',
@@ -362,9 +362,9 @@ def render(out):
 
     # panel B: probe selection; fill = regime, style = n
     ax = axes[1]
-    rand107 = json.load(open('project/trubric/data/q100_protocols.json'))[
+    rand107 = json.load(open('projects/trubric/data/q100_protocols.json'))[
         'protocols']['family']['by_m']
-    adap107 = json.load(open('project/trubric/data/q100_adaptive_family.json'))['by_m']
+    adap107 = json.load(open('projects/trubric/data/q100_adaptive_family.json'))['by_m']
     srcs = {('random', 107): rand107, ('adaptive', 107): adap107,
             ('random', 20): out['regime20']['random'],
             ('adaptive', 20): out['regime20']['adaptive']}

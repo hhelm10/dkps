@@ -6,7 +6,7 @@ OUTSIDE: content spokes (Correctness, Task) plot (acc-chance)/(1-chance);
 authorship spokes (Harness, Model Family, System Identity) plot the
 complement. 7 embedder panels x {raw, generic, trubric}.
 
-Reads project/trubric/data/radar_probes{,_gen}.json (probe-runner
+Reads projects/trubric/data/radar_probes{,_gen}.json (probe-runner
 output schema). Render-only.
 """
 import os as _os
@@ -44,8 +44,8 @@ SPOKES = [('outcome', 'Correctness', 'keep'), ('task', 'Task', 'keep'),
 
 def main():
     table = {}
-    for f in ('project/trubric/data/radar_probes.json',
-              'project/trubric/data/radar_probes_gen.json'):
+    for f in ('projects/trubric/data/radar_probes.json',
+              'projects/trubric/data/radar_probes_gen.json'):
         try:
             d = json.load(open(f))
         except FileNotFoundError:

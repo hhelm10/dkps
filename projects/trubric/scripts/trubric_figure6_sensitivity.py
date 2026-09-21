@@ -5,7 +5,7 @@ Gram terms make the sweep tractable); m in {1,5,20} panels; reference
 libraries n=107 (solid) and n=20 (dashed); mean over subsets (thick)
 and best subset (thin), +/-1 SEM.
 
-`main()` recomputes project/trubric/data/rubric_sens_paper.json from
+`main()` recomputes projects/trubric/data/rubric_sens_paper.json from
 the bank-32 embedding caches (hours); `render(json)` is cheap.
 """
 import os as _os
@@ -29,7 +29,7 @@ MSP = (1, 5, 20)
 NS = (107, 20)          # reference-library sizes; 20 = seeded subsample
 N_SUB = 200
 SIGS = (2, 4, 8)
-OUT_JSON = 'project/trubric/data/rubric_sens_paper.json'
+OUT_JSON = 'projects/trubric/data/rubric_sens_paper.json'
 
 
 def main():
