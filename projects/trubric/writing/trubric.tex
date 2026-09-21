@@ -50,6 +50,7 @@ Notably, agentic workflows often produce non-graded artifacts when executing a t
 Unfortunately, methods that could exploit this information rely on off-the-shelf embedding functions, and we find these poorly suited to traces: linear probes recover the identity of the system that generated a raw trace embedding with balanced accuracy up to $0.89$, indicating representations dominated by system identity-, model family-, and harness-related signals rather than by the content of the work performed.
 
 In this paper, we propose \trubric{} (\emph{trace rubric}): a trace representation constructed by extracting a structured, rubric-guided summary of each trace with an LLM and embedding the summary with a standard text encoder.
+
 \noindent \textbf{Contributions.} We make two primary contributions.
 \begin{enumerate}[itemsep=0pt, topsep=0pt, parsep=2pt]
 \item \textbf{Methodological:} We introduce \trubric{} and show that, across seven embedding functions, its representations preserve correctness- and task-related signal while collapsing system-identity decodability from $0.89$ to $0.20$ balanced accuracy -- selective attenuation of confounders rather than erasure of content.
