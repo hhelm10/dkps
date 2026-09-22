@@ -2,7 +2,7 @@ This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: trubric.aux
 The style file: iclr2027_conference.bst
-Database file #1: paper_refs.bib
+Database file #1: references.bib
 You've used 12 entries,
             2773 wiz_defined-function locations,
             649 strings with 7107 characters,

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Rebuild trubric.pdf whenever paper sources are part of the commit.
 W=projects/trubric/writing
-if git diff --cached --name-only | grep -qE "^$W/(trubric\.tex|paper_refs\.bib|.*\.sty|.*\.bst)$"; then
+if git diff --cached --name-only | grep -qE "^$W/(trubric\.tex|references\.bib|.*\.sty|.*\.bst)$"; then
     echo "[pre-commit] rebuilding $W/trubric.pdf"
     ( cd $W \
       && pdflatex -interaction=nonstopmode trubric.tex > /dev/null \
