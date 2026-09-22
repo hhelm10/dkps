@@ -97,7 +97,7 @@ The summary of each field is then embedded separately with a semantic embedding 
 To quantify what a representation encodes, we train class-balanced linear classifiers to predict each of the five attributes of a held-out trace from its embedding.
 Classifiers for system-level attributes (iii)--(v) are evaluated on held-out tasks.
 Classifiers for (i) and (ii) are evaluated on held-out groups of systems.
-We use cached traces from the SWE-bench Verified leaderboard archive, with DeepSeek-V4-Flash as both the rubric-instantiation and extraction model.
+We use cached traces from the SWE-bench Verified leaderboard archive \citep{openai2024verified}, with DeepSeek-V4-Flash \citep{deepseek2026v4} as both the rubric-instantiation and extraction model.
 We compare the quality of the \trubric{} embeddings, using $ g $ to embed the start and end of a raw trace, and generic rubric-based embeddings along axes (i)--(v) in Figure \ref{fig:radar}.
 Relative to baselines, \trubric{} preserves (i) and (ii) while mitigating (iii)--(v) across seven modern text encoders.
 Appendix~\ref{app:traces} provides a complete worked example -- a task, its instantiated \trubric{}, and the resulting extractions for two traces -- as well as a more detailed description of the classification.
