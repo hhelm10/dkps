@@ -1,15 +1,51 @@
-\begin{thebibliography}{12}
+\begin{thebibliography}{32}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
+\bibitem[Acharyya et~al.(2024)Acharyya, Trosset, Priebe, and
+  Helm]{acharyya2024consistent}
+Aranyak Acharyya, Michael~W. Trosset, Carey~E. Priebe, and Hayden~S. Helm.
+\newblock Consistent estimation of generative model representations in the data
+  kernel perspective space.
+\newblock \emph{arXiv preprint arXiv:2409.17308}, 2024.
+
+\bibitem[Benara et~al.(2024)]{benara2024qaemb}
+Vinamra Benara et~al.
+\newblock Crafting interpretable embeddings by asking {LLM}s questions.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2024.
+\newblock arXiv:2405.16714.
+
+\bibitem[Cemri et~al.(2025)]{cemri2025mast}
+Mert Cemri et~al.
+\newblock Why do multi-agent {LLM} systems fail?
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2025.
+\newblock arXiv:2503.13657.
+
 \bibitem[Duderstadt et~al.(2023)Duderstadt, Helm, and
   Priebe]{duderstadt2023data}
 Brandon Duderstadt, Hayden~S. Helm, and Carey~E. Priebe.
 \newblock Comparing foundation models using data kernels.
 \newblock \emph{arXiv preprint arXiv:2305.05126}, 2023.
+
+\bibitem[Ge et~al.(2026)]{ge2026psychometrics}
+Yuan Ge et~al.
+\newblock Agent psychometrics: Item response theory for agentic coding
+  evaluation.
+\newblock \emph{arXiv preprint arXiv:2604.00594}, 2026.
+
+\bibitem[Helm et~al.(2025)Helm, Duderstadt, Park, and
+  Priebe]{helm2025statistical}
+Hayden Helm, Brandon Duderstadt, Youngser Park, and Carey Priebe.
+\newblock Statistical inference on black-box generative models in the data
+  kernel perspective space.
+\newblock In \emph{Annual Meeting of the Association for Computational
+  Linguistics (ACL)}, 2025.
+\newblock arXiv:2410.01106.
 
 \bibitem[Helm et~al.(2026{\natexlab{a}})Helm, Johnson, and
   Priebe]{helm2026query}
@@ -58,6 +94,79 @@ Felipe Maia~Polo, Lucas Weber, Leshem Choshen, Yuekai Sun, Gongjun Xu, and
 \newblock In \emph{International Conference on Machine Learning (ICML)}, 2024.
 \newblock arXiv:2402.14992.
 
+\bibitem[Mehtiyev \& Assun\c{c}\~{a}o(2026)Mehtiyev and
+  Assun\c{c}\~{a}o]{mehtiyev2026beyond}
+Rustam Mehtiyev and Wesley K.~G. Assun\c{c}\~{a}o.
+\newblock Beyond resolution rates: Behavioral drivers of coding agent success
+  and failure.
+\newblock \emph{arXiv preprint arXiv:2604.02547}, 2026.
+
+\bibitem[Ndzomga(2026)]{ndzomga2026efficient}
+Michel Ndzomga.
+\newblock Efficient benchmarking of {AI} agents.
+\newblock \emph{arXiv preprint arXiv:2603.23749}, 2026.
+
+\bibitem[Nussbaum \& Duderstadt(2025)Nussbaum and
+  Duderstadt]{nussbaum2025trainingsparsemixtureexperts}
+Zach Nussbaum and Brandon Duderstadt.
+\newblock Training sparse mixture of experts text embedding models.
+\newblock \emph{arXiv preprint arXiv:2502.07972}, 2025.
+
+\bibitem[Oderinwale(2026)]{oderinwale2026trajectories}
+Hamidah Oderinwale.
+\newblock Agent trajectories as programs: Attribution of coding-agent traces to
+  scaffold and model.
+\newblock \emph{arXiv preprint arXiv:2606.16988}, 2026.
+
+\bibitem[Peng et~al.(2024)]{peng2024inbedder}
+Letian Peng et~al.
+\newblock Answer is all you need: Instruction-following text embedding via
+  answering the question.
+\newblock In \emph{Annual Meeting of the Association for Computational
+  Linguistics (ACL)}, 2024.
+\newblock arXiv:2402.09642.
+
+\bibitem[Ravfogel et~al.(2024)Ravfogel, Goldberg, and
+  Cotterell]{ravfogel2024description}
+Shauli Ravfogel, Yoav Goldberg, and Ryan Cotterell.
+\newblock Description-based text similarity.
+\newblock In \emph{Conference on Language Modeling (COLM)}, 2024.
+\newblock arXiv:2305.12517.
+
+\bibitem[Reimers \& Gurevych(2019)Reimers and Gurevych]{reimers2019sbert}
+Nils Reimers and Iryna Gurevych.
+\newblock Sentence-{BERT}: Sentence embeddings using siamese {BERT}-networks.
+\newblock In \emph{Conference on Empirical Methods in Natural Language
+  Processing (EMNLP)}, 2019.
+\newblock arXiv:1908.10084.
+
+\bibitem[Ruan et~al.(2024)Ruan, Maddison, and Hashimoto]{ruan2024observational}
+Yangjun Ruan, Chris~J. Maddison, and Tatsunori Hashimoto.
+\newblock Observational scaling laws and the predictability of language model
+  performance.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2024.
+\newblock arXiv:2405.10938.
+
+\bibitem[Shu et~al.(2026)]{shu2026traceprobe}
+Wei Shu et~al.
+\newblock What resolve rate hides: Canonical action taxonomies for coding agent
+  trajectories.
+\newblock \emph{arXiv preprint arXiv:2607.06184}, 2026.
+
+\bibitem[Su et~al.(2023)]{su2023instructor}
+Hongjin Su et~al.
+\newblock One embedder, any task: Instruction-finetuned text embeddings.
+\newblock In \emph{Findings of the Association for Computational Linguistics
+  (ACL)}, 2023.
+\newblock arXiv:2212.09741.
+
+\bibitem[Sun et~al.(2025)]{sun2025idiosyncrasies}
+Mingjie Sun et~al.
+\newblock Idiosyncrasies in large language models.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2025.
+\newblock arXiv:2502.12150.
+
 \bibitem[{Terminal-Bench Team}(2026)]{tbench2026}
 {Terminal-Bench Team}.
 \newblock Terminal-bench: Benchmarking agents on hard, realistic tasks in
@@ -85,6 +194,12 @@ Xingyao Wang et~al.
   (ICLR)}, 2025.
 \newblock arXiv:2407.16741.
 
+\bibitem[Xiao et~al.(2025)]{xiao2025agentdiet}
+Yiran Xiao et~al.
+\newblock {AgentDiet}: Reducing the cost of {LLM} agents with trajectory
+  reduction.
+\newblock \emph{arXiv preprint arXiv:2509.23586}, 2025.
+
 \bibitem[Yang et~al.(2024)Yang, Jimenez, Wettig, Lieret, Yao, Narasimhan, and
   Press]{yang2024sweagent}
 John Yang, Carlos~E. Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao,
@@ -94,5 +209,26 @@ John Yang, Carlos~E. Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao,
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2024.
 \newblock arXiv:2405.15793.
+
+\bibitem[Yauney et~al.(2026)]{yauney2026reliable}
+Gregory Yauney et~al.
+\newblock How reliable is language model micro-benchmarking?
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2026.
+\newblock arXiv:2510.08730.
+
+\bibitem[Zhuang et~al.(2025)]{zhuang2025embedllm}
+Richard Zhuang et~al.
+\newblock {EmbedLLM}: Learning compact representations of large language
+  models.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2025.
+\newblock arXiv:2410.02223.
+
+\bibitem[Zhuge et~al.(2025)]{zhuge2025agentjudge}
+Mingchen Zhuge et~al.
+\newblock Agent-as-a-judge: Evaluating agents with agents.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2025.
+\newblock arXiv:2410.10934.
 
 \end{thebibliography}
