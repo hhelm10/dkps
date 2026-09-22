@@ -100,7 +100,7 @@ Parallel work uses LLMs to adapt model outputs to be more naturally compared via
 
 \paragraph{Efficient benchmarking.}
 Task-efficient benchmarking estimates a system's full benchmark score from a small number of executions.
-The dominant paradigm for efficient benchmarking centers around item response theory (IRT) \citep{embretson2000item}, where a target system's score is estimated with $ m \le M $ item-level scores by assigning a latent ability estimated from the relationship between a task's difficulty and discriminability based on $ \mathcal{D} $ \citep{maiapolo2024tinybenchmarks, kipnis2025metabench}.
+The dominant paradigm for efficient benchmarking centers around item response theory (IRT) \citep{birnbaum1968some, embretson2000item}, where a target system's score is estimated with $ m \le M $ item-level scores by assigning a latent ability estimated from the relationship between a task's difficulty and discriminability based on $ \mathcal{D} $ \citep{maiapolo2024tinybenchmarks, kipnis2025metabench}.
 Extensions of IRT select informative or adaptive task subsets \citep{vivek2024anchor, truong2025amortized} or apply it to agentic benchmarks directly \citep{ge2026psychometrics, ndzomga2026efficient}.
 A complementary paradigm represents the systems themselves, either from their score profiles \citep{ruan2024observational, zhuang2025embedllm} or from the artifacts they produce while executing a task \citep{duderstadt2023data, acharyya2024consistent, helm2025statistical}.
 For example, the Product Kernel Perspective Space (PKPS) \citep{anonpkps} represents language models as Euclidean objects obtained via multidimensional scaling of the distances between their embedded responses.
