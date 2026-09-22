@@ -12,6 +12,11 @@ Aranyak Acharyya, Michael~W. Trosset, Carey~E. Priebe, and Hayden~S. Helm.
   kernel perspective space.
 \newblock \emph{arXiv preprint arXiv:2409.17308}, 2024.
 
+\bibitem[Anonymous(2026)]{anonpkps}
+Anonymous.
+\newblock Product kernel perspective spaces, 2026.
+\newblock Under review; citation anonymized for double-blind review.
+
 \bibitem[Benara et~al.(2024)]{benara2024qaemb}
 Vinamra Benara et~al.
 \newblock Crafting interpretable embeddings by asking {LLM}s questions.
@@ -31,6 +36,11 @@ Mert Cemri et~al.
 Brandon Duderstadt, Hayden~S. Helm, and Carey~E. Priebe.
 \newblock Comparing foundation models using data kernels.
 \newblock \emph{arXiv preprint arXiv:2305.05126}, 2023.
+
+\bibitem[Embretson \& Reise(2000)Embretson and Reise]{embretson2000item}
+Susan~E. Embretson and Steven~P. Reise.
+\newblock \emph{Item Response Theory for Psychologists}.
+\newblock Lawrence Erlbaum Associates, 2000.
 
 \bibitem[Ge et~al.(2026)]{ge2026psychometrics}
 Yuan Ge et~al.
@@ -194,12 +204,6 @@ Xingyao Wang et~al.
   (ICLR)}, 2025.
 \newblock arXiv:2407.16741.
 
-\bibitem[Xiao et~al.(2025)]{xiao2025agentdiet}
-Yiran Xiao et~al.
-\newblock {AgentDiet}: Reducing the cost of {LLM} agents with trajectory
-  reduction.
-\newblock \emph{arXiv preprint arXiv:2509.23586}, 2025.
-
 \bibitem[Yang et~al.(2024)Yang, Jimenez, Wettig, Lieret, Yao, Narasimhan, and
   Press]{yang2024sweagent}
 John Yang, Carlos~E. Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao,
@@ -209,13 +213,6 @@ John Yang, Carlos~E. Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao,
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2024.
 \newblock arXiv:2405.15793.
-
-\bibitem[Yauney et~al.(2026)]{yauney2026reliable}
-Gregory Yauney et~al.
-\newblock How reliable is language model micro-benchmarking?
-\newblock In \emph{International Conference on Learning Representations
-  (ICLR)}, 2026.
-\newblock arXiv:2510.08730.
 
 \bibitem[Zhuang et~al.(2025)]{zhuang2025embedllm}
 Richard Zhuang et~al.
