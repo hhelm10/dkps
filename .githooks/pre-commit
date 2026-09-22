@@ -1,8 +1,11 @@
 #!/bin/bash
 # Rebuild trubric.pdf whenever paper sources are part of the commit.
 W=projects/trubric/writing
-if git diff --cached --name-only | grep -qE "^$W/(trubric\.tex|references\.bib|.*\.sty|.*\.bst)$"; then
-    echo "[pre-commit] rebuilding $W/trubric.pdf"
+if git diff --cached --name-only | grep -qE "^($W/(trubric\.tex|references\.bib|.*\.sty|.*\.bst)|projects/trubric/artifacts/)"; then
+    echo "[pre-commit] syncing figures/ + rebuilding $W/trubric.pdf"
+    cp projects/trubric/artifacts/trubric_figure*.pdf \
+       projects/trubric/artifacts/trubric_table1_hero.tex $W/figures/
+    git add $W/figures
     ( cd $W \
       && pdflatex -interaction=nonstopmode trubric.tex > /dev/null \
       && bibtex trubric > /dev/null 2>&1 \

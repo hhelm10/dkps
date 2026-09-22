@@ -59,7 +59,7 @@ We make two primary contributions:
     We find that \trubric{}-based estimators, combined with an item-response model, reduce single-task mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks, respectively, and are nearly always better than baselines at any task budget (Table \ref{tab:hero}).
 \end{enumerate}
 
-\input{../artifacts/trubric_table1_hero.tex}
+\input{figures/trubric_table1_hero.tex}
 
 \subsection{Problem statement}
 \label{sec:problem}
@@ -84,14 +84,14 @@ For the target system $f_{0}$, we observe traces (and, optionally, trace-level s
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../artifacts/trubric_figure1_radar.pdf}
+\includegraphics[width=\textwidth]{figures/trubric_figure1_radar.pdf}
 \caption{Comparisons of the properties of three different methods for embedding executed task traces across seven different off-the-shelf text encoders: embedding the raw trace, embedding a structured summary based on a generic rubric, and embedding a structured summary based on a task-specific rubric.
     As measured by the balanced accuracy of held-out linear probes, described in Section~\ref{sec:method}, the embedding of the task-specific summary is better at removing undesirable signal while preserving relevant signal across all seven encoders.}
 \label{fig:radar}
 \end{figure}
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../artifacts/trubric_figure2_pkps.pdf}
+\includegraphics[width=\textwidth]{figures/trubric_figure2_pkps.pdf}
 \caption{The 2-d Product Kernel Perspective Space (PKPS) induced with raw trace embeddings (top) and the \trubric{} embeddings (bottom) under different number of reference systems and number of task executions.
     Each dot is a system colored by full benchmark score on SWE-bench Verified.
     The manifold of systems under the \trubric{} embeddings is more strongly correlated with the full benchmark score in paired settings. We report the average Mean Absolute Error (MAE) under leave-one-system-out (LOSO) protocol to quantify this observation.}
@@ -113,7 +113,7 @@ Table~\ref{tab:hero} further shows that generic rubrics are competitive on SWE-b
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../artifacts/trubric_figure3_protocols.pdf}
+\includegraphics[width=\textwidth]{figures/trubric_figure3_protocols.pdf}
 \caption{The Mean Absolute Error (MAE) of benchmark score estimators as a function of the number of executed tasks for SWE-bench Verified (top) and Terminal-Bench 2.0 (bottom) under three different realistic evaluation protocols: leave-one-system-out (left), leave-one-family-out (center), and leave-one-harness-out (right).
     Reported MAE is the average over 50 random subsets of tasks.
     Shaded areas represent $ \pm 1 $ S.E.
@@ -146,13 +146,13 @@ As Table~\ref{tab:hero} shows, IRT $+$ \trubric{} is best or near-best across th
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../artifacts/trubric_figure4_ablations.pdf}
+\includegraphics[width=\textwidth]{figures/trubric_figure4_ablations.pdf}
 \caption{Mean Absolute Error (MAE) of benchmark score estimators with access to different number of reference systems (left), different task selection procedures (center), and using different text encoders (right) under the leave-one-family-out evaluation protocol. Reported MAE is the average over 50 random subsets of tasks; adaptive task paths are deterministic given the reference systems. Adaptive tasks are selected sequentially to maximize Fisher information under a two-parameter logistic model fit to the reference systems, as described in Section~\ref{sec:method}.}
 \label{fig:ablations}
 \end{figure}
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../artifacts/trubric_figure5_cost.pdf}
+\includegraphics[width=\textwidth]{figures/trubric_figure5_cost.pdf}
 \caption{The cost of achieving a particular Mean Absolute Error (MAE; left and center left) and pairwise ranking error (center right and right) when using different benchmark score estimators on SWE-bench Verified and Terminal-Bench 2.0. Stars indicate the cost of producing the true benchmark score. An ideal method has low error (to the left) and is cheap (lower). Costs are calculated at a nominal \$2 per task execution. Values are estimated using the leave-one-family-out results underlying Table~\ref{tab:hero} and, for pairwise error, leave-two-out comparisons of system pairs whose true scores differ by at least 0.05.}
 \label{fig:cost}
 \end{figure}
@@ -184,7 +184,7 @@ On SWE-bench, the impact of encoder choice appears small compared with the effec
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{../artifacts/trubric_figure6_sensitivity.pdf}
+\includegraphics[width=\textwidth]{figures/trubric_figure6_sensitivity.pdf}
 \caption{The effect of the number of fields present in the rubric used to extract a structured summary of the trace on Mean Absolute Error (MAE) for different number of executed tasks and different number of reference systems for both task-specific and generic rubrics.
     We report both the MAE for the average (bold) and best performing (thin) sets of fields.
     In general, a task-specific rubric is preferred to a generic rubric when there are fewer reference systems and more executed tasks available.}
