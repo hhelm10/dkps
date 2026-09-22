@@ -105,18 +105,18 @@ Appendix~\ref{app:traces} provides a complete worked example (i.e., a task descr
 \label{sec:method-pkps}
 
 Given trace representations, we represent \emph{systems} following the Product Kernel Perspective Space (PKPS) construction \citep{anonpkps}.
-Before constructing the geometry, representations are centered by subtracting task-level means -- the average across systems for each task and field -- removing content shared by every attempt of a task and emphasizing differences in behavior.
-Let $\psi$ denote a text embedding of the task description and $\kappa_{\sigma}(q, q') = \exp\left(-\| \psi(q) - \psi(q') \|^{2} / 2\sigma^{2}\right)$ a Gaussian kernel on tasks.
-For systems $a$ and $b$ observed on task sets $Q_{a}$ and $Q_{b}$, define
+Before constructing the geometry, trace representations are centered by subtracting task-level means -- the average across systems for each task and field -- removing content shared by every attempt of a task and emphasizing differences in behavior.
+Let $\tau$ denote a text embedding of the task description and $\kappa_{\sigma}(q, q') = \exp\left(-\| \tau(q) - \tau(q') \|^{2} / 2\sigma^{2}\right)$ a Gaussian kernel on tasks.
+For systems $f_{a}$ and $f_{b}$ observed on task sets $Q_{a}$ and $Q_{b}$, define the kernel-weighted similarity
 \begin{equation*}
-\langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')},
-\qquad
-\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle.
+\langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')}
 \end{equation*}
+and the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$.
 The kernel compares traces from \emph{similar} -- rather than only identical -- tasks, so the target (observed on $m$ tasks) can be compared to references (observed on all $M$) without discarding unpaired information; as $\sigma \to 0$ the construction recovers paired-only comparisons.
 
-Applying classical multidimensional scaling to the $(n+1) \times (n+1)$ distance matrix yields a $d$-dimensional Euclidean representation of each system.
-We estimate $y_{0}$ with a ridge regressor fit from the reference representations to their benchmark scores; reference predictions are made leave-one-out via the hat matrix so that they remain honest.
+Collecting the distances $\delta(a, b)$ for all pairs of systems yields the $(n+1) \times (n+1)$ pairwise distance matrix $\Delta$.
+Applying classical multidimensional scaling (MDS) to $\Delta$ yields $d$-dimensional Euclidean representations $\psi_{0}, \psi_{1}, \hdots, \psi_{n} \in \mathbb{R}^{d}$ of the target and reference systems.
+We then fit a ridge regressor from the reference representations $\psi_{1}, \hdots, \psi_{n}$ to their benchmark scores $y_{1}, \hdots, y_{n}$ and estimate $\hat{y}_{\mathrm{geom}}$ by evaluating the fitted regressor at $\psi_{0}$; reference predictions are made leave-one-out via the hat matrix so that they remain honest.
 All hyperparameters -- the bandwidth $\sigma$, the dimension $d$, and the ridge penalty -- are selected by treating each reference system as a pseudo-target, predicting its score from the remaining references, and minimizing the mean reference error.\footnote{The selection pool in our experiments additionally contained a $k$-nearest-neighbor estimator over $\delta$; the MDS-based ridge regressor was selected in 92\% of sampled draws (110/120 across both benchmarks and $m \in \{1, 5, 20\}$), so we describe only the latter.}
 No target labels are used at any point, so the geometric estimator applies even when the target's executions cannot be graded.
 
