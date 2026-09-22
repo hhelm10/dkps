@@ -74,10 +74,50 @@ When evaluating a new system, we typically have access to $ \mathcal{D} = \left\
 where $x_{ij} \sim f_{i}(q_{j})$, $y_{ij} = s(x_{ij})$ and $y_{i} = y(f_{i}) $.
 For the target system $f_{0}$, we observe traces (and, optionally, trace-level scores) on only a subset $Q \subset Q^{*}$ of $|Q| = m \ll M$ tasks and our goal is to estimate the system's full benchmark score $ y_{0} $ using only the target's $m$ executions and $\mathcal{D}$.
 
-\section{Method}
+\section{Methods}
 \label{sec:method}
-% TODO: trubric construction (rubric-guided extraction, embedding, consensus
-% centering, PKPS geometry, estimators, IRT blend).
+We first present \trubric{} and then describe its role in geometry-based efficient benchmarking.
+
+\subsection{Task-specific rubrics for representing traces}
+\label{sec:method-trubric}
+
+A trace representation for benchmark prediction should place two traces close together when they reflect similar execution behavior on the task -- and should do so regardless of which harness, model family, or specific system produced them.
+\trubric{} constructs such a representation in two stages.
+
+First, for each task $q_{j}$, an LLM is prompted with the task description to instantiate a \emph{task-specific rubric}: a set of $K$ fields $R_{j} = (r_{j1}, \hdots, r_{jK})$, where each field describes one aspect of execution behavior to attend to when reading a trace from that task (e.g., how the relevant code was localized, how the fix was validated, how errors were handled).
+Field names are shared across tasks while their descriptions are instantiated per task; rubrics are generated once per task and shared across all systems, so their cost is amortized over the reference collection.
+We use $K = 6$ fields by default and study the effect of rubric size in Section~\ref{sec:results}.
+
+Second, for each trace $x_{ij}$, an LLM produces a structured summary $z_{ij} = (z_{ij}^{1}, \hdots, z_{ij}^{K})$, where $z_{ij}^{k}$ is a natural-language description of the trace with respect to field $r_{jk}$.
+Each field is embedded separately with an off-the-shelf text encoder $g$ and the embeddings are concatenated, yielding the trace representation $\phi(x_{ij}) = \left( g(z_{ij}^{1}), \hdots, g(z_{ij}^{K}) \right)$.
+Finally, representations are \emph{consensus-centered}: for each task and field, the mean representation across systems is subtracted, removing content common to every attempt of the task (e.g., restatements of the problem) and emphasizing differences in behavior.
+We compare against two alternatives constructed with the same encoder: embedding the raw trace directly (head and tail slices of the rendered log) and summarizing with a \emph{generic} rubric whose field descriptions are fixed across tasks.
+
+To quantify what a representation encodes, we train class-balanced linear probes to predict five attributes of a held-out trace from its embedding: task and correctness (signal an evaluation should retain) and system identity, model family, and harness (metadata it should not).
+Probes for system-level attributes are evaluated on held-out tasks, and probes for task and correctness on held-out groups of systems, so that reported balanced accuracies reflect generalization rather than memorization.
+
+\subsection{Inference in the Product Kernel Perspective Space}
+\label{sec:method-pkps}
+
+Given trace representations, we represent \emph{systems} following the Product Kernel Perspective Space (PKPS) construction \citep{anonpkps}.
+Let $\psi$ denote a text embedding of the task description and $\kappa_{\sigma}(q, q') = \exp\left(-\| \psi(q) - \psi(q') \|^{2} / 2\sigma^{2}\right)$ a Gaussian kernel on tasks.
+For systems $a$ and $b$ observed on task sets $Q_{a}$ and $Q_{b}$, define
+\begin{equation*}
+\langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')},
+\qquad
+d^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle.
+\end{equation*}
+The kernel compares traces from \emph{similar} -- rather than only identical -- tasks, so the target (observed on $m$ tasks) can be compared to references (observed on all $M$) without discarding unpaired information; as $\sigma \to 0$ the construction recovers paired-only comparisons.
+
+We consider two estimators of $y_{0}$ from this geometry.
+The first is distance-weighted $k$-nearest neighbors: $\hat{y}_{\mathrm{geom}}$ is the weighted mean of the benchmark scores of the $k$ references closest to the target.
+The second applies classical multidimensional scaling to the $(n+1) \times (n+1)$ distance matrix and fits a ridge regression from the resulting coordinates to the reference scores; reference predictions are made leave-one-out via the hat matrix so that they remain honest.
+All hyperparameters -- the bandwidth $\sigma$, the choice of estimator, and its parameters -- are selected by treating each reference system as a pseudo-target, predicting its score from the remaining references, and minimizing the mean reference error.
+No target labels are used at any point, so the geometric estimators apply even when the target's executions cannot be graded.
+
+As a score-only baseline and blending partner we use a two-parameter logistic (2PL) item-response model \citep{birnbaum1968some}: $\mathbb{P}(y_{ij} = 1) = \mathrm{logistic}\left(a_{j} (\theta_{i} - b_{j})\right)$ with item discriminations $a_{j}$ and difficulties $b_{j}$ fit on $\mathcal{D}$, the target ability $\theta_{0}$ estimated from its $m$ graded executions, and $\hat{y}_{\mathrm{IRT}}$ given by the average predicted success probability over $Q^{*}$.
+The combined estimator is the convex blend $\hat{y} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{\mathrm{geom}}$, with $\alpha \in [0, 1]$ selected by the same reference-pseudo-target procedure.
+For adaptive task selection, tasks are chosen sequentially to maximize Fisher information about the target's ability under the reference-fit 2PL model.
 
 \section{Results}
 \label{sec:results}
