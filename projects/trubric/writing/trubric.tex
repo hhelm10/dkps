@@ -81,20 +81,23 @@ We first present \trubric{} and then describe its role in geometry-based efficie
 \subsection{Task-specific rubrics for representing traces}
 \label{sec:method-trubric}
 
-A trace representation for benchmark prediction should place two traces close together when they reflect similar execution behavior on the task -- and should do so regardless of which harness, model family, or specific system produced them.
+A trace representation for benchmark prediction should place two traces close together when they reflect similar execution behavior on a task.
+It should be agnostic to which harness, model family, or specific system produced them.
 \trubric{} constructs such a representation in two stages.
 
-First, for each task $q_{j}$, an LLM is prompted with the task description to instantiate a \emph{task-specific rubric}: a set of $K$ fields $R_{j} = (r_{j1}, \hdots, r_{jK})$, where each field describes one aspect of execution behavior to attend to when reading a trace from that task (e.g., how the relevant code was localized, how the fix was validated, how errors were handled).
-Field names are shared across tasks while their descriptions are instantiated per task; rubrics are generated once per task and shared across all systems, so their cost is amortized over the reference collection.
-We use $K = 6$ fields by default and study the effect of rubric size in Section~\ref{sec:results}.
+First, for each task $q_{j}$, an LLM is prompted with the task description to instantiate a \emph{task-specific rubric}: a set of $K$ fields $R_{j} = (r_{j}^{(1)}, \hdots, r_{j}^{(K)})$, where each field describes one aspect of execution behavior to attend to when reading a trace from that task (e.g., how the relevant code was localized).
+Rubrics are generated once per task and shared across all systems.
+Field names are shared across tasks.
+Unless otherwise stated, we use $K = 6$ fields.
 
-Second, for each trace $x_{ij}$, an LLM produces a structured summary $z_{ij} = (z_{ij}^{1}, \hdots, z_{ij}^{K})$, where $z_{ij}^{k}$ is a natural-language description of the trace with respect to field $r_{jk}$.
-Each field is embedded separately with an off-the-shelf text encoder $g$ and the embeddings are concatenated, yielding the trace representation $\phi(x_{ij}) = \left( g(z_{ij}^{1}), \hdots, g(z_{ij}^{K}) \right)$.
-Finally, representations are \emph{consensus-centered}: for each task and field, the mean representation across systems is subtracted, removing content common to every attempt of the task (e.g., restatements of the problem) and emphasizing differences in behavior.
-We compare against two alternatives constructed with the same encoder: embedding the raw trace directly (head and tail slices of the rendered log) and summarizing with a \emph{generic} rubric whose field descriptions are fixed across tasks.
+Second, for each trace $x_{ij}$ we use an LLM to produce a short summary $z_{ij}^{(k)} $ for each field.
+The summary of each field is then embedded separately with a semantic embedding model $g: \mathcal{X} \to \mathbb{R}^{p} $ and concatenated to yield the trace representation $\phi(x_{ij}) = ( g(z_{ij}^{(1)}), \hdots, g(z_{ij}^{(K)})) \in \mathbb{R}^{K \cdot p} $.
+We center the representations by subtracting task-level means -- the average representation across systems for each task and field -- removing content common to every attempt of a task and emphasizing differences in behavior.
 
 To quantify what a representation encodes, we train class-balanced linear probes to predict five attributes of a held-out trace from its embedding: task and correctness (signal an evaluation should retain) and system identity, model family, and harness (metadata it should not).
 Probes for system-level attributes are evaluated on held-out tasks, and probes for task and correctness on held-out groups of systems, so that reported balanced accuracies reflect generalization rather than memorization.
+We compare against two alternatives constructed with the same encoder: embedding the raw trace directly (head and tail slices of the rendered log) and summarizing with a \emph{generic} rubric whose field descriptions are fixed across tasks.
+% TODO(appendix): example task, example trubric, example extractions, judge/encoder details, prompts.
 
 \subsection{Inference in the Product Kernel Perspective Space}
 \label{sec:method-pkps}
