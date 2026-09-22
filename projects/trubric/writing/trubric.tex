@@ -104,7 +104,7 @@ The dominant paradigm for efficient benchmarking centers around item response th
 Extensions of IRT select informative or adaptive task subsets \citep{vivek2024anchor, truong2025amortized} or apply it to agentic benchmarks directly \citep{ge2026psychometrics, ndzomga2026efficient}.
 A complementary paradigm represents the systems themselves, either from their score profiles \citep{ruan2024observational, zhuang2025embedllm} or from the artifacts they produce while executing a task \citep{duderstadt2023data, acharyya2024consistent, helm2025statistical}.
 For example, the Product Kernel Perspective Space (PKPS) \citep{anonpkps} represents language models as Euclidean objects obtained via multidimensional scaling of the distances between their embedded responses.
-\citet{helm2026query} regress benchmark scores on these representations and prove that the resulting predictions are task-efficient relative to the sample score.
+\citet{helm2026query} regress benchmark scores on similar representations and prove that the resulting predictions are task-efficient relative to the sample score.
 \trubric{} enables extending geometry-based methods to agentic traces by providing an effective trace encoding.
 We show that these two approaches -- score-based IRT and artifact-based PKPS -- can be combined to outperform either for any number of given executed tasks.
 
