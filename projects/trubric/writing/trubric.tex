@@ -76,7 +76,7 @@ For the target system $f_{0}$, we observe traces (and, optionally, trace-level s
 
 \section{Methods}
 \label{sec:method}
-We first present \trubric{} and then describe its role in geometry-based efficient benchmarking.
+We first present \trubric{} and compare it to baseline trace embedding functions. We then describe constructing representations of the systems $ f_{0}, f_{1}, \hdots, f_{n} $ based on \trubric{} embeddings that can be used to train a simple regressor in $ \mathbb{R}^{d} $ for efficient benchmarking.
 
 \subsection{Task-specific rubrics for representing traces}
 \label{sec:method-trubric}
@@ -87,8 +87,7 @@ For efficient benchmarking with traces, an ideal representation encodes (i) and 
 \trubric{} constructs such a representation in two stages.
 
 First, for each task $q_{j}$, an LLM is prompted with the task description to instantiate a task-specific rubric: a set of $K$ fields $R_{j} = (r_{j}^{(1)}, \hdots, r_{j}^{(K)})$, where each field describes one aspect of execution behavior (e.g., how the relevant code was localized).
-Rubrics are shared across all systems.
-Field names are shared across tasks.
+Rubrics are shared across all systems and field names are shared across tasks.
 Unless otherwise stated, we use $K = 6$ fields.
 
 Second, for each trace $x_{ij}$ we use an LLM to produce a short summary $z_{ij}^{(k)} $ for each field.
@@ -97,10 +96,10 @@ The summary of each field is then embedded separately with a semantic embedding 
 To quantify what a representation encodes, we train class-balanced linear classifiers to predict each of the five attributes of a held-out trace from its embedding.
 Classifiers for system-level attributes (iii)--(v) are evaluated on held-out tasks.
 Classifiers for (i) and (ii) are evaluated on held-out groups of systems.
-We use cached traces from the SWE-bench Verified leaderboard archive \citep{openai2024verified}, with DeepSeek-V4-Flash \citep{deepseek2026v4} as both the rubric-instantiation and extraction model.
+We use cached traces from the SWE-bench Verified leaderboard \citep{openai2024verified}, with DeepSeek-V4-Flash \citep{deepseek2026v4} as both the rubric generator and summarizer.
 We compare the quality of the \trubric{} embeddings, using $ g $ to embed the start and end of a raw trace, and generic rubric-based embeddings along axes (i)--(v) in Figure \ref{fig:radar}.
 Relative to baselines, \trubric{} preserves (i) and (ii) while mitigating (iii)--(v) across seven modern text encoders.
-Appendix~\ref{app:traces} provides a complete worked example -- a task, its instantiated \trubric{}, and the resulting extractions for two traces -- as well as a more detailed description of the classification.
+Appendix~\ref{app:traces} provides a complete worked example (i.e., a task description, its \trubric{}, and extractions for two traces) and more detailed descriptions of the classification tasks.
 
 \subsection{Inference in the Product Kernel Perspective Space}
 \label{sec:method-pkps}
