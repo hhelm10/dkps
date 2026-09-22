@@ -1,0 +1,98 @@
+\begin{thebibliography}{12}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Duderstadt et~al.(2023)Duderstadt, Helm, and
+  Priebe]{duderstadt2023data}
+Brandon Duderstadt, Hayden~S. Helm, and Carey~E. Priebe.
+\newblock Comparing foundation models using data kernels.
+\newblock \emph{arXiv preprint arXiv:2305.05126}, 2023.
+
+\bibitem[Helm et~al.(2026{\natexlab{a}})Helm, Johnson, and
+  Priebe]{helm2026query}
+Hayden Helm, Johnson, and Carey Priebe.
+\newblock Query-efficient model evaluation using cached responses.
+\newblock In \emph{International Conference on Machine Learning (ICML)},
+  2026{\natexlab{a}}.
+\newblock arXiv:2605.07096.
+
+\bibitem[Helm et~al.(2026{\natexlab{b}})Helm, Liu, and Yang]{helm2026jailbreak}
+Hayden Helm, Xiaodong Liu, and Weiwei Yang.
+\newblock Jailbreak susceptibility prediction and mitigation via the behavioral
+  geometry of models.
+\newblock \emph{arXiv preprint arXiv:2605.26409}, 2026{\natexlab{b}}.
+
+\bibitem[Jimenez et~al.(2024)Jimenez, Yang, Wettig, Yao, Pei, Press, and
+  Narasimhan]{jimenez2024swebench}
+Carlos~E. Jimenez, John Yang, Alexander Wettig, Shunyu Yao, Kexin Pei, Ofir
+  Press, and Karthik Narasimhan.
+\newblock {SWE}-bench: Can language models resolve real-world github issues?
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2024.
+\newblock arXiv:2310.06770.
+
+\bibitem[Kapoor et~al.(2026)Kapoor, Stroebl, et~al.]{kapoor2025hal}
+Sayash Kapoor, Benedikt Stroebl, et~al.
+\newblock Holistic agent leaderboard: The missing infrastructure for {AI} agent
+  evaluation.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2026.
+\newblock arXiv:2510.11977.
+
+\bibitem[Kipnis et~al.(2025)]{kipnis2025metabench}
+Alex Kipnis et~al.
+\newblock metabench: A sparse benchmark to measure general ability in large
+  language models.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2025.
+\newblock arXiv:2407.12844.
+
+\bibitem[Maia~Polo et~al.(2024)Maia~Polo, Weber, Choshen, Sun, Xu, and
+  Yurochkin]{maiapolo2024tinybenchmarks}
+Felipe Maia~Polo, Lucas Weber, Leshem Choshen, Yuekai Sun, Gongjun Xu, and
+  Mikhail Yurochkin.
+\newblock tiny{B}enchmarks: Evaluating {LLM}s with fewer examples.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2024.
+\newblock arXiv:2402.14992.
+
+\bibitem[{Terminal-Bench Team}(2026)]{tbench2026}
+{Terminal-Bench Team}.
+\newblock Terminal-bench: Benchmarking agents on hard, realistic tasks in
+  command line interfaces.
+\newblock \emph{arXiv preprint arXiv:2601.11868}, 2026.
+
+\bibitem[Truong et~al.(2025)]{truong2025amortized}
+Sang Truong et~al.
+\newblock Reliable and efficient amortized model-based evaluation.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2025.
+\newblock arXiv:2503.13335.
+
+\bibitem[Vivek et~al.(2024)Vivek, Ethayarajh, Yang, and Kiela]{vivek2024anchor}
+Rajan Vivek, Kawin Ethayarajh, Diyi Yang, and Douwe Kiela.
+\newblock Anchor points: Benchmarking models with much fewer examples.
+\newblock In \emph{Conference of the European Chapter of the Association for
+  Computational Linguistics (EACL)}, 2024.
+\newblock arXiv:2309.08638.
+
+\bibitem[Wang et~al.(2025)]{wang2025openhands}
+Xingyao Wang et~al.
+\newblock {OpenHands}: An open platform for {AI} software developers as
+  generalist agents.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2025.
+\newblock arXiv:2407.16741.
+
+\bibitem[Yang et~al.(2024)Yang, Jimenez, Wettig, Lieret, Yao, Narasimhan, and
+  Press]{yang2024sweagent}
+John Yang, Carlos~E. Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao,
+  Karthik Narasimhan, and Ofir Press.
+\newblock {SWE}-agent: Agent-computer interfaces enable automated software
+  engineering.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2024.
+\newblock arXiv:2405.15793.
+
+\end{thebibliography}

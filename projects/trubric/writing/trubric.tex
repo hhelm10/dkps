@@ -39,14 +39,14 @@ These results indicate that trace geometry and correctness outcomes carry comple
 
 The dominant paradigm of generative model use is increasingly agentic: systems plan, invoke tools, observe intermediate results, and iterate over long horizons to complete complex tasks \citep{yang2024sweagent, wang2025openhands}.
 As agentic capabilities increase, so does the range of settings in which a given system might be deployed -- and, with it, the number of benchmarks on which the system must be evaluated before it can be trusted with consequential work \citep{kapoor2025hal}.
-Agentic evaluation, however, is expensive: each task execution requires a properly sandboxed environment and a single execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
+Agentic evaluation, however, is expensive: each task execution requires a properly sandboxed environment and a single task execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
 At reported per-task costs of \$0.13--\$4 \citep{kapoor2025hal}, the cost of evaluating a single system on a single benchmark can regularly exceed \$2{,}000.
 Given this cost, efficient evaluation is necessary to increase the evaluation coverage of a system and ensure operator trust.
 
-Task-efficient evaluation methods -- via benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, leveraging cached responses \citep{helm2026query}, etc. -- address this problem by finding structure in item-level information available from previously-evaluated reference systems.
+Task-efficient evaluation methods -- via benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, leveraging cached responses \citep{helm2026query}, etc. -- address this problem by finding structure in item-level information available from previously-evaluated reference systems to decrease the cost of evaluating a new system.
 Some task-efficient evaluation methods require only the item-level scores from reference systems \citep{vivek2024anchor, kipnis2025metabench}.
 Others leverage the content of cached artifacts, such as the natural language responses or residual streams, to measure the similarity of systems on a set of tasks \citep{duderstadt2023data, helm2026jailbreak, helm2026query}.
-Notably, agentic workflows often produce artifacts when executing a task -- file diffs, tool invocations, intermediate plans, and error messages -- recorded together in an execution trace that can be used to this effect.
+Notably, agentic workflows often produce artifacts when executing a task -- file diffs, tool calls, intermediate plans, and error messages -- recorded together in an execution trace that can be used to this effect.
 Unfortunately, existing methods for using cached artifacts rely on off-the-shelf embedding functions that are not immediately well-suited for representing traces.
 
 We make two primary contributions:
@@ -55,10 +55,12 @@ We make two primary contributions:
 \setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
     \item \textbf{\trubric{} trace representations.} We introduce \trubric{} (\emph{trace rubric}): a trace representation constructed by extracting a structured, rubric-guided summary of each trace with an LLM and embedding the summary with a standard text encoder.
     We show that \trubric{} embeddings preserve information relevant to the task and behavior of the system while minimizing system-, model family-, and harness- specific signal across seven modern text encoders.
-    \item \textbf{Task-efficient evaluation.} Given the \trubric{} embeddings from a set of tasks for a target system and a collection of reference systems, we evaluate their utility for predicting the target system's full-benchmark score on SWE-bench Verified and Terminal-Bench 2.0 under three different agentic system evaluation protocols.
-    We find that \trubric{}-based estimators, combined with an item-response model, reduce single-task mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks respectively, and are never worse than either constituent at any task budget (Table \ref{tab:hero}).
+    \item \textbf{Task-efficient evaluation using cached traces.} Given the \trubric{} embeddings from a set of tasks for a target system and a collection of reference systems, we evaluate their utility for predicting the target system's full-benchmark score on SWE-bench Verified and Terminal-Bench 2.0 under three different agentic system evaluation protocols.
+    We find that \trubric{}-based estimators, combined with an item-response model, reduce single-task mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks, respectively, and are nearly always better than either constituent at any task budget (Table \ref{tab:hero}).
     Our results are not sensitive to choice of hyperparameters, including text encoder.
 \end{enumerate}
+
+\input{../artifacts/trubric_table1_hero.tex}
 
 \subsection{Problem statement}
 \label{sec:problem}
@@ -97,9 +99,8 @@ The query subset $Q$ may be fixed, drawn at random, or selected adaptively per t
 
 \section{Efficient evaluation}
 \label{sec:results}
-% TODO: hero table (Table 1), protocol grid (Figure 3), ablations (Figure 4),
+% TODO: protocol grid (Figure 3), ablations (Figure 4),
 % cost and ranking (Figure 5), rubric sensitivity (Figure 6).
-\input{../artifacts/trubric_table1_hero.tex}
 
 \section{Related work}
 \label{sec:related}

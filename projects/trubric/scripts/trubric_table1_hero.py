@@ -44,17 +44,15 @@ def load_cell(bench, regime):
 
 
 def sig_vs_irt(errs, rng):
-    """{method: True if paired (method - irt) 95% CI upper < 0}."""
+    """{method: True if better than IRT with two-sided Wilcoxon
+    signed-rank p < 0.05 on paired per-system errors}."""
+    from scipy.stats import wilcoxon
     out = {}
     e_irt = np.array(errs['irt'])
-    M = len(e_irt)
     for k in errs:
-        if k == 'irt':
-            out[k] = False
-            continue
         d = np.array(errs[k]) - e_irt
-        v = np.array([d[rng.integers(0, M, M)].mean() for _ in range(2000)])
-        out[k] = float(np.percentile(v, 97.5)) < 0
+        out[k] = (k != 'irt' and d.mean() < 0
+                  and wilcoxon(np.array(errs[k]), e_irt).pvalue < 0.05)
     return out
 
 
@@ -105,12 +103,21 @@ def build_md(t):
 
 
 def build_tex(t):
-    out = [r'% requires booktabs + graphicx; bold = column best,',
-           r'% underline = significantly better than IRT (paired, p<.05)',
+    out = [r'% requires booktabs + graphicx (and the \trubric macro)',
            r'\begin{table}[t]',
            r'\centering',
-           r'\caption{MAE of estimated benchmark scores under '
-           r'leave-one-family-out.}',
+           r'\caption{Mean Absolute Error (MAE) of benchmark score '
+           r'estimators for SWE-bench Verified and Terminal-Bench 2.0 '
+           r'under leave-one-family-out evaluation and different task '
+           r'selection protocols (random \& adaptive). '
+           r'\textbf{Bolded} values are the best method for a given '
+           r'benchmark, task selection, and number of tasks. '
+           r'\underline{Underlined} values are statistically significant '
+           r'($\alpha = 0.05$) comparisons to IRT per the two-sided '
+           r'Wilcoxon signed-rank test. The \trubric{} and IRT blend -- '
+           r'which takes advantage of both trace geometry and '
+           r'per-execution score -- is the best or near-best in all '
+           r'settings.}',
            r'\label{tab:hero}',
            r'\resizebox{\textwidth}{!}{%',
            r'\begin{tabular}{l' + 'c' * 12 + '}',
