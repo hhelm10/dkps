@@ -75,15 +75,6 @@ y(f) = \frac{1}{M} \sum_{j=1}^{M} \mathbb{E}\left[ s(f(q_{j})) \right],
 where the expectation is with respect to the randomness of $f$.
 We write $y$ for $y(f)$ when the system is clear from context.
 
-When evaluating a new system, we typically have access to the execution records of $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$ -- both the traces and the trace-level scores on every task:
-\begin{equation*}
-\mathcal{D} = \left\{ \{ (x_{ij}, y_{ij}) \}_{j=1}^{M} \right\}_{i=1}^{n},
-\end{equation*}
-where $x_{ij} \sim f_{i}(q_{j})$, $y_{ij} = s(x_{ij})$, and the benchmark score of reference system $f_{i}$ is $y_{i} = \frac{1}{M} \sum_{j=1}^{M} y_{ij}$.
-Such reference caches exist publicly at scale.\footnote{The SWE-bench Verified leaderboard archive contains traces and outcomes for over one hundred systems; we estimate it embodies \$50K--\$100K of agent compute contributed by submitters.}
-For the target system $f$, we observe traces (and, optionally, trace-level scores) on only a subset $Q \subset Q^{*}$ of $|Q| = m \ll M$ tasks.
-Our goal is an estimate $\hat{y}$ of $y(f)$ from the target's $m$ executions together with $\mathcal{D}$.
-
 \section{Method}
 \label{sec:method}
 % TODO: trubric construction (rubric-guided extraction, embedding, consensus
