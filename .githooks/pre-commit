@@ -4,7 +4,8 @@ W=projects/trubric/writing
 if git diff --cached --name-only | grep -qE "^($W/(trubric\.tex|references\.bib|.*\.sty|.*\.bst)|projects/trubric/artifacts/)"; then
     echo "[pre-commit] syncing figures/ + rebuilding $W/trubric.pdf"
     cp projects/trubric/artifacts/trubric_figure*.pdf \
-       projects/trubric/artifacts/trubric_table1_hero.tex $W/figures/
+       projects/trubric/artifacts/trubric_table1_hero.tex \
+       projects/trubric/artifacts/trubric_appendixA_example.tex $W/figures/
     git add $W/figures
     ( cd $W \
       && pdflatex -interaction=nonstopmode trubric.tex > /dev/null \
