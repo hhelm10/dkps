@@ -92,12 +92,15 @@ Unless otherwise stated, we use $K = 6$ fields.
 
 Second, for each trace $x_{ij}$ we use an LLM to produce a short summary $z_{ij}^{(k)} $ for each field.
 The summary of each field is then embedded separately with a semantic embedding model $g: \mathcal{X} \to \mathbb{R}^{p} $ and concatenated to yield the trace representation $\phi(x_{ij}) = ( g(z_{ij}^{(1)}), \hdots, g(z_{ij}^{(K)})) \in \mathbb{R}^{K \cdot p} $.
-We center the representations by subtracting task-level means -- the average representation across systems for each task and field -- removing content common to every attempt of a task and emphasizing differences in behavior.
+We center the representations by subtracting task-level means to emphasize differences in behavior and remove content shared by all attempts of a task.
 
-To quantify what a representation encodes, we train class-balanced linear probes to predict five attributes of a held-out trace from its embedding: task and correctness (signal an evaluation should retain) and system identity, model family, and harness (metadata it should not).
-Probes for system-level attributes are evaluated on held-out tasks, and probes for task and correctness on held-out groups of systems, so that reported balanced accuracies reflect generalization rather than memorization.
-We compare against two alternatives constructed with the same encoder: embedding the raw trace directly (head and tail slices of the rendered log) and summarizing with a \emph{generic} rubric whose field descriptions are fixed across tasks.
-% TODO(appendix): example task, example trubric, example extractions, judge/encoder details, prompts.
+To quantify what a representation encodes, we train class-balanced linear classifiers to predict five attributes of a held-out trace from its embedding: i) task (i.e., predict which task the trace corresponds to), ii) correctness (i.e., predict if a trace produced a correct output), iii) system identity (i.e., predict which system produced the trace), iv) model family (i.e., predict the family of the underlying generative model), and v) harness (i.e., predict the harness used to produce the trace).
+For generalizable efficient benchmarking with traces, an ideal representation encodes (i) and (ii) but not (iii)--(v).
+Classifiers for system-level attributes are evaluated on held-out tasks.
+Classifiers for task and correctness on held-out groups of systems.
+We compare the quality of the \trubric{} embeddings along axes (i)--(v), raw trace embeddings, and generic rubric-based embeddings in Figure \ref{fig:radar}.
+Relative to baselines, \trubric{} preserves (i) and (ii) while mitigating (iii)--(v).
+% TODO(appendix): judge/encoder details, prompts (worked example now in Appendix A).
 
 \subsection{Inference in the Product Kernel Perspective Space}
 \label{sec:method-pkps}
