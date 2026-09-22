@@ -1,4 +1,4 @@
-\begin{thebibliography}{32}
+\begin{thebibliography}{33}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -23,6 +23,13 @@ Vinamra Benara et~al.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2024.
 \newblock arXiv:2405.16714.
+
+\bibitem[Birnbaum(1968)]{birnbaum1968some}
+Allan Birnbaum.
+\newblock Some latent trait models and their use in inferring an examinee's
+  ability.
+\newblock In Frederic~M. Lord and Melvin~R. Novick (eds.), \emph{Statistical
+  Theories of Mental Test Scores}, pp.\  397--479. Addison-Wesley, 1968.
 
 \bibitem[Cemri et~al.(2025)]{cemri2025mast}
 Mert Cemri et~al.
