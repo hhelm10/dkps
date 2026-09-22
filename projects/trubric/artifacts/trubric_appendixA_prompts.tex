@@ -1,0 +1,39 @@
+\subsection{Prompts}
+\label{app:prompts}
+
+The rubric-instantiation prompt (\texttt{\{problem\}} is the task description):
+\begin{quote}\small\begin{verbatim}
+Here is a repository issue that a software-engineering agent will be asked to fix:
+
+{problem}
+
+Write an instance-specific rubric for judging an agent's trace on THIS issue:
+for each section below, one sentence saying what specifically to look for in
+this instance (name the likely relevant modules/files/tests if inferable).
+
+Sections: understanding, localization, reproduction, editing, verification, final_state.
+Respond with ONLY a JSON object with those keys, each a one-sentence string.
+\end{verbatim}\end{quote}
+
+The extraction prompt (\texttt{\{rubric\}} is the instantiated \trubric{} for the task, or the fixed generic rubric below for the generic baseline; \texttt{\{keys\}} the field names; the rendered trace is appended after the prompt):
+\begin{quote}\small\begin{verbatim}
+Below is the (truncated) execution trace of a software-engineering agent.
+Extract a factual description of the agent's behavior for EACH of the following
+sections. 30-60 words per section. Describe behavior only -- do not restate the
+problem. If a section did not occur, write exactly what is missing (e.g. "never
+ran any test after editing").
+
+{rubric}
+
+Respond with ONLY a JSON object with keys {keys}, each a string.
+\end{verbatim}\end{quote}
+
+The generic rubric:
+\begin{quote}\small\begin{verbatim}
+- understanding: how the agent oriented itself before acting
+- localization: how it searched/navigated to find the relevant code
+- reproduction: whether/how it reproduced the issue before fixing
+- editing: what it changed (files, nature and size of the edit)
+- verification: whether it re-ran tests or a repro script after editing, and the OBSERVED outcome (passing/failing/errors)
+- final_state: how the run ended (clean finish, step/cost limit, submitted unverified)
+\end{verbatim}\end{quote}
