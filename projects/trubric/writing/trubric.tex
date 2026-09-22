@@ -79,14 +79,121 @@ For the target system $f_{0}$, we observe traces (and, optionally, trace-level s
 % TODO: trubric construction (rubric-guided extraction, embedding, consensus
 % centering, PKPS geometry, estimators, IRT blend).
 
-\section{Trace representations encode confounders}
-\label{sec:probes}
-% TODO: linear-probe analysis (Figure 1), PKPS geometry (Figure 2).
-
-\section{Efficient evaluation}
+\section{Results}
 \label{sec:results}
-% TODO: protocol grid (Figure 3), ablations (Figure 4),
-% cost and ranking (Figure 5), rubric sensitivity (Figure 6).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../artifacts/trubric_figure1_radar.pdf}
+\caption{Held-out balanced accuracy of linear probes for five trace attributes, chance-normalized so that chance sits at the center and better-for-evaluation is outside: content attributes (Correctness, Task) plot recoverability and system-metadata attributes (Harness, Model Family, System Identity) plot its complement. One panel per text encoder; raw traces vs.\ generic-rubric vs.\ \trubric{} summaries.}
+\label{fig:radar}
+\end{figure}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../artifacts/trubric_figure2_pkps.pdf}
+\caption{Two-dimensional PKPS representations of 107 SWE-bench Verified systems, colored by benchmark score (gold high, blue low), for raw-trace embeddings (top) and \trubric{} embeddings (bottom) as the number of reference systems $n$ and tasks $m$ grows. Panels within a row are Procrustes-aligned; badges report leave-one-system-out MAE of a $k$NN predictor in each panel.}
+\label{fig:pkps}
+\end{figure}
+
+\paragraph{Rubric-based preprocessing produces more useful trace representations.}
+We compare embeddings of raw traces with embeddings of structured summaries produced using either a generic rubric or a task-specific rubric, \trubric{}.
+Figure~\ref{fig:radar} shows that both rubric constructions reduce recoverable information about system identity, model family, and harness while retaining task and correctness information.
+As discussed in Section~\ref{sec:intro}, these attributes can introduce nuisance variation into trace similarity, obscuring similarities in how systems execute tasks.
+Task-specific rubrics generally produce a larger reduction in identity-related signals than generic rubrics.
+This qualitative pattern persists across seven embedding functions with little overall variation, although the precise magnitudes differ.
+
+These differences are also reflected in the system-level geometry.
+Figure~\ref{fig:pkps} shows a clearer relationship between system position in the embedding space and benchmark score for \trubric{} than for raw-trace embeddings.
+In Figure~\ref{fig:protocols}, prediction error decreases more rapidly with additional tasks when using \trubric{} representations than when using raw-trace embeddings.
+On SWE-bench Verified, increasing the task budget from 1 to 20 reduces geometry-only MAE from .081 to .060 for \trubric{}, compared with .099 to .089 for raw traces.
+Table~\ref{tab:hero} further shows that generic rubrics are competitive on SWE-bench, particularly at small budgets, though task-specific rubrics provide larger improvements on Terminal-Bench 2.0.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../artifacts/trubric_figure3_protocols.pdf}
+\caption{MAE of benchmark-score estimators as a function of the task budget $m$ (random task selection, $B=50$ shared draws, $\pm 1$ SEM bands) on SWE-bench Verified (top) and Terminal-Bench 2.0 (bottom) under three reference-exclusion protocols of increasing conservatism.}
+\label{fig:protocols}
+\end{figure}
+
+\paragraph{Trace geometry alone supports task-efficient benchmark prediction.}
+Table~\ref{tab:hero} and Figure~\ref{fig:protocols} show that rubric-based trace geometry predicts full-benchmark performance more accurately than the sample score across small task budgets.
+Under leave-one-family-out evaluation, this advantage holds from 1 through 10 randomly selected tasks on both benchmarks.
+The geometric estimator also outperforms the population-mean baseline, indicating that its accuracy reflects useful differences between systems rather than just regularizing towards the average reference score.
+We emphasize that these geometric methods \emph{only} require the target's trace content, and \emph{not} its correctness labels, which means that these methods are applicable in settings where grading (even a small number of) target tasks is infeasible (due to e.g.\ cost, lack of expertise, etc.), provided scored reference systems are available.
+
+Trace geometry can also outperform IRT, which already exploits the correctness patterns of reference systems.
+On SWE-bench, geometry remains more accurate through 10 random tasks (Figure~\ref{fig:protocols}).
+On Terminal-Bench, geometry outperforms IRT at one task, but IRT is more accurate from three tasks onward.
+The advantage of trace geometry over outcome-only methods is largest when few target executions are available, while its relative performance at larger budgets varies by benchmark.
+
+\paragraph{Combining trace geometry with correctness outcomes improves prediction beyond either source alone.}
+The two estimators exhibit different behavior as the task budget grows: geometric predictions are informative with very few executions, while IRT improves substantially as the number of tasks increases.
+We combine the geometric and IRT predictions using the weighting procedure described in Section~\ref{sec:method}, referring to the resulting estimator as IRT $+$ \trubric{}.
+Figure~\ref{fig:protocols} shows that combining their predictions improves accuracy across evaluated budgets.
+At five random tasks on SWE-bench, IRT $+$ \trubric{} achieves .063 MAE, compared with .069 for geometry alone and .088 for IRT.
+On Terminal-Bench -- where IRT is relatively stronger -- the combination achieves .090, compared with .107 for geometry and .097 for IRT.
+
+The improvement therefore extends beyond choosing whichever method performs better on a particular benchmark.
+These results support the complementary predictive value of execution content and correctness outcomes.
+The broad pattern persists across the system-, family-, and harness-exclusion protocols in Figure~\ref{fig:protocols}, although the size of the improvement varies.
+As Table~\ref{tab:hero} shows, IRT $+$ \trubric{} is best or near-best across the reported settings, though its advantage over IRT generally shrinks as the number of correctness observations increases.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../artifacts/trubric_figure4_ablations.pdf}
+\caption{Ablations under leave-one-family-out evaluation on SWE-bench Verified. (a) Effect of the number of reference systems $n$ for $m \in \{1, 5, 20\}$ tasks (line weight). (b) Random (open) vs.\ adaptive (filled) task selection for \trubric{} geometry with $n = 107$ (solid) and $n = 20$ (dashed) reference systems. (c) Effect of the text encoder on \trubric{} geometry.}
+\label{fig:ablations}
+\end{figure}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../artifacts/trubric_figure5_cost.pdf}
+\caption{Evaluation cost per target system (at a nominal \$2 per execution) to reach a given MAE (left two panels) and a given pairwise ranking accuracy on system pairs separated by at least 0.05 (right two panels). The star marks full-benchmark evaluation: exact scores at full cost.}
+\label{fig:cost}
+\end{figure}
+
+\paragraph{Trace-informed estimation reduces the cost of reaching a given prediction accuracy.}
+Figure~\ref{fig:cost} translates the error curves into execution costs, illustrating how more informative estimates can reduce the number of tasks required for a desired accuracy.
+For this comparison, we assume a cost of \$2 per agent execution.
+On SWE-bench, IRT $+$ \trubric{} reaches an MAE below .10 with one random task, compared with five tasks for IRT and twenty for the sample score -- the smallest tested budgets meeting this threshold.
+This corresponds to estimated target execution costs of \$2, \$10, and \$40, respectively.
+
+Combining trace information with adaptive sampling also reduces cost at a more stringent accuracy level: five adaptive tasks with IRT $+$ \trubric{} achieve approximately the same error as twenty random tasks with IRT, .048 MAE (Table~\ref{tab:hero}), corresponding to \$10 rather than \$40.
+These comparisons concern the cost of executing tasks for a new system and assume an existing reference collection.
+We assume that reference executions are available from community archives or that their acquisition cost is amortized over a large number of target evaluations.
+In this calculation, we treat the cost of LLMs used to do (t)rubric summarization and the cost of API-based embedding functions as negligible compared to the cost of running the agents on the task.
+These comparisons illustrate how extracting additional information from each execution can make accurate benchmark estimation feasible at substantially smaller task budgets.
+
+\paragraph{Performance improves with larger reference libraries and adaptive task selection.}
+Figure~\ref{fig:ablations}a shows that increasing the number of reference models generally improves both IRT and geometry-based estimators.
+At five random tasks on SWE-bench, expanding the library from 20 to 107 systems reduces geometry-only MAE from .086 to .069 and IRT $+$ \trubric{} MAE from .081 to .063.
+The contribution of geometry depends on reference availability: given a small number of reference models and a large target-task budget, IRT can outperform geometry-based methods.
+
+Adaptive task selection provides a further improvement.
+With five adaptive tasks, IRT $+$ \trubric{} achieves .048 MAE on SWE-bench, compared with .063 for five random tasks (Table~\ref{tab:hero}).
+Together, Table~\ref{tab:hero} and Figure~\ref{fig:ablations}b show that adaptive selection improves both IRT and geometry-based prediction.
+These findings demonstrate that trace-based estimation can be used alongside adaptive sampling.
+
+Figure~\ref{fig:ablations}c further shows that the qualitative behavior persists across seven embedding functions.
+On SWE-bench, the impact of encoder choice appears small compared with the effects of the number of target tasks and the number of reference models.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{../artifacts/trubric_figure6_sensitivity.pdf}
+\caption{Effect of rubric size $r$ on MAE for generic and task-specific (\trubric{}) rubrics, averaged over up to 200 random size-$r$ subsets of a 32-field bank (thick: mean $\pm 1$ SEM; thin: best subset per size), for $m \in \{1, 5, 20\}$ tasks and reference libraries of $n = 107$ (solid) and $n = 20$ (dashed) systems.}
+\label{fig:sensitivity}
+\end{figure}
+
+\paragraph{Broader rubrics improve average performance, though strong, small rubrics may exist.}
+Figure~\ref{fig:sensitivity} varies the number of fields included in generic and task-specific rubrics, averaging performance over subsets drawn from a bank of 32 fields.
+For both constructions, adding fields generally improves average prediction accuracy, with diminishing returns.
+At five tasks and the larger reference library, increasing a task-specific rubric from one to six fields reduces average MAE from .090 to .081; using all 32 fields reduces it further to .077.
+This pattern is consistent with an ensembling effect from combining descriptions of multiple aspects of execution.
+Task-specific rubrics generally outperform generic rubrics in this experiment, with small reversals at the one-task budget.
+
+The thin curves show that some small subsets perform substantially better than the average subset of the same size.
+Each point selects the lowest average evaluation error among the tested subsets separately for that setting, averaging over probe draws and all 107 target systems even when the reference library contains 20 systems.
+These retrospective selections demonstrate the existence of favorable small rubrics on the evaluation panel, rather than a validated procedure for identifying them in advance.
+The selected subsets need not be nested as field count increases, so their performance need not improve monotonically.
 
 \section{Related work}
 \label{sec:related}

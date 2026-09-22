@@ -27,24 +27,40 @@
 \citation{duderstadt2023data,helm2026jailbreak,helm2026query}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
 \newlabel{sec:intro}{{1}{1}{Introduction}{section.1}{}}
-\citation{reimers2019sbert,su2023instructor,nussbaum2025trainingsparsemixtureexperts}
-\citation{sun2025idiosyncrasies,oderinwale2026trajectories}
-\citation{cemri2025mast,shu2026traceprobe}
-\citation{zhuge2025agentjudge,mehtiyev2026beyond}
-\citation{ravfogel2024description,peng2024inbedder,benara2024qaemb}
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Mean Absolute Error (MAE) of benchmark score estimators for SWE-bench Verified and Terminal-Bench 2.0 under leave-one-family-out evaluation and different task selection protocols (random \& adaptive). \textbf  {Bolded} values are the best method for a given benchmark, task selection, and number of tasks. \underline  {Underlined} values are statistically significant ($\alpha = 0.05$) comparisons to IRT per the two-sided Wilcoxon signed-rank test. The \textsc  {trubric}{} and IRT blend -- which takes advantage of both trace geometry and per-execution score -- is the best or near-best in all settings.}}{2}{table.1}\protected@file@percent }
 \newlabel{tab:hero}{{1}{2}{Mean Absolute Error (MAE) of benchmark score estimators for SWE-bench Verified and Terminal-Bench 2.0 under leave-one-family-out evaluation and different task selection protocols (random \& adaptive). \textbf {Bolded} values are the best method for a given benchmark, task selection, and number of tasks. \underline {Underlined} values are statistically significant ($\alpha = 0.05$) comparisons to IRT per the two-sided Wilcoxon signed-rank test. The \trubric {} and IRT blend -- which takes advantage of both trace geometry and per-execution score -- is the best or near-best in all settings}{table.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Problem statement}{2}{subsection.1.1}\protected@file@percent }
 \newlabel{sec:problem}{{1.1}{2}{Problem statement}{subsection.1.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Method}{2}{section.2}\protected@file@percent }
 \newlabel{sec:method}{{2}{2}{Method}{section.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Trace representations encode confounders}{2}{section.3}\protected@file@percent }
-\newlabel{sec:probes}{{3}{2}{Trace representations encode confounders}{section.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Efficient evaluation}{2}{section.4}\protected@file@percent }
-\newlabel{sec:results}{{4}{2}{Efficient evaluation}{section.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Related work}{2}{section.5}\protected@file@percent }
-\newlabel{sec:related}{{5}{2}{Related work}{section.5}{}}
-\@writefile{toc}{\contentsline {paragraph}{Representing agentic traces.}{2}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{2}{section.3}\protected@file@percent }
+\newlabel{sec:results}{{3}{2}{Results}{section.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Rubric-based preprocessing produces more useful trace representations.}{2}{section*.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Held-out balanced accuracy of linear probes for five trace attributes, chance-normalized so that chance sits at the center and better-for-evaluation is outside: content attributes (Correctness, Task) plot recoverability and system-metadata attributes (Harness, Model Family, System Identity) plot its complement. One panel per text encoder; raw traces vs.\ generic-rubric vs.\ \textsc  {trubric}{} summaries.}}{3}{figure.1}\protected@file@percent }
+\newlabel{fig:radar}{{1}{3}{Held-out balanced accuracy of linear probes for five trace attributes, chance-normalized so that chance sits at the center and better-for-evaluation is outside: content attributes (Correctness, Task) plot recoverability and system-metadata attributes (Harness, Model Family, System Identity) plot its complement. One panel per text encoder; raw traces vs.\ generic-rubric vs.\ \trubric {} summaries}{figure.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Two-dimensional PKPS representations of 107 SWE-bench Verified systems, colored by benchmark score (gold high, blue low), for raw-trace embeddings (top) and \textsc  {trubric}{} embeddings (bottom) as the number of reference systems $n$ and tasks $m$ grows. Panels within a row are Procrustes-aligned; badges report leave-one-system-out MAE of a $k$NN predictor in each panel.}}{3}{figure.2}\protected@file@percent }
+\newlabel{fig:pkps}{{2}{3}{Two-dimensional PKPS representations of 107 SWE-bench Verified systems, colored by benchmark score (gold high, blue low), for raw-trace embeddings (top) and \trubric {} embeddings (bottom) as the number of reference systems $n$ and tasks $m$ grows. Panels within a row are Procrustes-aligned; badges report leave-one-system-out MAE of a $k$NN predictor in each panel}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces MAE of benchmark-score estimators as a function of the task budget $m$ (random task selection, $B=50$ shared draws, $\pm 1$ SEM bands) on SWE-bench Verified (top) and Terminal-Bench 2.0 (bottom) under three reference-exclusion protocols of increasing conservatism.}}{4}{figure.3}\protected@file@percent }
+\newlabel{fig:protocols}{{3}{4}{MAE of benchmark-score estimators as a function of the task budget $m$ (random task selection, $B=50$ shared draws, $\pm 1$ SEM bands) on SWE-bench Verified (top) and Terminal-Bench 2.0 (bottom) under three reference-exclusion protocols of increasing conservatism}{figure.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Trace geometry alone supports task-efficient benchmark prediction.}{4}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Combining trace geometry with correctness outcomes improves prediction beyond either source alone.}{4}{section*.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Ablations under leave-one-family-out evaluation on SWE-bench Verified. (a) Effect of the number of reference systems $n$ for $m \in \{1, 5, 20\}$ tasks (line weight). (b) Random (open) vs.\ adaptive (filled) task selection for \textsc  {trubric}{} geometry with $n = 107$ (solid) and $n = 20$ (dashed) reference systems. (c) Effect of the text encoder on \textsc  {trubric}{} geometry.}}{5}{figure.4}\protected@file@percent }
+\newlabel{fig:ablations}{{4}{5}{Ablations under leave-one-family-out evaluation on SWE-bench Verified. (a) Effect of the number of reference systems $n$ for $m \in \{1, 5, 20\}$ tasks (line weight). (b) Random (open) vs.\ adaptive (filled) task selection for \trubric {} geometry with $n = 107$ (solid) and $n = 20$ (dashed) reference systems. (c) Effect of the text encoder on \trubric {} geometry}{figure.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Evaluation cost per target system (at a nominal \$2 per execution) to reach a given MAE (left two panels) and a given pairwise ranking accuracy on system pairs separated by at least 0.05 (right two panels). The star marks full-benchmark evaluation: exact scores at full cost.}}{5}{figure.5}\protected@file@percent }
+\newlabel{fig:cost}{{5}{5}{Evaluation cost per target system (at a nominal \$2 per execution) to reach a given MAE (left two panels) and a given pairwise ranking accuracy on system pairs separated by at least 0.05 (right two panels). The star marks full-benchmark evaluation: exact scores at full cost}{figure.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Trace-informed estimation reduces the cost of reaching a given prediction accuracy.}{5}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Performance improves with larger reference libraries and adaptive task selection.}{5}{section*.5}\protected@file@percent }
+\citation{reimers2019sbert,su2023instructor,nussbaum2025trainingsparsemixtureexperts}
+\citation{sun2025idiosyncrasies,oderinwale2026trajectories}
+\citation{cemri2025mast,shu2026traceprobe}
+\citation{zhuge2025agentjudge,mehtiyev2026beyond}
+\citation{ravfogel2024description,peng2024inbedder,benara2024qaemb}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Effect of rubric size $r$ on MAE for generic and task-specific (\textsc  {trubric}{}) rubrics, averaged over up to 200 random size-$r$ subsets of a 32-field bank (thick: mean $\pm 1$ SEM; thin: best subset per size), for $m \in \{1, 5, 20\}$ tasks and reference libraries of $n = 107$ (solid) and $n = 20$ (dashed) systems.}}{6}{figure.6}\protected@file@percent }
+\newlabel{fig:sensitivity}{{6}{6}{Effect of rubric size $r$ on MAE for generic and task-specific (\trubric {}) rubrics, averaged over up to 200 random size-$r$ subsets of a 32-field bank (thick: mean $\pm 1$ SEM; thin: best subset per size), for $m \in \{1, 5, 20\}$ tasks and reference libraries of $n = 107$ (solid) and $n = 20$ (dashed) systems}{figure.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Broader rubrics improve average performance, though strong, small rubrics may exist.}{6}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Related work}{6}{section.4}\protected@file@percent }
+\newlabel{sec:related}{{4}{6}{Related work}{section.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Representing agentic traces.}{6}{section*.7}\protected@file@percent }
 \citation{birnbaum1968some,embretson2000item}
 \citation{maiapolo2024tinybenchmarks,kipnis2025metabench}
 \citation{vivek2024anchor,truong2025amortized}
@@ -64,11 +80,11 @@
 \bibcite{ge2026psychometrics}{{8}{2026}{{Ge et~al.}}{{}}}
 \bibcite{helm2025statistical}{{9}{2025}{{Helm et~al.}}{{Helm, Duderstadt, Park, and Priebe}}}
 \bibcite{helm2026query}{{10}{2026{a}}{{Helm et~al.}}{{Helm, Johnson, and Priebe}}}
-\@writefile{toc}{\contentsline {paragraph}{Efficient benchmarking.}{3}{section*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{3}{section.6}\protected@file@percent }
-\newlabel{sec:discussion}{{6}{3}{Discussion}{section.6}{}}
 \bibcite{helm2026jailbreak}{{11}{2026{b}}{{Helm et~al.}}{{Helm, Liu, and Yang}}}
 \bibcite{jimenez2024swebench}{{12}{2024}{{Jimenez et~al.}}{{Jimenez, Yang, Wettig, Yao, Pei, Press, and Narasimhan}}}
+\@writefile{toc}{\contentsline {paragraph}{Efficient benchmarking.}{7}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{7}{section.5}\protected@file@percent }
+\newlabel{sec:discussion}{{5}{7}{Discussion}{section.5}{}}
 \bibcite{kapoor2025hal}{{13}{2026}{{Kapoor et~al.}}{{Kapoor, Stroebl, et~al.}}}
 \bibcite{kipnis2025metabench}{{14}{2025}{{Kipnis et~al.}}{{}}}
 \bibcite{maiapolo2024tinybenchmarks}{{15}{2024}{{Maia~Polo et~al.}}{{Maia~Polo, Weber, Choshen, Sun, Xu, and Yurochkin}}}
@@ -91,4 +107,4 @@
 \bibcite{zhuang2025embedllm}{{32}{2025}{{Zhuang et~al.}}{{}}}
 \bibcite{zhuge2025agentjudge}{{33}{2025}{{Zhuge et~al.}}{{}}}
 \bibstyle{iclr2027_conference}
-\gdef \@abspage@last{5}
+\gdef \@abspage@last{9}
