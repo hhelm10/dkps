@@ -115,11 +115,10 @@ d^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rang
 \end{equation*}
 The kernel compares traces from \emph{similar} -- rather than only identical -- tasks, so the target (observed on $m$ tasks) can be compared to references (observed on all $M$) without discarding unpaired information; as $\sigma \to 0$ the construction recovers paired-only comparisons.
 
-We consider two estimators of $y_{0}$ from this geometry.
-The first is distance-weighted $k$-nearest neighbors: $\hat{y}_{\mathrm{geom}}$ is the weighted mean of the benchmark scores of the $k$ references closest to the target.
-The second applies classical multidimensional scaling to the $(n+1) \times (n+1)$ distance matrix and fits a ridge regression from the resulting coordinates to the reference scores; reference predictions are made leave-one-out via the hat matrix so that they remain honest.
-All hyperparameters -- the bandwidth $\sigma$, the choice of estimator, and its parameters -- are selected by treating each reference system as a pseudo-target, predicting its score from the remaining references, and minimizing the mean reference error.
-No target labels are used at any point, so the geometric estimators apply even when the target's executions cannot be graded.
+Applying classical multidimensional scaling to the $(n+1) \times (n+1)$ distance matrix yields a $d$-dimensional Euclidean representation of each system.
+We estimate $y_{0}$ with a ridge regressor fit from the reference representations to their benchmark scores; reference predictions are made leave-one-out via the hat matrix so that they remain honest.
+All hyperparameters -- the bandwidth $\sigma$, the dimension $d$, and the ridge penalty -- are selected by treating each reference system as a pseudo-target, predicting its score from the remaining references, and minimizing the mean reference error.
+No target labels are used at any point, so the geometric estimator applies even when the target's executions cannot be graded.
 
 As a score-only baseline and blending partner we use a two-parameter logistic (2PL) item-response model \citep{birnbaum1968some}: $\mathbb{P}(y_{ij} = 1) = \mathrm{logistic}\left(a_{j} (\theta_{i} - b_{j})\right)$ with item discriminations $a_{j}$ and difficulties $b_{j}$ fit on $\mathcal{D}$, the target ability $\theta_{0}$ estimated from its $m$ graded executions, and $\hat{y}_{\mathrm{IRT}}$ given by the average predicted success probability over $Q^{*}$.
 The combined estimator is the convex blend $\hat{y} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{\mathrm{geom}}$, with $\alpha \in [0, 1]$ selected by the same reference-pseudo-target procedure.
