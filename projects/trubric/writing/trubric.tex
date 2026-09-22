@@ -65,28 +65,24 @@ We make two primary contributions:
 \subsection{Problem statement}
 \label{sec:problem}
 
-Given an agentic system $f$, we consider the problem of predicting its score on a benchmark $Q^{*} = \{q_{1}, \hdots, q_{M}\}$.
-For our purposes, a system $f \in \mathcal{F}$ is a random mapping from a query space $\mathcal{Q}$ to a trace space $\mathcal{X}$: executing $f$ on query $q$ yields a trace $f(q)$, a long, semi-structured log of the system's actions, observations, and outputs.
-Let $s: \mathcal{X} \to \{0, 1\}$ denote the harness's trace-level scoring function and $y: \mathcal{F} \times 2^{Q^{*}} \to [0,1]$ denote the benchmark scoring function, $y(f, Q) = \frac{1}{|Q|} \sum_{q \in Q} \mathbb{E}[s(f(q))]$.
-We refer to $y(f, Q^{*})$ as $y$ when the context is clear.
+An agentic system $f \in \mathcal{F}$ is a random mapping from a task space $\mathcal{Q}$ to a trace space $\mathcal{X}$: given a task $q \in \mathcal{Q}$, the system plans, invokes tools, and iterates until it terminates.
+A benchmark is a fixed collection of tasks $Q^{*} = \{q_{1}, \hdots, q_{M}\} \subset \mathcal{Q}$ together with an execution harness and an automatic grader.
+Executing $f$ on a task $q$ produces a trace $x = f(q) \in \mathcal{X}$: the recorded log of the system's actions, observations, and outputs -- file diffs, tool calls, intermediate plans, error messages -- generated while attempting the task.
+Each execution is evaluated by the benchmark's trace-level scoring function $s: \mathcal{X} \to \{0, 1\}$, and the system is evaluated by its benchmark score
+\begin{equation*}
+y(f) = \frac{1}{M} \sum_{j=1}^{M} \mathbb{E}\left[ s(f(q_{j})) \right],
+\end{equation*}
+where the expectation is with respect to the randomness of $f$.
+We write $y$ for $y(f)$ when the system is clear from context.
 
-As described above, full evaluation of $f$ on all queries may be infeasible.
-Instead, we assume access to $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$ for which we observe both the execution artifacts and the item-level scores on every query:
+When evaluating a new system, we typically have access to the execution records of $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$ -- both the traces and the trace-level scores on every task:
 \begin{equation*}
 \mathcal{D} = \left\{ \{ (x_{ij}, y_{ij}) \}_{j=1}^{M} \right\}_{i=1}^{n},
 \end{equation*}
-where $x_{ij} \sim f_{i}(q_{j})$ is the trace of reference system $f_{i}$ on query $q_{j}$ and $y_{ij} = s(x_{ij}) \in \{0, 1\}$ is its trace-level score.
-The benchmark score of reference system $f_{i}$ is $y_{i} = \frac{1}{M} \sum_{j=1}^{M} y_{ij}$.
+where $x_{ij} \sim f_{i}(q_{j})$, $y_{ij} = s(x_{ij})$, and the benchmark score of reference system $f_{i}$ is $y_{i} = \frac{1}{M} \sum_{j=1}^{M} y_{ij}$.
 Such reference caches exist publicly at scale.\footnote{The SWE-bench Verified leaderboard archive contains traces and outcomes for over one hundred systems; we estimate it embodies \$50K--\$100K of agent compute contributed by submitters.}
-Given $\mathcal{D}$, our goal is to estimate $y$ with $m \ll M$ queries.
-That is, we seek an estimate $\hat{y}$ that predicts the full benchmark score of $f$ from its traces (and, optionally, its trace-level scores) on a subset $Q \subset Q^{*}$ with $|Q| = m$, together with $\mathcal{D}$.
-
-Two aspects distinguish this setting from the short-response setting of \citet{helm2026query}.
-First, the observation associated with each query is not a short response but a trace of $10^{4}$--$10^{6}$ tokens in one of many mutually incompatible harness formats.
-Whether and how traces can be embedded usefully is the central question of this paper.
-Second, the reference population is confounded: reference systems that share the target's underlying language model or harness permit trivially accurate prediction via score-copying.
-We therefore evaluate under a leave-one-model-family-out protocol -- references sharing the target's underlying model family are excluded -- and verify robustness under a leave-one-harness-out protocol.
-The query subset $Q$ may be fixed, drawn at random, or selected adaptively per target; we report all three regimes.
+For the target system $f$, we observe traces (and, optionally, trace-level scores) on only a subset $Q \subset Q^{*}$ of $|Q| = m \ll M$ tasks.
+Our goal is an estimate $\hat{y}$ of $y(f)$ from the target's $m$ executions together with $\mathcal{D}$.
 
 \section{Method}
 \label{sec:method}
