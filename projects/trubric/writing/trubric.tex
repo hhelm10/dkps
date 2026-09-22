@@ -277,7 +277,25 @@ We show that these two approaches -- score-based IRT and artifact-based PKPS -- 
 \bibliographystyle{iclr2027_conference}
 
 \appendix
+\section{Trace representation details}
+\label{app:traces}
+
 \input{figures/trubric_appendixA_example.tex}
+
+\subsection{Linear-probe methodology}
+\label{app:probes}
+
+For each combination of text encoder and trace representation, we assemble one embedding per trace for the executions of the 107 SWE-bench Verified systems on a fixed panel of 20 tasks (2{,}129 traces; a small number of executions are missing from the public archive).
+Rubric-based representations are the concatenated per-field embeddings of Section~\ref{sec:method-trubric}; raw-trace representations embed head and tail slices of the rendered log as two blocks.
+Each block is $\ell_{2}$-normalized and blocks are weighted equally.
+
+Probes are linear classifiers trained with class-balanced squared loss and a ridge penalty; the penalty is selected along a closed-form regularization path using grouped cross-validation within the training folds.
+Evaluation is five-fold grouped cross-validation with seeded, size-balanced group allocation: for the system-level attributes (iii)--(v) the groups are tasks, so probes are evaluated on tasks unseen during training, and for (i)--(ii) the groups are model families, so probes are evaluated on systems from families unseen during training.
+We report balanced accuracy averaged over folds; chance balanced accuracy for a $C$-class attribute is $1/C$.
+Figure~\ref{fig:radar} plots $(\mathrm{accuracy} - \mathrm{chance})/(1 - \mathrm{chance})$ for attributes (i)--(ii) and its complement for (iii)--(v), so that better-for-evaluation is always outward.
+Table~\ref{tab:probes} reports the balanced accuracies underlying Figure~\ref{fig:radar}.
+
+\input{figures/trubric_tableA1_probes.tex}
 
 \end{document}
 % build-hook smoke test

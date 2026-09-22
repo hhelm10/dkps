@@ -1,0 +1,42 @@
+\begin{table}[t]
+\centering
+\caption{Held-out balanced accuracy of linear probes for the five trace attributes of Section~\ref{sec:method-trubric}, for each text encoder and trace representation; these values underlie Figure~\ref{fig:radar}. For evaluation-relevant attributes (i)--(ii), higher is better; for system-metadata attributes (iii)--(v), lower is better. The final row reports chance balanced accuracy.}
+\label{tab:probes}
+\small
+\begin{tabular}{llccccc}
+\toprule
+encoder & representation & {(i) task} & {(ii) correctness} & {(iii) system} & {(iv) family} & {(v) harness} \\
+\midrule
+\texttt{text-embedding-3-small} & raw trace & 1.00 & 0.82 & 0.89 & 0.97 & 0.96 \\
+ & generic & 0.99 & 0.84 & 0.61 & 0.64 & 0.76 \\
+ & \trubric{} & 0.99 & 0.84 & 0.20 & 0.36 & 0.29 \\
+\addlinespace[2pt]
+\texttt{nomic-embed-text-v1.5} & raw trace & 0.98 & 0.78 & 0.84 & 0.90 & 0.91 \\
+ & generic & 0.99 & 0.86 & 0.56 & 0.63 & 0.70 \\
+ & \trubric{} & 0.99 & 0.84 & 0.16 & 0.30 & 0.22 \\
+\addlinespace[2pt]
+\texttt{bge-large-en-v1.5} & raw trace & 0.95 & 0.78 & 0.73 & 0.79 & 0.86 \\
+ & generic & 0.99 & 0.84 & 0.58 & 0.64 & 0.73 \\
+ & \trubric{} & 0.99 & 0.85 & 0.16 & 0.33 & 0.23 \\
+\addlinespace[2pt]
+\texttt{gte-large} & raw trace & 0.95 & 0.77 & 0.77 & 0.83 & 0.90 \\
+ & generic & 0.99 & 0.85 & 0.56 & 0.59 & 0.70 \\
+ & \trubric{} & 0.99 & 0.84 & 0.17 & 0.33 & 0.23 \\
+\addlinespace[2pt]
+\texttt{e5-large-v2} & raw trace & 0.96 & 0.77 & 0.79 & 0.86 & 0.90 \\
+ & generic & 0.99 & 0.85 & 0.62 & 0.66 & 0.77 \\
+ & \trubric{} & 0.99 & 0.85 & 0.21 & 0.37 & 0.29 \\
+\addlinespace[2pt]
+\texttt{all-mpnet-base-v2} & raw trace & 0.93 & 0.77 & 0.68 & 0.76 & 0.82 \\
+ & generic & 0.99 & 0.84 & 0.43 & 0.52 & 0.57 \\
+ & \trubric{} & 0.99 & 0.83 & 0.11 & 0.29 & 0.16 \\
+\addlinespace[2pt]
+\texttt{all-MiniLM-L6-v2} & raw trace & 0.91 & 0.75 & 0.70 & 0.75 & 0.86 \\
+ & generic & 0.99 & 0.84 & 0.45 & 0.53 & 0.59 \\
+ & \trubric{} & 0.99 & 0.82 & 0.11 & 0.31 & 0.16 \\
+\addlinespace[2pt]
+\midrule
+\multicolumn{2}{l}{chance} & 0.05 & 0.50 & 0.01 & 0.12 & 0.02 \\
+\bottomrule
+\end{tabular}
+\end{table}

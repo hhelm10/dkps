@@ -45,7 +45,7 @@ def main():
             j = j[0]
         extractions.append((label, j))
 
-    out = [r'\section{Example task, \trubric{}, and extractions}',
+    out = [r'\subsection{Example task, \trubric{}, and extractions}',
            r'\label{app:example}',
            '',
            r'We illustrate the \trubric{} pipeline on SWE-bench Verified '
