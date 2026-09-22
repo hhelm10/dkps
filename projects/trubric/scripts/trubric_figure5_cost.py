@@ -108,23 +108,24 @@ def main():
         cost = np.array(MS) * COST_RUN
         for key, label, role in PW_SERIES:
             st = hv_style.ROLES[role]
-            acc = [pw[bkey][str(m)]['gap05'][key] for m in MS]
-            ax.plot(acc, cost, color=st['color'], ls=st['ls'],
+            err = [1 - pw[bkey][str(m)]['gap05'][key] for m in MS]
+            ax.plot(err, cost, color=st['color'], ls=st['ls'],
                     lw=st.get('lw', 2.6), marker='o', ms=6.5,
                     markerfacecolor='white',
                     markeredgecolor=st['color'], markeredgewidth=1.4,
                     label=label, zorder=4 if role == 'anchor' else 3)
         ax.axvline(0.5, color=hv_style.REFLINE, ls=':', lw=1.1, zorder=1)
-        ax.text(.507, cost[-1], 'chance', ha='left', va='top', rotation=90,
+        ax.text(.493, cost[-1], 'chance', ha='right', va='top', rotation=90,
                 fontsize=SZ['annot'] - 1, color=hv_style.INK_MUTE)
         ax.set_yscale('log')
         ax.set_yticks([2, 10, 40])
         ax.set_yticklabels(['\\$2', '\\$10', '\\$40'])
         ax.set_ylim(1.6, 50)
-        ax.set_xlim(.45, 1.0)
+        ax.set_xlim(0, .55)
+        ax.set_xticks([0, .1, .2, .3, .4, .5])
         ax.set_title(title, fontsize=SZ['label'],
                      color=hv_style.INK_TITLE)
-        ax.set_xlabel('pairwise accuracy',
+        ax.set_xlabel('pairwise error',
                       fontsize=SZ['subtitle'] - 1)
         ax.tick_params(labelsize=SZ['tick'])
     axes[2].set_ylabel('cost per system\n(\\$2/run)',

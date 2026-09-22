@@ -85,13 +85,16 @@ For the target system $f_{0}$, we observe traces (and, optionally, trace-level s
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{../artifacts/trubric_figure1_radar.pdf}
-\caption{Held-out balanced accuracy of linear probes for five trace attributes, chance-normalized so that chance sits at the center and better-for-evaluation is outside: content attributes (Correctness, Task) plot recoverability and system-metadata attributes (Harness, Model Family, System Identity) plot its complement. One panel per text encoder; raw traces vs.\ generic-rubric vs.\ \trubric{} summaries.}
+\caption{Comparisons of the properties of three different methods for embedding executed task traces across seven different off-the-shelf text encoders: embedding the raw trace, embedding a structured summary based on a generic rubric, and embedding a structured summary based on a task-specific rubric.
+    As measured by the balanced accuracy of held-out linear probes, described in Section~\ref{sec:method}, the embedding of the task-specific summary is better at removing undesirable signal while preserving relevant signal across all seven encoders.}
 \label{fig:radar}
 \end{figure}
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{../artifacts/trubric_figure2_pkps.pdf}
-\caption{Two-dimensional PKPS representations of 107 SWE-bench Verified systems, colored by benchmark score (gold high, blue low), for raw-trace embeddings (top) and \trubric{} embeddings (bottom) as the number of reference systems $n$ and tasks $m$ grows. Panels within a row are Procrustes-aligned; badges report leave-one-system-out MAE of a $k$NN predictor in each panel.}
+\caption{The 2-d Product Kernel Perspective Space (PKPS) induced with raw trace embeddings (top) and the \trubric{} embeddings (bottom) under different number of reference systems and number of task executions.
+    Each dot is a system colored by full benchmark score on SWE-bench Verified.
+    The manifold of systems under the \trubric{} embeddings is more strongly correlated with the full benchmark score in paired settings. We report the average Mean Absolute Error (MAE) under leave-one-system-out (LOSO) protocol to quantify this observation.}
 \label{fig:pkps}
 \end{figure}
 
@@ -111,7 +114,10 @@ Table~\ref{tab:hero} further shows that generic rubrics are competitive on SWE-b
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{../artifacts/trubric_figure3_protocols.pdf}
-\caption{MAE of benchmark-score estimators as a function of the task budget $m$ (random task selection, $B=50$ shared draws, $\pm 1$ SEM bands) on SWE-bench Verified (top) and Terminal-Bench 2.0 (bottom) under three reference-exclusion protocols of increasing conservatism.}
+\caption{The Mean Absolute Error (MAE) of benchmark score estimators as a function of the number of executed tasks for SWE-bench Verified (top) and Terminal-Bench 2.0 (bottom) under three different realistic evaluation protocols: leave-one-system-out (left), leave-one-family-out (center), and leave-one-harness-out (right).
+    Reported MAE is the average over 50 random subsets of tasks.
+    Shaded areas represent $ \pm 1 $ S.E.
+    The \trubric{} and IRT blend dominates all methods (i.e., is never worse and is sometimes better) across all protocols, datasets, and number of executed tasks.}
 \label{fig:protocols}
 \end{figure}
 
@@ -141,13 +147,13 @@ As Table~\ref{tab:hero} shows, IRT $+$ \trubric{} is best or near-best across th
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{../artifacts/trubric_figure4_ablations.pdf}
-\caption{Ablations under leave-one-family-out evaluation on SWE-bench Verified. (a) Effect of the number of reference systems $n$ for $m \in \{1, 5, 20\}$ tasks (line weight). (b) Random (open) vs.\ adaptive (filled) task selection for \trubric{} geometry with $n = 107$ (solid) and $n = 20$ (dashed) reference systems. (c) Effect of the text encoder on \trubric{} geometry.}
+\caption{Mean Absolute Error (MAE) of benchmark score estimators with access to different number of reference systems (left), different task selection procedures (center), and using different text encoders (right) under the leave-one-family-out evaluation protocol. Reported MAE is the average over 50 random subsets of tasks; adaptive task paths are deterministic given the reference systems. Adaptive tasks are selected sequentially to maximize Fisher information under a two-parameter logistic model fit to the reference systems, as described in Section~\ref{sec:method}.}
 \label{fig:ablations}
 \end{figure}
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{../artifacts/trubric_figure5_cost.pdf}
-\caption{Evaluation cost per target system (at a nominal \$2 per execution) to reach a given MAE (left two panels) and a given pairwise ranking accuracy on system pairs separated by at least 0.05 (right two panels). The star marks full-benchmark evaluation: exact scores at full cost.}
+\caption{The cost of achieving a particular Mean Absolute Error (MAE; left and center left) and pairwise ranking error (center right and right) when using different benchmark score estimators on SWE-bench Verified and Terminal-Bench 2.0. Stars indicate the cost of producing the true benchmark score. An ideal method has low error (to the left) and is cheap (lower). Costs are calculated at a nominal \$2 per task execution. Values are estimated using the leave-one-family-out results underlying Table~\ref{tab:hero} and, for pairwise error, leave-two-out comparisons of system pairs whose true scores differ by at least 0.05.}
 \label{fig:cost}
 \end{figure}
 
@@ -179,7 +185,9 @@ On SWE-bench, the impact of encoder choice appears small compared with the effec
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{../artifacts/trubric_figure6_sensitivity.pdf}
-\caption{Effect of rubric size $r$ on MAE for generic and task-specific (\trubric{}) rubrics, averaged over up to 200 random size-$r$ subsets of a 32-field bank (thick: mean $\pm 1$ SEM; thin: best subset per size), for $m \in \{1, 5, 20\}$ tasks and reference libraries of $n = 107$ (solid) and $n = 20$ (dashed) systems.}
+\caption{The effect of the number of fields present in the rubric used to extract a structured summary of the trace on Mean Absolute Error (MAE) for different number of executed tasks and different number of reference systems for both task-specific and generic rubrics.
+    We report both the MAE for the average (bold) and best performing (thin) sets of fields.
+    In general, a task-specific rubric is preferred to a generic rubric when there are fewer reference systems and more executed tasks available.}
 \label{fig:sensitivity}
 \end{figure}
 
