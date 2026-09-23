@@ -24,132 +24,154 @@
 \maketitle
 
 \begin{abstract}
-Efficient benchmarking estimates a system's full-benchmark performance from a small number of task executions.
+Efficient benchmarking estimates a system's full benchmark performance from a small number of task executions.
 Standard approaches rely solely on the binary correctness of executions from a collection of already-evaluated reference systems.
 An agentic system, however, produces a rich trace for each execution that can reveal substantially more about its capabilities.
-Exploiting this information requires useful trace representations.
-We propose representing a trace by extracting a structured, rubric-guided summary of it with an LLM and embedding the summary with a standard text encoder.
+Leveraging this information requires useful trace representations.
+We propose representing a trace by extracting a structured summary of it with an LLM and embedding the summary with a standard text encoder.
 These representations preserve correctness- and task-related signal while minimizing the presence of system identity-, model family-, and harness-related signals that dominate raw trace embeddings.
 Given this representation for each task execution from all reference systems, we construct low-dimensional representations of the systems, predict a new system's score from its position among the reference systems, and combine the resulting geometric prediction with a two-parameter logistic item-response model.
-On SWE-bench Verified and Terminal-Bench 2.0, the proposed estimator reduces mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$), respectively, when provided a single random executed task relative to an item-response model alone.
-These results indicate that trace geometry and correctness outcomes carry complementary predictive signal and enable more accurate benchmark score estimation from limited agent executions.
+On SWE-bench Verified and Terminal-Bench 2.0, the proposed estimator reduces mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$), respectively, when provided a single random executed task relative to an item-response model alone and is never worse than either baseline for any given number of executed tasks.
+These results indicate that trace geometry and correctness outcomes carry complementary predictive signal and together enable more accurate benchmark score estimation from limited agent executions.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
 
-The dominant paradigm of generative model use is increasingly agentic: systems plan, invoke tools, observe intermediate results, and iterate over long horizons to complete complex tasks \citep{yang2024sweagent, wang2025openhands}.
+Generative model use is increasingly agentic: systems plan, invoke tools, observe intermediate results, and iterate over long horizons to complete complex tasks \citep{yang2024sweagent, wang2025openhands}.
 As agentic capabilities increase, so does the range of settings in which a given system might be deployed -- and, with it, the number of benchmarks on which the system must be evaluated before it can be trusted with consequential work \citep{kapoor2025hal}.
-Agentic evaluation, however, is expensive as each task execution requires a properly sandboxed environment and a single task execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026} and can regularly exceed \$2{,}000 \citep{kapoor2025hal}.
-% At reported per-task costs of \$0.13--\$4 \citep{kapoor2025hal}, the cost of evaluating a single system on a single benchmark can regularly exceed \$2{,}000.
-Given this cost, efficient evaluation is necessary to increase the evaluation coverage of an agentic system.
+Agentic evaluation, however, is expensive.
+Each task execution requires a properly sandboxed environment and a single task execution routinely consumes hundreds of thousands of tokens \citep{jimenez2024swebench, tbench2026}.
+Full evaluation on a benchmark can regularly exceed \$2{,}000 \citep{kapoor2025hal}.
+Given this cost, efficient evaluation is necessary to improve the evaluation coverage of an agentic system.
 
-Task-efficient evaluation methods (e.g., benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, leveraging cached responses \citep{helm2026query}, etc.) address this problem by finding structure in item-level information available from previously-evaluated reference systems to decrease the cost of evaluating a new system.
-Some task-efficient evaluation methods require only the item-level scores from reference systems \citep{vivek2024anchor, kipnis2025metabench}.
-Others leverage the content of cached artifacts, such as natural language responses or residual streams, to measure the similarity of systems on a set of tasks \citep{duderstadt2023data, helm2026jailbreak, helm2026query}.
-Notably, agentic workflows often produce artifacts when executing a task -- file diffs, tool calls, intermediate plans, and error messages -- recorded together in an execution trace that can be used to this effect.
-Unfortunately, existing methods for using cached artifacts rely on off-the-shelf embedding functions that are not immediately well-suited for representing traces.
-
-We make two primary contributions:
+Task-efficient evaluation methods
+% (e.g., benchmark compression and anchor-item selection \citep{vivek2024anchor, maiapolo2024tinybenchmarks}, item response theory and adaptive testing \citep{kipnis2025metabench, truong2025amortized}, utilizing cached responses \citep{helm2026query}, etc.)
+address this problem by finding structure in item-level information available from previously evaluated reference systems to mitigate the cost of evaluating a new system.
+Some task-efficient evaluation methods require only the item-level scores from reference systems \citep{maiapolo2024tinybenchmarks,vivek2024anchor, kipnis2025metabench, bowyer2026efficient}.
+Others leverage information in cached artifacts, such as natural language responses \citep{acharyya2024consistent,helm2025statistical} or residual streams \citep{duderstadt2023data}, to measure the similarity of systems on a set of tasks.
+Agentic workflows often produce artifacts when executing a task -- file diffs, tool calls, intermediate plans, and error messages -- recorded together in an execution trace that can be used to this effect.
+Existing methods for using cached artifacts rely on off-the-shelf embedding functions that may better capture known model idiosyncracies \citep{sun2025idiosyncrasies} than trace functionality or behavior.
+Along these lines, we make two primary contributions:
 \begin{enumerate}
 [wide, labelwidth=1pt, labelindent=12pt]
 \setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
-    \item \textbf{\trubric{} trace representations.} We introduce \trubric{} (\emph{trace rubric}): a trace representation constructed by extracting a task specific structured summary of each trace with an LLM and embedding the summary with a standard text encoder.
+    \item \textbf{\trubric{} trace representations.} We introduce \trubric{} (\emph{trace rubric}): a trace representation constructed by extracting a task specific structured summary of a trace with an LLM and embedding the summary with a standard text encoder.
     We show that \trubric{} embeddings preserve information relevant to the task and behavior of the system while minimizing system-, model family-, and harness- specific signal across seven modern text encoders.
     \item \textbf{Task-efficient evaluation using cached traces.} Given the \trubric{} embeddings from a set of tasks for a target system and a collection of reference systems, we evaluate their utility for predicting the target system's full-benchmark score on SWE-bench Verified and Terminal-Bench 2.0 under three different agentic system evaluation protocols.
-    We find that \trubric{}-based estimators, combined with an item-response model, reduce single-task mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks, respectively, and are nearly always better than baselines at any task budget (Table \ref{tab:hero}).
+    We find that \trubric{}-based estimators, combined with an item-response model, reduce single-task mean absolute error from 0.13 to 0.08 ($p < 10^{-4}$) and from 0.14 to 0.12 ($p < 10^{-3}$) on the two benchmarks, respectively, and are nearly always better than baselines at every task budget (Table \ref{tab:hero}).
 \end{enumerate}
 
-\input{figures/trubric_table1_hero.tex}
+\begin{table}[t]
+\centering
+\caption{Mean Absolute Error (MAE) of benchmark score estimators on SWE-bench Verified and Terminal-Bench 2.0 under leave-one-family-out evaluation and different task selection protocols. \textbf{Bolded} values are the best method for a given (benchmark, task selection, number of tasks). \underline{Underlined} values are statistically significant ($\alpha = 0.05$) comparisons to IRT per the two-sided Wilcoxon signed-rank test. The \trubric{} and IRT convex combination -- which takes advantage of both trace geometry and per-execution score -- is the best or near-best in all settings.}
+\label{tab:hero}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccccccccc}
+\toprule
+ & \multicolumn{6}{c}{\textbf{SWE-bench Verified}} & \multicolumn{6}{c}{\textbf{Terminal-Bench 2.0}} \\
+\cmidrule(lr){2-7} \cmidrule(lr){8-13}
+ & \multicolumn{3}{c}{random} & \multicolumn{3}{c}{adaptive} & \multicolumn{3}{c}{random} & \multicolumn{3}{c}{adaptive} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13}
+\textit{Num.\ tasks $m$} & {1} & {5} & {20} & {1} & {5} & {20} & {1} & {5} & {20} & {1} & {5} & {20} \\
+\midrule
+sample score & 0.442 & 0.175 & 0.082 & 0.380 & 0.151 & 0.072 & 0.396 & 0.164 & 0.073 & 0.360 & 0.124 & 0.132 \\
+IRT & 0.127 & 0.088 & 0.048 & 0.080 & 0.062 & \bfseries 0.034 & 0.137 & 0.097 & 0.052 & 0.112 & 0.067 & 0.039 \\
+raw trace & {\underline{0.099}} & 0.093 & 0.089 & 0.096 & 0.083 & 0.081 & 0.135 & 0.126 & 0.120 & 0.128 & 0.125 & 0.113 \\
+generic & {\underline{\bfseries 0.079}} & {\underline{0.071}} & 0.068 & 0.074 & 0.070 & 0.069 & 0.139 & 0.127 & 0.115 & 0.144 & 0.130 & 0.117 \\
+trubric & {\underline{0.081}} & {\underline{0.069}} & 0.060 & 0.068 & 0.056 & 0.060 & {\underline{0.127}} & 0.107 & 0.093 & 0.110 & 0.092 & 0.084 \\
+IRT $+$ trubric & {\underline{0.081}} & {\underline{\bfseries 0.063}} & {\underline{\bfseries 0.043}} & {\underline{\bfseries 0.062}} & {\underline{\bfseries 0.048}} & \bfseries 0.034 & {\underline{\bfseries 0.122}} & {\underline{\bfseries 0.090}} & {\underline{\bfseries 0.050}} & {\underline{\bfseries 0.099}} & {\underline{\bfseries 0.059}} & \bfseries 0.037 \\
+\bottomrule
+\end{tabular}}
+\end{table}
 
 \subsection{Problem statement}
 \label{sec:problem}
 
-For our purposes, an agentic system $f \in \mathcal{F}$ is a random mapping from a task space $\mathcal{Q}$ to a trace space $\mathcal{X}$.
-A benchmark is a fixed collection of tasks $Q^{*} = \{q_{1}, \hdots, q_{M}\} \subset \mathcal{Q}$.
-Each trace is evaluated by the benchmark's trace-level scoring function $s: \mathcal{X} \to \{0, 1\}$ and the system is evaluated by its benchmark score $ y(f) = \frac{1}{M} \sum_{j=1}^{M} \mathbb{E}\left[ s(f(q_{j})) \right] $
+For our purposes, an agentic system $f \in \mathcal{F}$ is a random mapping from a task space $\mathcal{T}$ to a trace space $\mathcal{X}$.
+A benchmark is a fixed collection of tasks $T^{*} = \{t_{1}, \hdots, t_{M}\} \subset \mathcal{T}$.
+Each trace is evaluated by the benchmark's trace-level scoring function $s: \mathcal{X} \to \{0, 1\}$ and the system has a benchmark score $ y(f) = \frac{1}{M} \sum_{j=1}^{M} \mathbb{E}\left[ s(f(t_{j})) \right] $,
 where the expectation is with respect to the randomness of $f$.
 We write $y$ for $y(f)$ when the context is clear.
 
-When evaluating a new system, we typically have access to $ \mathcal{D} = \left\{ \{ (x_{ij}, y_{ij}) \}_{j=1}^{M} \right\}_{i=1}^{n} $, the traces and trace-level scores of $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$,
-where $x_{ij} \sim f_{i}(q_{j})$, $y_{ij} = s(x_{ij})$ and $y_{i} = y(f_{i}) $.
-For the target system $f_{0}$, we observe traces (and, optionally, trace-level scores) on only a subset $Q \subset Q^{*}$ of $|Q| = m \ll M$ tasks and our goal is to estimate the system's full benchmark score $ y_{0} $ using only the target's $m$ executions and $\mathcal{D}$.
+When evaluating a new system, we typically have access to $ \mathcal{D} = \left\{ \{ (x_{ij}, s(x_{ij})) \}_{j=1}^{M} \right\}_{i=1}^{n} $, the traces and trace-level scores of $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$,
+where $x_{ij} \sim f_{i}(t_{j})$ and $y_{i} = y(f_{i}) $.
+For the target system $f_{0}$, we observe traces (and, optionally, trace-level scores) on only a subset $T \subset T^{*}$ of $|T| = m \ll M$ tasks and our goal is to estimate the system's full benchmark score $ y_{0} $ using only the target's $m$ executions and $\mathcal{D}$.
 
 \section{Related work}
 \label{sec:related}
 
 \paragraph{Representing agentic traces.}
-The standard tools for embedding model outputs are text encoders trained on sentence-level semantic similarity \citep{reimers2019sbert, su2023instructor, nussbaum2025trainingsparsemixtureexperts}.
-Agentic traces, however, implicitly or explicitly encode system metadata that may not be relevant for downstream tasks \citep{sun2025idiosyncrasies, oderinwale2026trajectories} and are not necessarily encoded well by semantic embedding models.
+The standard tools for embedding model artifacts are text encoders trained on sentence-level semantic similarity \citep{reimers2019sbert, su2023instructor, nussbaum2025trainingsparsemixtureexperts}.
+Agentic traces, however, implicitly or explicitly encode system metadata that may not be relevant for downstream tasks \citep{sun2025idiosyncrasies, oderinwale2026trajectories} and are therefore not necessarily encoded well by semantic embedding models.
 Instead, traces have primarily been studied through taxonomies of failure modes and actions \citep{cemri2025mast, shu2026traceprobe} and LLM judges of agent behavior \citep{zhuge2025agentjudge, mehtiyev2026beyond}.
 Parallel work uses LLMs to adapt model outputs to be more naturally compared via their semantics \citep{ravfogel2024description, peng2024inbedder, benara2024qaemb}.
-\trubric{} applies this to agentic traces by embedding a task-specific structured summary of each trace, preserving behavior-relevant information while minimizing the presence of system metadata.
+\trubric{} applies this to agentic traces by embedding a task-specific structured summary of each trace, preserving behavior-relevant information while minimizing signal from system metadata.
 
 \paragraph{Efficient benchmarking.}
 Task-efficient benchmarking estimates a system's full benchmark score from a small number of executions.
 The dominant paradigm for efficient benchmarking centers around item response theory (IRT) \citep{birnbaum1968some, embretson2000item}, where a target system's score is estimated with $ m \le M $ item-level scores by assigning a latent ability estimated from the relationship between a task's difficulty and discriminability based on $ \mathcal{D} $ \citep{maiapolo2024tinybenchmarks, kipnis2025metabench}.
-Extensions of IRT select informative or adaptive task subsets \citep{vivek2024anchor, truong2025amortized} or apply it to agentic benchmarks directly \citep{ge2026psychometrics, ndzomga2026efficient}.
+Extensions of IRT select informative or adaptive task subsets \citep{vivek2024anchor, truong2025amortized}.
 A complementary paradigm represents the systems themselves, either from their score profiles \citep{ruan2024observational, zhuang2025embedllm} or from the artifacts they produce while executing a task \citep{duderstadt2023data, acharyya2024consistent, helm2025statistical}.
 For example, the Product Kernel Perspective Space (PKPS) \citep{anonpkps} represents language models as Euclidean objects obtained via multidimensional scaling of the distances between their embedded responses.
-\citet{helm2026query} regress benchmark scores on similar representations and prove that the resulting predictions are task-efficient relative to the sample score.
-\trubric{} enables extending geometry-based methods to agentic traces by providing an effective trace encoding.
-We show that these two approaches -- score-based IRT and artifact-based PKPS -- can be combined to outperform either for any number of given executed tasks.
+\citet{helm2026query} regress benchmark scores on similar representations and prove that the estimate is task-efficient relative to the sample score.
+\trubric{} enables extending geometry-based methods to agentic systems by providing an effective trace encoding.
+We show that these two approaches -- score-based IRT and trace-based PKPS -- can be combined to outperform either for any number of given executed tasks.
 
 \section{Methods}
 \label{sec:method}
-We first present \trubric{} and compare it to baseline trace embedding functions. We then describe constructing representations of the systems $ f_{0}, f_{1}, \hdots, f_{n} $ based on \trubric{} embeddings that can be used to train a simple regressor in $ \mathbb{R}^{d} $ for efficient benchmarking.
+We first present \trubric{}.
+We then describe constructing representations of the systems $ f_{0}, f_{1}, \hdots, f_{n} $ based on \trubric{} embeddings that can be used to train a simple regressor in $ \mathbb{R}^{d} $ for task-efficient evaluation.
+We evaluate the proposed methods in Section \ref{sec:experiments}.
 
 \subsection{Task-specific rubrics for representing traces}
 \label{sec:method-trubric}
+\begin{figure}[!b]
+\centering
+\includegraphics[width=\textwidth]{figures/trubric_figure1_radar.pdf}
+\caption{Comparisons of the properties of three different methods for embedding traces across seven different off-the-shelf text encoders: embedding the raw trace, embedding a structured summary based on a generic rubric, and embedding a structured summary based on a task-specific rubric.
+    As measured by the balanced accuracy of a linear classifier, the embedding of the task-specific summary is better at removing undesirable signal while preserving relevant signal.}
+\label{fig:radar}
+\end{figure}
 
 A trace representation for benchmark prediction should place two traces close together when they reflect similar execution behavior on a task.
 Concretely, we consider five attributes of a trace that a representation might encode: i) task (i.e., which task the trace corresponds to), ii) correctness (i.e., whether the trace produced a correct output), iii) system identity (i.e., which system produced the trace), iv) model family (i.e., the family of the underlying generative model), and v) harness (i.e., the harness used to produce the trace).
 For efficient benchmarking with traces, an ideal representation encodes (i) and (ii) but not (iii)--(v).
 \trubric{} constructs such a representation in two stages.
 
-First, for each task $q_{j}$, an LLM is prompted with the task description to instantiate a task-specific rubric: a set of $K$ fields $R_{j} = (r_{j}^{(1)}, \hdots, r_{j}^{(K)})$, where each field describes one aspect of execution behavior (e.g., how the relevant code was localized).
-Rubrics are shared across all systems and field names are shared across tasks.
-Unless otherwise stated, we use $K = 6$ fields.
+First, for each task $t_{j}$, an LLM is prompted with the task description to instantiate a task-specific rubric.
+The rubric is a set of $K$ fields $R_{j} = (r_{j}^{(1)}, \hdots, r_{j}^{(K)})$ where each field describes an aspect of execution behavior (e.g., how the relevant code was found).
+Rubrics are shared across all traces for a given task and fields are shared across tasks.
+An example rubric is provided in Appendix \ref{app:example}.
 
 Second, for each trace $x_{ij}$ we use an LLM to produce a short summary $z_{ij}^{(k)} $ for each field.
 The summary of each field is then embedded separately with a semantic embedding model $g: \mathcal{X} \to \mathbb{R}^{p} $ and concatenated to yield the trace representation $\phi(x_{ij}) = ( g(z_{ij}^{(1)}), \hdots, g(z_{ij}^{(K)})) \in \mathbb{R}^{K \cdot p} $.
 
-To quantify what a representation encodes, we train class-balanced linear classifiers to predict each of the five attributes of a held-out trace from its embedding.
-Classifiers for system-level attributes (iii)--(v) are evaluated on held-out tasks.
-Classifiers for (i) and (ii) are evaluated on held-out groups of systems.
-We evaluate \trubric{} using cached traces from the SWE-bench Verified leaderboard \citep{openai2024verified}, with DeepSeek-V4-Flash \citep{deepseek2026v4} as both the rubric generator and summarizer.
-We compare the quality of the \trubric{} embeddings to using $ g $ to embed the start and end of a raw trace and to generic rubric-based embeddings along axes (i)--(v) in Figure \ref{fig:radar}.
-
-Relative to baselines, \trubric{} preserves (i) and (ii) while mitigating (iii)--(v) across seven modern text encoders.
-Details about the data are described in Section~\ref{sec:experiments}.
-Appendix~\ref{app:traces} provides a complete worked example (i.e., a task description, its \trubric{}, and extractions for two traces) and more detailed descriptions of the classification tasks.
+Figure \ref{fig:radar} compares \trubric{} to two baselines along axes (i)--(v).
+\trubric{} preserves desirable information (i) and (ii) while minimizing idiosyncratic information (iii)--(v).
+Experiment details are provided in Section \ref{sec:experiments}.
 
 \subsection{Inference in the Product Kernel Perspective Space}
 \label{sec:method-pkps}
 
-Given trace representations, we represent systems via the Product Kernel Perspective Space (PKPS).
-Before constructing the geometry of systems, trace representations are centered by subtracting task-level means -- the average across systems for each task and field -- to emphasize differences in behavior.
-Let $\tau$ denote a text embedding of the task description and $\kappa_{\sigma}(q, q') = \exp\left(-\| \tau(q) - \tau(q') \|^{2} / 2\sigma^{2}\right)$ a Gaussian kernel on tasks.
-For systems $f_{a}$ and $f_{b}$ evaluated on task sets $Q_{a}$ and $Q_{b}$, define the weighted similarity
+Given trace representations, we represent agentic systems via the Product Kernel Perspective Space (PKPS).
+Before constructing the geometry of systems, trace representations are centered by subtracting the average across systems for each task and field to emphasize differences in behavior.
+Let $\tau$ denote a text embedding of the task description and $\kappa_{\sigma}(t, t') = \exp\left(-\| \tau(t) - \tau(t') \|^{2} / 2\sigma^{2}\right)$ a Gaussian kernel on the embedded task descriptions.
+For systems $f_{a}$ and $f_{b}$ evaluated on task sets $T_{a}$ and $T_{b}$, define the weighted similarity
 \begin{equation}
 \label{method:pkps}
-\langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')},
+\langle a, b \rangle = \frac{\sum_{t \in T_{a}} \sum_{t' \in T_{b}} \kappa_{\sigma}(t, t') \, \langle \phi(x_{at}), \phi(x_{bt'}) \rangle}{\sum_{t \in T_{a}} \sum_{t' \in T_{b}} \kappa_{\sigma}(t, t')},
 \end{equation}
-the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$, and $ \Delta_{ab} = \delta^{2}(a,b) $. With $ \Delta $ defined on $ f_{0}, \hdots f_{n} $, applying classical multidimensional scaling (MDS) to $ \Delta $ yields $d$-dimensional Euclidean representations $(\psi_{0}, \psi_{1}, \hdots, \psi_{n}) \in \mathbb{R}^{(n+1) \times d}$ of the systems with respect to their task sets.
-Importantly, Eq. \eqref{method:pkps} is defined when $ |Q_{a} | \neq |Q_{b}| $ if both $ |Q_{a}| > 0 $ and $ |Q_{b}| > 0 $, so the target system is naturally represented in the same space as the reference systems.
+the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$, and $ \Delta_{ab} = \delta^{2}(a,b) $. With $ \Delta $ defined on $ f_{0}, f_{1}, \hdots f_{n} $, applying classical multidimensional scaling \citep{torgerson1952mds} to $ \Delta $ yields $d$-dimensional Euclidean representations $(\psi_{0}, \psi_{1}, \hdots, \psi_{n}) \in \mathbb{R}^{(n+1) \times d}$ of the systems with respect to the collective task sets.
+Importantly, Eq. \eqref{method:pkps} is defined when $ |T_{a} | \neq |T_{b}| $ if both $ |T_{a}| > 0 $ and $ |T_{b}| > 0 $, so the target system is naturally represented in the same space as the reference systems.
 
-In benchmarking settings, it is typical that $ |Q_{0} | = m \ll M $ and $ |Q_{i} | = M $ for all $ i \in \{1, \hdots, n\} $.
+In benchmarking settings, it is typical that $ |T_{0} | = m \ll M $ and $ |T_{i} | = M $ for all $ i \in \{1, \hdots, n\} $.
 Given $ \mathcal{D} $ and $ \psi_{1}, \hdots, \psi_{n} $, we train a simple regressor on $ (\psi_{1}, y_{1}), \hdots, (\psi_{n}, y_{n})$ and apply it to $ \psi_{0} $ to obtain $ \hat{y}_{geom} $.
-In practice, all hyperparameters -- the task kernel bandwidth $\sigma$, the dimension $d$, and the ridge penalty -- are selected via cross-validation.
-Figure \ref{fig:pkps} shows the $ d=2$ perspectives when using the raw-trace embeddings (top) and the \trubric{} embeddings (bottom) for different number of references models and number of executed tasks per system.
+Figure \ref{fig:pkps} shows the $ d=2$ perspectives when using the raw-trace embeddings (top) and the \trubric{} embeddings (bottom) for different numbers of reference models and numbers of executed tasks per system.
 Each dot is a system colored by its full benchmark score on SWE-bench Verified.
 The \trubric{}-based PKPS contains more information, per a lower mean absolute error (MAE) on leave-one-system-out evaluation (LOSO; see Section~\ref{sec:experiments}).
-
-The geometry-based prediction does not use any item-level score information.
-To incorporate this information we fit a two-parameter logistic item-response model \citep{birnbaum1968some} with $ \mathcal{D} $.
-We apply the fitted item-response model to $ f_{0} $'s $ m $ scored traces to obtain $ \hat{y}_{IRT} $.
-We then consider the combined estimator $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{\mathrm{geom}}$, with $\alpha \in [0, 1] $ selected via cross-validation.
-Fitting and prediction details for the item-response model, along with all baselines, are provided in Appendix~\ref{app:baselines}.
+Finally, we note that $ \hat{y} $ is estimated without any item-level score information.
+In our experiments described in Section \ref{sec:experiments} we include a simple combination of $ \hat{y} $ and an IRT-based estimate that ignores trace information but utilizes the $ \{s_{ij}\} $.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -187,13 +209,6 @@ Implementation details for all baselines are provided in Appendix~\ref{app:basel
 \subsection{Results}
 \label{sec:results}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{figures/trubric_figure1_radar.pdf}
-\caption{Comparisons of the properties of three different methods for embedding executed task traces across seven different off-the-shelf text encoders: embedding the raw trace, embedding a structured summary based on a generic rubric, and embedding a structured summary based on a task-specific rubric.
-    As measured by the balanced accuracy of held-out linear probes, described in Section~\ref{sec:method}, the embedding of the task-specific summary is better at removing undesirable signal while preserving relevant signal across all seven encoders.}
-\label{fig:radar}
-\end{figure}
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/trubric_figure2_pkps.pdf}
@@ -467,18 +482,18 @@ The generic rubric:
 \subsection{Score-only baselines}
 \label{app:score-baselines}
 
-\paragraph{Sample score.} The mean of the target's $m$ observed trace-level scores, $\hat{y}_{\mathrm{sample}} = \frac{1}{m} \sum_{q \in Q_{0}} s(f_{0}(q))$.
+\paragraph{Sample score.} The mean of the target's $m$ observed trace-level scores, $\hat{y}_{\mathrm{sample}} = \frac{1}{m} \sum_{t \in T_{0}} s(f_{0}(t))$.
 
 \paragraph{Population mean.} The mean benchmark score of the reference systems, $\hat{y}_{\mathrm{pop}} = \frac{1}{n} \sum_{i=1}^{n} y_{i}$, which ignores the target's executions entirely.
 
 \paragraph{Item-response model.}
-We fit the two-parameter logistic model $\mathbb{P}(y_{ij} = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ to the reference score matrix by maximum a posteriori estimation, with standard normal priors on the abilities $\theta_{i}$ and difficulties $b_{j}$ and a $\mathcal{N}(0, 1/10)$ prior on the log-discriminations $\log a_{j}$ (centering the slopes at the Rasch value of one), optimized with L-BFGS.
+We fit the two-parameter logistic model $\mathbb{P}(s(x_{ij}) = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ to the reference score matrix by maximum a posteriori estimation, with standard normal priors on the abilities $\theta_{i}$ and difficulties $b_{j}$ and a $\mathcal{N}(0, 1/10)$ prior on the log-discriminations $\log a_{j}$ (centering the slopes at the Rasch value of one), optimized with L-BFGS.
 Because the benchmark score aggregates all $M$ tasks while the model is fit on the $M$-task panel, we additionally fit a monotone link from ability to benchmark score, $y \approx \mathrm{sigmoid}(c_{1} \theta + c_{0})$, by least squares on the reference systems.
 For a target, we form a posterior over ability on a dense grid -- the prior is a normal with the mean and standard deviation of the reference abilities -- update it with the likelihood of the target's $m$ observed trace-level scores, and report the posterior mean of the fitted ability-to-score link as $\hat{y}_{\mathrm{IRT}}$.
 
 \paragraph{Adaptive task selection.}
 Given the fitted item-response model, tasks are selected greedily per target: at each step, the next task is the one with the highest expected Fisher information $a_{j}^{2} \, p_{j}(\theta)(1 - p_{j}(\theta))$ under the current ability posterior, the outcome is observed, and the posterior is updated.
-Random task selection instead draws $Q_{0}$ uniformly; reported random-selection results average over 50 shared draws.
+Random task selection instead draws $T_{0}$ uniformly; reported random-selection results average over 50 shared draws.
 
 \subsection{Trace-geometry baselines}
 \label{app:geom-baselines}
