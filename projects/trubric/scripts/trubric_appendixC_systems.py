@@ -57,12 +57,22 @@ def main():
            r'\endhead', r'\bottomrule', r'\endlastfoot']
     for s, fam, y in swe_rows:
         out.append(rf'\texttt{{{esc(s)}}} & {esc(fam)} & {y:.3f} \\')
+    # truncate over-long names/tags; spell them out after the table
+    notes = []
+    def short(text, limit):
+        if len(text) <= limit:
+            return esc(text), None
+        mark = chr(ord('a') + len(notes))
+        notes.append((mark, text))
+        return esc(text[:limit - 1]) + r'\ldots\textsuperscript{' + mark + '}', mark
     out += [r'\end{longtable}', r'\end{center}', '',
+            r'\clearpage',
             r'\subsection{Terminal-Bench 2.0 systems}',
             r'Table~\ref{tab:tb2-systems} lists the 65 evaluated '
             r'submissions with their harness, underlying-model tags, and '
-            r'official score $y$ (mean over five trials).', '',
-            r'\begin{center}\tiny',
+            r'official score $y$ (mean over five trials). Truncated '
+            r'entries are spelled out below the table.', '',
+            r'\begin{center}\scriptsize',
             r'\begin{longtable}{lllc}',
             r'\caption{Terminal-Bench 2.0 systems.}'
             r'\label{tab:tb2-systems}\\',
@@ -71,8 +81,13 @@ def main():
             r'\toprule', r'system & harness & model tags & $y$ \\',
             r'\midrule', r'\endhead', r'\bottomrule', r'\endlastfoot']
     for s, h, t, y in tb2_rows:
-        out.append(rf'\texttt{{{esc(s)}}} & {esc(h)} & {esc(t)} & {y:.3f} \\')
+        s_disp, _ = short(s, 34)
+        t_disp, _ = short(t, 30)
+        out.append(rf'\texttt{{{s_disp}}} & {esc(h)} & {t_disp} & {y:.3f} \\')
     out += [r'\end{longtable}', r'\end{center}', '',
+            r'{\scriptsize\noindent ' + ' \\\\\n'.join(
+                rf'\textsuperscript{{{m}}}~\texttt{{{esc(t)}}}'
+                for m, t in notes) + r'}', '',
             r'\subsection{Task panels}',
             r'The SWE-bench Verified panel consists of the following '
             r'$M = 100$ instances (a fixed 20-task panel united with a '

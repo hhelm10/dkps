@@ -127,10 +127,11 @@ system & family & $y$ \\
 \end{longtable}
 \end{center}
 
+\clearpage
 \subsection{Terminal-Bench 2.0 systems}
-Table~\ref{tab:tb2-systems} lists the 65 evaluated submissions with their harness, underlying-model tags, and official score $y$ (mean over five trials).
+Table~\ref{tab:tb2-systems} lists the 65 evaluated submissions with their harness, underlying-model tags, and official score $y$ (mean over five trials). Truncated entries are spelled out below the table.
 
-\begin{center}\tiny
+\begin{center}\scriptsize
 \begin{longtable}{lllc}
 \caption{Terminal-Bench 2.0 systems.}\label{tab:tb2-systems}\\
 \toprule
@@ -164,9 +165,9 @@ system & harness & model tags & $y$ \\
 \texttt{JJAgent\_\_Multiple} & jjagent & -- & 0.871 \\
 \texttt{Judy\_\_Claude-Opus-4.6} & judy & claude-opus-4-6 & 0.721 \\
 \texttt{Judy\_\_Gemini-3.1-Pro-Preview} & tongagents & gemini-3-1-pro-preview & 0.805 \\
-\texttt{Junie\_CLI\_\_Gemini-3-Flash-Preview-Gemini-3.1-Pro-Preview-Claude-Opus-4.6-GPT-5.3-Codex} & junie-cli & claude-opus-4-6/gemini-3-1-pro-preview/gemini-3-flash-preview/gpt-5-3-codex & 0.710 \\
-\texttt{LemonCode\_\_GPT-5.3-Codex} & lemon-code & gemini-3-1-pro-preview/gpt-5-3-codex & 0.799 \\
-\texttt{LemonHarness\_GPT-5.3-CodeX} & lemonharness & gemini-3-1-pro-preview/gpt-5-3-codex & 0.849 \\
+\texttt{Junie\_CLI\_\_Gemini-3-Flash-Preview\ldots\textsuperscript{a}} & junie-cli & claude-opus-4-6/gemini-3-1-pr\ldots\textsuperscript{b} & 0.710 \\
+\texttt{LemonCode\_\_GPT-5.3-Codex} & lemon-code & gemini-3-1-pro-preview/gpt-5-\ldots\textsuperscript{c} & 0.799 \\
+\texttt{LemonHarness\_GPT-5.3-CodeX} & lemonharness & gemini-3-1-pro-preview/gpt-5-\ldots\textsuperscript{d} & 0.849 \\
 \texttt{MAYA\_\_Claude-4.5-sonnet} & maya & claude-sonnet-4-5 & 0.427 \\
 \texttt{MAYA\_\_Claude-4.6-opus} & maya-v2 & claude-opus-4-6 & 0.725 \\
 \texttt{Meta-Harness\_\_Claude-Opus-4.6} & meta-harness & claude-opus-4-6 & 0.764 \\
@@ -175,16 +176,16 @@ system & harness & model tags & $y$ \\
 \texttt{Mux\_\_GPT-5.2} & mux & gpt-5-2 & 0.621 \\
 \texttt{Mux\_\_GPT-5.3-Codex} & mux & gpt-5-3-codex & 0.746 \\
 \texttt{NexAU-AHE\_\_gpt-5.5} & nexau-ahe & gpt-5-5 & 0.847 \\
-\texttt{OB-1\_GPT-5.3-Codex-Claude-Opus-4.5-Claude-Opus-4.6} & ob-1 & claude-opus-4-5/claude-opus-4-6/gpt-5-3-codex & 0.727 \\
-\texttt{OB-1\_GPT-5.4-GPT-5.3-Codex-Claude-Opus-4.5-Claude-Opus-4.6} & ob-1 & claude-opus-4-5/claude-opus-4-6/gpt-5-3-codex/gpt-5-4 & 0.825 \\
+\texttt{OB-1\_GPT-5.3-Codex-Claude-Opus-4.\ldots\textsuperscript{e}} & ob-1 & claude-opus-4-5/claude-opus-4\ldots\textsuperscript{f} & 0.727 \\
+\texttt{OB-1\_GPT-5.4-GPT-5.3-Codex-Claude\ldots\textsuperscript{g}} & ob-1 & claude-opus-4-5/claude-opus-4\ldots\textsuperscript{h} & 0.825 \\
 \texttt{OpenCode\_\_Claude-Opus-4.5} & opencode & claude-opus-4-5 & 0.523 \\
 \texttt{OpenSage\_\_GPT-5.3-Codex} & sageagent & gpt-5-3-codex & 0.794 \\
 \texttt{OpenSage\_\_Gemini-3-Pro-Preview} & sageagent & gemini-3-pro-preview & 0.652 \\
-\texttt{Polaris\_\_Claude-Opus-4.7-GPT-5.5-Gemini-3.1-Pro} & polaris & claude-opus-4-7/gemini-3-1-pro-preview/gpt-5-5 & 0.822 \\
+\texttt{Polaris\_\_Claude-Opus-4.7-GPT-5.5-\ldots\textsuperscript{i}} & polaris & claude-opus-4-7/gemini-3-1-pr\ldots\textsuperscript{j} & 0.822 \\
 \texttt{Simplai-Agent\_\_Claude-Sonnet-4.6} & simplai-agent & claude-sonnet-4-6 & 0.535 \\
 \texttt{Simple-Codex\_\_GPT-5.3-Codex} & simple-codex & gpt-5-3-codex & 0.752 \\
 \texttt{Terminus-KIRA\_\_Claude-Opus-4.6} & terminus-kira & claude-opus-4-6 & 0.747 \\
-\texttt{Terminus-KIRA\_\_Gemini-3.1-Pro-Preview} & terminus-kira & gemini-3-1-pro-preview & 0.748 \\
+\texttt{Terminus-KIRA\_\_Gemini-3.1-Pro-Pre\ldots\textsuperscript{k}} & terminus-kira & gemini-3-1-pro-preview & 0.748 \\
 \texttt{Terminus2\_\_Claude-Opus-4.6} & terminus2 & claude-opus-4-6 & 0.629 \\
 \texttt{Terminus2\_\_DeepSeek-V3.2} & terminus2 & deepseek-v3-2 & 0.396 \\
 \texttt{Terminus2\_\_GLM-4.7} & terminus2 & glm-4-7 & 0.334 \\
@@ -198,7 +199,7 @@ system & harness & model tags & $y$ \\
 \texttt{cchuter\_\_minimax-m2.5} & cchuter & minimax-m2-5 & 0.427 \\
 \texttt{clnkr\_\_GPT-5.5} & clnkr & gpt-5-5 & 0.661 \\
 \texttt{copilot-cli\_\_claude-opus-4.6} & copilot-cli & claude-opus-4-6 & 0.607 \\
-\texttt{dakou\_\_qwen3-coder-480b} & dakou-agent & qwen3-coder-480b-a35b-instruct-fp8 & 0.272 \\
+\texttt{dakou\_\_qwen3-coder-480b} & dakou-agent & qwen3-coder-480b-a35b-instruc\ldots\textsuperscript{l} & 0.272 \\
 \texttt{grok-cli\_\_grok-4.20-0309-reasoning} & grok-cli & grok-4-20-0309-reasoning & 0.573 \\
 \texttt{logos-latest\_\_claude-opus-4.7} & logos & -- & 0.852 \\
 \texttt{logos-ts\_\_claude-opus-4.7} & logos & -- & 0.807 \\
@@ -210,6 +211,19 @@ system & harness & model tags & $y$ \\
 \texttt{vix\_\_claude-opus-4-7} & vix & claude-opus-4-7 & 0.903 \\
 \end{longtable}
 \end{center}
+
+{\scriptsize\noindent \textsuperscript{a}~\texttt{Junie\_CLI\_\_Gemini-3-Flash-Preview-Gemini-3.1-Pro-Preview-Claude-Opus-4.6-GPT-5.3-Codex} \\
+\textsuperscript{b}~\texttt{claude-opus-4-6/gemini-3-1-pro-preview/gemini-3-flash-preview/gpt-5-3-codex} \\
+\textsuperscript{c}~\texttt{gemini-3-1-pro-preview/gpt-5-3-codex} \\
+\textsuperscript{d}~\texttt{gemini-3-1-pro-preview/gpt-5-3-codex} \\
+\textsuperscript{e}~\texttt{OB-1\_GPT-5.3-Codex-Claude-Opus-4.5-Claude-Opus-4.6} \\
+\textsuperscript{f}~\texttt{claude-opus-4-5/claude-opus-4-6/gpt-5-3-codex} \\
+\textsuperscript{g}~\texttt{OB-1\_GPT-5.4-GPT-5.3-Codex-Claude-Opus-4.5-Claude-Opus-4.6} \\
+\textsuperscript{h}~\texttt{claude-opus-4-5/claude-opus-4-6/gpt-5-3-codex/gpt-5-4} \\
+\textsuperscript{i}~\texttt{Polaris\_\_Claude-Opus-4.7-GPT-5.5-Gemini-3.1-Pro} \\
+\textsuperscript{j}~\texttt{claude-opus-4-7/gemini-3-1-pro-preview/gpt-5-5} \\
+\textsuperscript{k}~\texttt{Terminus-KIRA\_\_Gemini-3.1-Pro-Preview} \\
+\textsuperscript{l}~\texttt{qwen3-coder-480b-a35b-instruct-fp8}}
 
 \subsection{Task panels}
 The SWE-bench Verified panel consists of the following $M = 100$ instances (a fixed 20-task panel united with a seeded random draw of 80 further instances):
