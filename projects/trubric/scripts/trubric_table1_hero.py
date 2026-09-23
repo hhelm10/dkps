@@ -114,7 +114,7 @@ def build_tex(t):
            r'benchmark, task selection, and number of tasks. '
            r'\underline{Underlined} values are statistically significant '
            r'($\alpha = 0.05$) comparisons to IRT per the two-sided '
-           r'Wilcoxon signed-rank test. The \trubric{} and IRT blend -- '
+           r'Wilcoxon signed-rank test. The \trubric{} and IRT ensemble -- '
            r'which takes advantage of both trace geometry and '
            r'per-execution score -- is the best or near-best in all '
            r'settings.}',

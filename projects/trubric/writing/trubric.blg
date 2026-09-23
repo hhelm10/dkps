@@ -3,44 +3,44 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: trubric.aux
 The style file: iclr2027_conference.bst
 Database file #1: references.bib
-You've used 33 entries,
+You've used 35 entries,
             2773 wiz_defined-function locations,
-            743 strings with 10384 characters,
-and the built_in function-call counts, 13871 in all, are:
-= -- 1144
-> -- 867
-< -- 22
-+ -- 297
-- -- 263
-* -- 943
-:= -- 2177
-add.period$ -- 120
-call.type$ -- 33
-change.case$ -- 172
-chr.to.int$ -- 32
-cite$ -- 66
-duplicate$ -- 730
-empty$ -- 1231
-format.name$ -- 316
-if$ -- 2944
+            751 strings with 10634 characters,
+and the built_in function-call counts, 14463 in all, are:
+= -- 1196
+> -- 887
+< -- 24
++ -- 305
+- -- 269
+* -- 971
+:= -- 2271
+add.period$ -- 126
+call.type$ -- 35
+change.case$ -- 180
+chr.to.int$ -- 34
+cite$ -- 70
+duplicate$ -- 764
+empty$ -- 1293
+format.name$ -- 324
+if$ -- 3070
 int.to.chr$ -- 2
 int.to.str$ -- 1
-missing$ -- 33
-newline$ -- 193
-num.names$ -- 134
-pop$ -- 429
+missing$ -- 34
+newline$ -- 203
+num.names$ -- 142
+pop$ -- 450
 preamble$ -- 1
-purify$ -- 140
+purify$ -- 146
 quote$ -- 0
-skip$ -- 512
+skip$ -- 538
 stack$ -- 0
-substring$ -- 98
-swap$ -- 64
+substring$ -- 102
+swap$ -- 66
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 358
+type$ -- 380
 warning$ -- 0
-while$ -- 103
+while$ -- 109
 width$ -- 0
-write$ -- 445
+write$ -- 469

@@ -231,7 +231,7 @@ Table~\ref{tab:hero} further shows that generic rubrics are competitive on SWE-b
 \caption{The Mean Absolute Error (MAE) of benchmark score estimators as a function of the number of executed tasks for SWE-bench Verified (top) and Terminal-Bench 2.0 (bottom) under three different realistic evaluation protocols: leave-one-system-out (left), leave-one-family-out (center), and leave-one-harness-out (right).
     Reported MAE is the average over 50 random subsets of tasks.
     Shaded areas represent $ \pm 1 $ S.E.
-    The \trubric{} and IRT blend dominates all methods (i.e., is never worse and is sometimes better) across all protocols, datasets, and number of executed tasks.}
+    The \trubric{} and IRT ensemble dominates all methods (i.e., is never worse and is sometimes better) across all protocols, datasets, and number of executed tasks.}
 \label{fig:protocols}
 \end{figure}
 
@@ -499,7 +499,7 @@ The generic-rubric representation follows the two-stage construction of Section~
 
 For each task draw, hyperparameters are selected by treating each reference system as a pseudo-target: its score is predicted from the remaining references (leave-one-out via the hat matrix for the ridge regressor), and the configuration minimizing the mean reference error is selected.
 The candidate grids are the kernel bandwidth $\sigma^{2} \in \{\mathrm{med}/2^{k}\}_{k=0}^{8}$ where $\mathrm{med}$ is the median squared distance between task embeddings, the dimension $d \in \{8, 16\}$, and the ridge penalty $\in \{0.1, 1.0\}$.
-The blend weight $\alpha$ is selected on a $101$-point grid over $[0, 1]$ by the same reference-pseudo-target procedure.
+The ensemble weight $\alpha$ is selected on a $101$-point grid over $[0, 1]$ by the same reference-pseudo-target procedure.
 
 \end{document}
 % build-hook smoke test
