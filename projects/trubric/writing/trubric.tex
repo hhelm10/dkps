@@ -64,7 +64,7 @@ Along these lines, we make two primary contributions:
 
 \begin{table}[t]
 \centering
-\caption{Mean Absolute Error (MAE) of benchmark score estimators on SWE-bench Verified and Terminal-Bench 2.0 under leave-one-family-out evaluation and different task selection protocols. \textbf{Bolded} values are the best method for a given (benchmark, task selection, number of tasks). \underline{Underlined} values are statistically significant ($\alpha = 0.05$) comparisons to IRT per the two-sided Wilcoxon signed-rank test. The \trubric{} and IRT convex combination -- which takes advantage of both trace geometry and per-execution score -- is the best or near-best in all settings.}
+\caption{Mean Absolute Error (MAE) of benchmark score estimators on SWE-bench Verified and Terminal-Bench 2.0 under leave-one-family-out evaluation and different task selection protocols. \textbf{Bolded} values are the best method for a given (benchmark, task selection, number of tasks). \underline{Underlined} values are statistically significant ($\alpha = 0.05$) comparisons to IRT per the two-sided Wilcoxon signed-rank test. The population mean ignores the target's executions and is therefore constant across task selections and budgets. The \trubric{} and IRT convex combination -- which takes advantage of both trace geometry and per-execution score -- is the best or near-best in all settings.}
 \label{tab:hero}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccccccccccc}
@@ -75,6 +75,7 @@ Along these lines, we make two primary contributions:
 \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13}
 \textit{Num.\ tasks $m$} & {1} & {5} & {20} & {1} & {5} & {20} & {1} & {5} & {20} & {1} & {5} & {20} \\
 \midrule
+population mean & \multicolumn{6}{c}{0.139} & \multicolumn{6}{c}{0.155} \\
 sample score & 0.442 & 0.175 & 0.082 & 0.380 & 0.151 & 0.072 & 0.396 & 0.164 & 0.073 & 0.360 & 0.124 & 0.132 \\
 IRT & 0.127 & 0.088 & 0.048 & 0.080 & 0.062 & \bfseries 0.034 & 0.137 & 0.097 & 0.052 & 0.112 & 0.067 & 0.039 \\
 raw trace & {\underline{0.099}} & 0.093 & 0.089 & 0.096 & 0.083 & 0.081 & 0.135 & 0.126 & 0.120 & 0.128 & 0.125 & 0.113 \\
@@ -227,7 +228,7 @@ Detailed descriptions of a system's assignment to a model family or harness are 
 Unless stated otherwise, we report leave-one-family-out.
 
 \paragraph{Efficient benchmarking baselines.}
-We compare against four baselines: the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT}, \emph{raw trace} (the PKPS pipeline applied to the raw-trace embeddings), and \emph{generic} (the PKPS pipeline applied to the generic-rubric embeddings).
+We compare against five baselines: the \emph{population mean} (the mean benchmark score of the reference systems, which ignores the target's executions entirely), the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT}, \emph{raw trace} (the PKPS pipeline applied to the raw-trace embeddings), and \emph{generic} (the PKPS pipeline applied to the generic-rubric embeddings).
 IRT fits the two-parameter logistic model $\mathbb{P}(s(x_{ij}) = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ \citep{birnbaum1968some} to the reference scores, where $\theta_{i}$ is the ability of system $f_{i}$ and $b_{j}$ and $a_{j}$ are the difficulty and discriminability of task $t_{j}$.
 The target's ability is estimated from its $m$ observed trace-level scores and mapped to a benchmark score $\hat{y}_{\mathrm{IRT}}$ via a link function fitted on the references.
 Finally, we consider the convex combination $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{geom}$, with $\alpha \in [0, 1] $ selected via cross-validation.
