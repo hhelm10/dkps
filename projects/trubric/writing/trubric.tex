@@ -117,9 +117,11 @@ The summary of each field is then embedded separately with a semantic embedding 
 To quantify what a representation encodes, we train class-balanced linear classifiers to predict each of the five attributes of a held-out trace from its embedding.
 Classifiers for system-level attributes (iii)--(v) are evaluated on held-out tasks.
 Classifiers for (i) and (ii) are evaluated on held-out groups of systems.
-We use cached traces from the SWE-bench Verified leaderboard \citep{openai2024verified}, with DeepSeek-V4-Flash \citep{deepseek2026v4} as both the rubric generator and summarizer.
-We compare the quality of the \trubric{} embeddings, using $ g $ to embed the start and end of a raw trace, and generic rubric-based embeddings along axes (i)--(v) in Figure \ref{fig:radar}.
+We evaluate \trubric{} using cached traces from the SWE-bench Verified leaderboard \citep{openai2024verified}, with DeepSeek-V4-Flash \citep{deepseek2026v4} as both the rubric generator and summarizer.
+We compare the quality of the \trubric{} embeddings to using $ g $ to embed the start and end of a raw trace and to generic rubric-based embeddings along axes (i)--(v) in Figure \ref{fig:radar}.
+
 Relative to baselines, \trubric{} preserves (i) and (ii) while mitigating (iii)--(v) across seven modern text encoders.
+Details about the data are described in Section~\ref{sec:experiments}.
 Appendix~\ref{app:traces} provides a complete worked example (i.e., a task description, its \trubric{}, and extractions for two traces) and more detailed descriptions of the classification tasks.
 
 \subsection{Inference in the Product Kernel Perspective Space}
