@@ -112,8 +112,6 @@ For systems $f_{a}$ and $f_{b}$ observed on task sets $Q_{a}$ and $Q_{b}$, defin
 \langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')}
 \end{equation*}
 and the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$.
-The kernel compares traces from \emph{similar} -- rather than only identical -- tasks, so the target (observed on $m$ tasks) can be compared to references (observed on all $M$) without discarding unpaired information; as $\sigma \to 0$ the construction recovers paired-only comparisons.
-
 Collecting the distances $\delta(a, b)$ for all pairs of systems yields the $(n+1) \times (n+1)$ pairwise distance matrix $\Delta$.
 Applying classical multidimensional scaling (MDS) to $\Delta$ yields $d$-dimensional Euclidean representations $\psi_{0}, \psi_{1}, \hdots, \psi_{n} \in \mathbb{R}^{d}$ of the target and reference systems.
 We then fit a ridge regressor from the reference representations $\psi_{1}, \hdots, \psi_{n}$ to their benchmark scores $y_{1}, \hdots, y_{n}$ and estimate $\hat{y}_{\mathrm{geom}}$ by evaluating the fitted regressor at $\psi_{0}$; reference predictions are made leave-one-out via the hat matrix so that they remain honest.
