@@ -156,7 +156,9 @@ We then evaluate \trubric{}-based estimators against these baselines across benc
 
 \paragraph{Benchmark data.}
 We consider two agentic benchmarks:
-\begin{enumerate}[itemsep=1pt, topsep=2pt]
+\begin{enumerate}
+[wide, labelwidth=1pt, labelindent=12pt]
+\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
     \item \textbf{SWE-bench Verified} \citep{jimenez2024swebench, openai2024verified} consists of 500 human-validated software-engineering tasks drawn from real GitHub issues.
     Its public leaderboard contains 119 submissions; we retain the 107 with complete public trace archives and per-task outcomes.
     We construct trace representations on a fixed panel of $M = 100$ tasks (a seeded random subset of the tasks with near-universal trace coverage) and take each system's benchmark score $y$ to be its official resolve rate over all 500 tasks.
@@ -168,7 +170,9 @@ We consider two agentic benchmarks:
 \paragraph{Evaluation protocols.}
 Modern leaderboards contain many entries that share an underlying model or harness: predicting the score of a system whose near-siblings are among the references is easy -- the reference scores can simply be copied -- and does not reflect the intended use case of evaluating a genuinely new system.
 We therefore consider three reference-exclusion protocols of increasing conservatism:
-\begin{enumerate}[itemsep=1pt, topsep=2pt]
+\begin{enumerate}
+[wide, labelwidth=1pt, labelindent=12pt]
+\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
     \item \emph{Leave-one-system-out}: only the target itself is excluded from the references.
     \item \emph{Leave-one-family-out}: references whose underlying model family matches the target's are additionally excluded.
     \item \emph{Leave-one-harness-out}: references sharing the target's harness are excluded.
@@ -179,7 +183,9 @@ For each task budget $m$, random task selection averages over 50 shared draws; a
 
 \paragraph{Baselines.}
 We compare against four baselines:
-\begin{enumerate}[itemsep=1pt, topsep=2pt]
+\begin{enumerate}
+[wide, labelwidth=1pt, labelindent=12pt]
+\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
     \item \emph{Sample score}: the mean of the target's $m$ observed trace-level scores.
     \item \emph{IRT}: the two-parameter logistic model of Section~\ref{sec:method-pkps}.
     \item \emph{Raw trace}: the PKPS pipeline applied to embeddings of the start and end of each rendered trace.
