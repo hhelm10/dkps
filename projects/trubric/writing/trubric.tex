@@ -388,7 +388,7 @@ Table~\ref{tab:probes} reports the balanced accuracies underlying Figure~\ref{fi
 \centering
 \caption{Held-out balanced accuracy of linear probes for the five trace attributes of Section~\ref{sec:method-trubric}, for each text encoder and trace representation; these values underlie Figure~\ref{fig:radar}. For evaluation-relevant attributes (i)--(ii), higher is better; for system-metadata attributes (iii)--(v), lower is better. The final row reports chance balanced accuracy.}
 \label{tab:probes}
-\small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
 encoder & representation & {(i) task} & {(ii) correctness} & {(iii) system} & {(iv) family} & {(v) harness} \\
@@ -424,14 +424,14 @@ encoder & representation & {(i) task} & {(ii) correctness} & {(iii) system} & {(
 \midrule
 \multicolumn{2}{l}{chance} & 0.05 & 0.50 & 0.01 & 0.12 & 0.02 \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Prompts}
 \label{app:prompts}
 
 The rubric-instantiation prompt (\texttt{\{problem\}} is the task description):
-\begin{quote}\small\begin{verbatim}
+\begin{quote}\scriptsize\begin{verbatim}
 Here is a repository issue that a software-engineering agent will be asked to fix:
 
 {problem}
@@ -440,12 +440,13 @@ Write an instance-specific rubric for judging an agent's trace on THIS issue:
 for each section below, one sentence saying what specifically to look for in
 this instance (name the likely relevant modules/files/tests if inferable).
 
-Sections: understanding, localization, reproduction, editing, verification, final_state.
+Sections: understanding, localization, reproduction, editing,
+verification, final_state.
 Respond with ONLY a JSON object with those keys, each a one-sentence string.
 \end{verbatim}\end{quote}
 
 The extraction prompt (\texttt{\{rubric\}} is the instantiated \trubric{} for the task, or the fixed generic rubric below for the generic baseline; \texttt{\{keys\}} the field names; the rendered trace is appended after the prompt):
-\begin{quote}\small\begin{verbatim}
+\begin{quote}\scriptsize\begin{verbatim}
 Below is the (truncated) execution trace of a software-engineering agent.
 Extract a factual description of the agent's behavior for EACH of the following
 sections. 30-60 words per section. Describe behavior only -- do not restate the
@@ -458,13 +459,15 @@ Respond with ONLY a JSON object with keys {keys}, each a string.
 \end{verbatim}\end{quote}
 
 The generic rubric:
-\begin{quote}\small\begin{verbatim}
+\begin{quote}\scriptsize\begin{verbatim}
 - understanding: how the agent oriented itself before acting
 - localization: how it searched/navigated to find the relevant code
 - reproduction: whether/how it reproduced the issue before fixing
 - editing: what it changed (files, nature and size of the edit)
-- verification: whether it re-ran tests or a repro script after editing, and the OBSERVED outcome (passing/failing/errors)
-- final_state: how the run ended (clean finish, step/cost limit, submitted unverified)
+- verification: whether it re-ran tests or a repro script after editing,
+  and the OBSERVED outcome (passing/failing/errors)
+- final_state: how the run ended (clean finish, step/cost limit,
+  submitted unverified)
 \end{verbatim}\end{quote}
 
 
