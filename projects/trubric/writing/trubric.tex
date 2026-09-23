@@ -352,7 +352,7 @@ The selected subsets need not be nested as field count increases, so their perfo
 \section{Trace representation details}
 \label{app:traces}
 
-\subsection{Example task, \trubric{}, and extractions}
+\subsection{Example task, trace, rubrics, and extractions}
 \label{app:example}
 
 We illustrate the \trubric{} pipeline on SWE-bench Verified instance \texttt{django\_\_django-11099}.
@@ -371,6 +371,68 @@ UsernameValidator allows trailing newline in usernames \\ Description \\ 	 \\ AS
 \item[verification] The agent should run the relevant test suite (e.g., tests/auth\_tests/test\_validators.py or full Django auth tests) to confirm that usernames with trailing newlines are now rejected, and that existing valid usernames still pass.
 \item[final state] The final state should show django/contrib/auth/validators.py with both regex patterns updated, and no other unintended modifications, with tests confirming the newline rejection behavior.
 \end{description}
+
+\paragraph{Generic rubric.} For contrast, the generic baseline uses the same six fields with fixed, task-agnostic descriptions shared by every task:
+\begin{description}[itemsep=1pt, topsep=2pt]\small
+\item[understanding] how the agent oriented itself before acting
+\item[localization] how it searched/navigated to find the relevant code
+\item[reproduction] whether/how it reproduced the issue before fixing
+\item[editing] what it changed (files, nature and size of the edit)
+\item[verification] whether it re-ran tests or a repro script after editing, and the OBSERVED outcome (passing/failing/errors)
+\item[final state] how the run ended (clean finish, step/cost limit, submitted unverified)
+\end{description}
+
+\paragraph{Trace.} An excerpt of System A's rendered trace on this task, as provided to the summarization LLM.
+The full rendered trace is 98{,}806 characters; its beginning and end are shown.
+\begin{quote}\scriptsize\begin{verbatim}
+swe_main
+First, we should locate the files that contain the `ASCIIUsernameValidator` and
+`UnicodeUsernameValidator` classes to understand where the regex patterns are
+defined. Since the issue mentions that these validators are in
+`contrib.auth.validators`, we can start by searching for files named
+`validators.py` within the `contrib/auth` directory.
+
+
+action: find_file "validators.py" contrib/auth
+
+Directory contrib/auth not found
+
+First, we should locate the files that contain the `ASCIIUsernameValidator` and
+`UnicodeUsernameValidator` classes to understand where the regex patterns are
+defined. [...]
+
+```
+find_file "validators.py" contrib/auth
+```
+{"open_file": "n/a", "working_dir": "/django__django"}
+
+[... roughly 97,000 characters omitted ...]
+
+action: python regex_test.py
+
+primary
+role: user
+ASCIIUsernameValidator rejected the username.
+UnicodeUsernameValidator rejected the username.
+
+(Open file: /django__django/regex_test.py)
+(Current directory: /django__django)
+bash-$
+primary
+role: assistant
+The output indicates that both the `ASCIIUsernameValidator` and
+`UnicodeUsernameValidator` regex patterns correctly rejected the username with
+a trailing newline. This confirms that the changes made to the regex patterns
+are effective.
+
+Since the issue has been addressed and the fix has been verified with a test
+script, we can now submit our changes to the code base.
+
+```
+submit
+```
+action: submit
+\end{verbatim}\end{quote}
 
 \paragraph{Extractions.} Structured summaries of two systems' traces on this task, produced against the rubric above. The summaries describe execution behavior without reference to the harness or underlying model that produced the trace.
 
