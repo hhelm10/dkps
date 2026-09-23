@@ -311,7 +311,8 @@ With five adaptive tasks, IRT $+$ \trubric{} achieves 0.048 MAE on SWE-bench, co
 Together, Table~\ref{tab:hero} and center panel of Figure~\ref{fig:ablations} show that adaptive selection improves both IRT and geometry-based prediction and further improves evaluation efficiency.
 
 \paragraph{Prediction is insensitive to the choice of text encoder.} We evaluate the sensitivity of \trubric{}-based prediction on SWE-bench to the choice of text encoder in the right panel of Figure~\ref{fig:ablations}.
-We include \texttt{text-embedding-3-small}, \texttt{nomic-embed-text-v1.5}, \texttt{bge-large-en-v1.5}, \texttt{gte-large}, \texttt{e5-large-v2}, \texttt{all-mpnet-base-v2}, and \texttt{all-MiniLM-L6-v2}.
+We include \texttt{text-embedding-3-small} \citep{neelakantan2022text}, \texttt{nomic-embed-text-v1.5} \citep{nussbaum2024nomic}, \texttt{bge-large-en-v1.5} \citep{xiao2023cpack}, \texttt{gte-large} \citep{li2023gte}, \texttt{e5-large-v2} \citep{wang2022e5}, \texttt{all-mpnet-base-v2}, and \texttt{all-MiniLM-L6-v2} \citep{reimers2019sbert}.
+These encoders span open- and closed-source models, multiple architectures and training procedures, and embedding dimensions ranging from 384 to 1536.
 The impact of encoder choice is small (at most 0.008 MAE at any fixed setting) compared with the effects of the number of target tasks or task selection (0.081 to 0.060 from 1 to 20 random tasks; 0.063 to 0.048 for random versus adaptive selection at five tasks) and the number of reference models (0.086 to 0.069 at five tasks).
 
 \begin{figure}[t]
