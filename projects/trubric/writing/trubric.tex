@@ -328,7 +328,47 @@ The selected subsets need not be nested as field count increases, so their perfo
 \section{Trace representation details}
 \label{app:traces}
 
-\input{figures/trubric_appendixA_example.tex}
+\subsection{Example task, \trubric{}, and extractions}
+\label{app:example}
+
+We illustrate the \trubric{} pipeline on SWE-bench Verified instance \texttt{django\_\_django-11099}.
+
+\paragraph{Task.} The problem statement, as provided to the rubric-instantiation LLM:
+\begin{quote}\small
+UsernameValidator allows trailing newline in usernames \\ Description \\ 	 \\ ASCIIUsernameValidator and UnicodeUsernameValidator use the regex  \\ r'\textasciicircum{}[\textbackslash{}w.@+-]+\$' \\ The intent is to only allow alphanumeric characters as well as ., @, +, and -. However, a little known quirk of Python regexes is that \$ will also match a trailing newline. Therefore, the user name validators will accept usernames which end with a newline. You can avoid this behavior by instead using \textbackslash{}A and \textbackslash{}Z to terminate regexes. For example, the validator regex could be changed to \\ r'\textbackslash{}A[\textbackslash{}w.@+-]+\textbackslash{}Z' \\ in order to reject usernames that end with a newline. \\ I am not sure how to officially post a patch, but the required change is trivial - using the regex above in the two validators in contrib.auth.validators.
+\end{quote}
+
+\paragraph{Instantiated \trubric{}.} The six task-specific field descriptions generated for this instance:
+\begin{description}[itemsep=1pt, topsep=2pt]\small
+\item[understanding] Look for the agent to identify that the issue lies in the regex anchoring with \$ in ASCIIUsernameValidator and UnicodeUsernameValidator, specifically that \$ matches a trailing newline in Python, and that changing to \textbackslash{}A and \textbackslash{}Z is the proposed fix in django/contrib/auth/validators.py.
+\item[localization] Check that the agent correctly locates the two validator classes (ASCIIUsernameValidator and UnicodeUsernameValidator) in django/contrib/auth/validators.py and references the existing regex r'\textasciicircum{}[\textbackslash{}w.@+-]+\$' in both.
+\item[reproduction] Look for the agent to write or run a test that confirms a username ending with a newline (e.g., 'validuser\textbackslash{}n') is currently accepted by the validators, possibly by using Django's validate\_username or directly instantiating the validators.
+\item[editing] Verify that the agent modifies the regex pattern in both validator classes from r'\textasciicircum{}[\textbackslash{}w.@+-]+\$' to r'\textbackslash{}A[\textbackslash{}w.@+-]+\textbackslash{}Z', ensuring no other changes are made to the file.
+\item[verification] The agent should run the relevant test suite (e.g., tests/auth\_tests/test\_validators.py or full Django auth tests) to confirm that usernames with trailing newlines are now rejected, and that existing valid usernames still pass.
+\item[final state] The final state should show django/contrib/auth/validators.py with both regex patterns updated, and no other unintended modifications, with tests confirming the newline rejection behavior.
+\end{description}
+
+\paragraph{Extractions.} Structured summaries of two systems' traces on this task, produced against the rubric above. The summaries describe execution behavior without reference to the harness or underlying model that produced the trace.
+
+\subparagraph{System A.}
+\begin{description}[itemsep=1pt, topsep=2pt]\small
+\item[understanding] The agent identified that the issue stems from Python's regex behavior where \$ matches a trailing newline, and that changing the anchors to \textbackslash{}A and \textbackslash{}Z in both validators would fix it. It explicitly mentioned this during the initial inspection of the validator file.
+\item[localization] The agent searched for validators.py, found django/contrib/auth/validators.py, opened it, and located both ASCIIUsernameValidator and UnicodeUsernameValidator classes. It acknowledged the existing regex pattern r'\textasciicircum{}[\textbackslash{}w.@+-]+\$' in both classes before making changes.
+\item[reproduction] The agent attempted to reproduce the bug by creating test\_validators.py and simple\_test\_validators.py, but these scripts failed due to missing Django settings configuration. It then created regex\_test.py to directly test the regex patterns, which ran successfully and confirmed rejection of a trailing newline after the fix, though it did not demonstrate acceptance before the fix.
+\item[editing] The agent edited lines 10 and 20 in django/contrib/auth/validators.py, changing the regex from r'\textasciicircum{}[\textbackslash{}w.@+-]+\$' to r'\textbackslash{}A[\textbackslash{}w.@+-]+\textbackslash{}Z' in both ASCIIUsernameValidator and UnicodeUsernameValidator. The diff shows only these two regex changes to the file, with no other modifications.
+\item[verification] The agent ran the custom regex\_test.py script, which output that both ASCII and Unicode validators rejected a username ending with a newline. It did not run the existing Django test suite (e.g., tests/auth\_tests/test\_validators.py) to verify the fix against formal tests.
+\item[final state] The final state includes django/contrib/auth/validators.py with both regex patterns updated to r'\textbackslash{}A[\textbackslash{}w.@+-]+\textbackslash{}Z'. Three new files (test\_validators.py, simple\_test\_validators.py, regex\_test.py) were created, but no other existing files were modified. The agent submitted these changes.
+\end{description}
+
+\subparagraph{System B.}
+\begin{description}[itemsep=1pt, topsep=2pt]\small
+\item[understanding] The agent identified that the issue stems from Python's regex behavior where \$ matches a trailing newline, causing ASCIIUsernameValidator and UnicodeUsernameValidator to incorrectly accept usernames ending with newlines. It understood that replacing \textasciicircum{} and \$ with \textbackslash{}A and \textbackslash{}Z would fix the anchoring issue, as described in the issue for django/contrib/auth/validators.py.
+\item[localization] The agent located the two validator classes, ASCIIUsernameValidator and UnicodeUsernameValidator, in django/contrib/auth/validators.py. It confirmed both classes use the existing regex pattern r'\textasciicircum{}[\textbackslash{}w.@+-]+\$' and identified these as the exact locations requiring modification.
+\item[reproduction] The agent verified the issue by running a quick test comparing the old and new regex patterns against usernames with and without trailing newlines. The test confirmed that the old pattern matched usernames ending with a newline, while the new pattern correctly rejected them, and valid usernames still passed.
+\item[editing] The agent modified the regex pattern in both validator classes from r'\textasciicircum{}[\textbackslash{}w.@+-]+\$' to r'\textbackslash{}A[\textbackslash{}w.@+-]+\textbackslash{}Z' in django/contrib/auth/validators.py. The diff shows only these two regex changes, with no other modifications made to the file.
+\item[verification] The agent ran the auth test suite which passed all 494 tests, including the tests in auth\_tests/test\_validators.py for UsernameValidatorsTests. It also ran a targeted test confirming that usernames with trailing newlines are now rejected by both validators while valid usernames still pass.
+\item[final state] The final state shows django/contrib/auth/validators.py with both regex patterns updated to r'\textbackslash{}A[\textbackslash{}w.@+-]+\textbackslash{}Z' in ASCIIUsernameValidator and UnicodeUsernameValidator. No other files were modified, and tests confirm the newline rejection behavior works correctly.
+\end{description}
 
 \subsection{Linear-probe methodology}
 \label{app:probes}
@@ -343,9 +383,88 @@ We report balanced accuracy averaged over folds; chance balanced accuracy for a 
 Figure~\ref{fig:radar} plots $(\mathrm{accuracy} - \mathrm{chance})/(1 - \mathrm{chance})$ for attributes (i)--(ii) and its complement for (iii)--(v), so that better-for-evaluation is always outward.
 Table~\ref{tab:probes} reports the balanced accuracies underlying Figure~\ref{fig:radar}.
 
-\input{figures/trubric_tableA1_probes.tex}
+\begin{table}[t]
+\centering
+\caption{Held-out balanced accuracy of linear probes for the five trace attributes of Section~\ref{sec:method-trubric}, for each text encoder and trace representation; these values underlie Figure~\ref{fig:radar}. For evaluation-relevant attributes (i)--(ii), higher is better; for system-metadata attributes (iii)--(v), lower is better. The final row reports chance balanced accuracy.}
+\label{tab:probes}
+\small
+\begin{tabular}{llccccc}
+\toprule
+encoder & representation & {(i) task} & {(ii) correctness} & {(iii) system} & {(iv) family} & {(v) harness} \\
+\midrule
+\texttt{text-embedding-3-small} & raw trace & 1.00 & 0.82 & 0.89 & 0.97 & 0.96 \\
+ & generic & 0.99 & 0.84 & 0.61 & 0.64 & 0.76 \\
+ & \trubric{} & 0.99 & 0.84 & 0.20 & 0.36 & 0.29 \\
+\addlinespace[2pt]
+\texttt{nomic-embed-text-v1.5} & raw trace & 0.98 & 0.78 & 0.84 & 0.90 & 0.91 \\
+ & generic & 0.99 & 0.86 & 0.56 & 0.63 & 0.70 \\
+ & \trubric{} & 0.99 & 0.84 & 0.16 & 0.30 & 0.22 \\
+\addlinespace[2pt]
+\texttt{bge-large-en-v1.5} & raw trace & 0.95 & 0.78 & 0.73 & 0.79 & 0.86 \\
+ & generic & 0.99 & 0.84 & 0.58 & 0.64 & 0.73 \\
+ & \trubric{} & 0.99 & 0.85 & 0.16 & 0.33 & 0.23 \\
+\addlinespace[2pt]
+\texttt{gte-large} & raw trace & 0.95 & 0.77 & 0.77 & 0.83 & 0.90 \\
+ & generic & 0.99 & 0.85 & 0.56 & 0.59 & 0.70 \\
+ & \trubric{} & 0.99 & 0.84 & 0.17 & 0.33 & 0.23 \\
+\addlinespace[2pt]
+\texttt{e5-large-v2} & raw trace & 0.96 & 0.77 & 0.79 & 0.86 & 0.90 \\
+ & generic & 0.99 & 0.85 & 0.62 & 0.66 & 0.77 \\
+ & \trubric{} & 0.99 & 0.85 & 0.21 & 0.37 & 0.29 \\
+\addlinespace[2pt]
+\texttt{all-mpnet-base-v2} & raw trace & 0.93 & 0.77 & 0.68 & 0.76 & 0.82 \\
+ & generic & 0.99 & 0.84 & 0.43 & 0.52 & 0.57 \\
+ & \trubric{} & 0.99 & 0.83 & 0.11 & 0.29 & 0.16 \\
+\addlinespace[2pt]
+\texttt{all-MiniLM-L6-v2} & raw trace & 0.91 & 0.75 & 0.70 & 0.75 & 0.86 \\
+ & generic & 0.99 & 0.84 & 0.45 & 0.53 & 0.59 \\
+ & \trubric{} & 0.99 & 0.82 & 0.11 & 0.31 & 0.16 \\
+\addlinespace[2pt]
+\midrule
+\multicolumn{2}{l}{chance} & 0.05 & 0.50 & 0.01 & 0.12 & 0.02 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\input{figures/trubric_appendixA_prompts.tex}
+\subsection{Prompts}
+\label{app:prompts}
+
+The rubric-instantiation prompt (\texttt{\{problem\}} is the task description):
+\begin{quote}\small\begin{verbatim}
+Here is a repository issue that a software-engineering agent will be asked to fix:
+
+{problem}
+
+Write an instance-specific rubric for judging an agent's trace on THIS issue:
+for each section below, one sentence saying what specifically to look for in
+this instance (name the likely relevant modules/files/tests if inferable).
+
+Sections: understanding, localization, reproduction, editing, verification, final_state.
+Respond with ONLY a JSON object with those keys, each a one-sentence string.
+\end{verbatim}\end{quote}
+
+The extraction prompt (\texttt{\{rubric\}} is the instantiated \trubric{} for the task, or the fixed generic rubric below for the generic baseline; \texttt{\{keys\}} the field names; the rendered trace is appended after the prompt):
+\begin{quote}\small\begin{verbatim}
+Below is the (truncated) execution trace of a software-engineering agent.
+Extract a factual description of the agent's behavior for EACH of the following
+sections. 30-60 words per section. Describe behavior only -- do not restate the
+problem. If a section did not occur, write exactly what is missing (e.g. "never
+ran any test after editing").
+
+{rubric}
+
+Respond with ONLY a JSON object with keys {keys}, each a string.
+\end{verbatim}\end{quote}
+
+The generic rubric:
+\begin{quote}\small\begin{verbatim}
+- understanding: how the agent oriented itself before acting
+- localization: how it searched/navigated to find the relevant code
+- reproduction: whether/how it reproduced the issue before fixing
+- editing: what it changed (files, nature and size of the edit)
+- verification: whether it re-ran tests or a repro script after editing, and the OBSERVED outcome (passing/failing/errors)
+- final_state: how the run ended (clean finish, step/cost limit, submitted unverified)
+\end{verbatim}\end{quote}
 
 
 
