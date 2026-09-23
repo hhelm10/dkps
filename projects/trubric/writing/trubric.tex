@@ -151,13 +151,30 @@ Fitting and prediction details for the item-response model, along with all basel
 \section{Experiments}
 \label{sec:experiments}
 
-[sentence guiding the reader]
+We next describe the datasets we use to evaluate trace-based geometries for efficient evaluation, introduce three different evaluation protocols relevant to efficient agent evaluation, and describe relevant baselines.
+We then evaluate \trubric{}-based estimators against these baselines across benchmarks, evaluation protocols, task budgets, and design choices (Section~\ref{sec:results}).
 
-[paragraphs describing data]
+\paragraph{Benchmark data.}
+SWE-bench Verified \citep{jimenez2024swebench, openai2024verified} consists of 500 human-validated software-engineering tasks drawn from real GitHub issues.
+Its public leaderboard contains 119 submissions; we retain the 107 with complete public trace archives and per-task outcomes.
+We construct trace representations on a fixed panel of $M = 100$ tasks (a seeded random subset of the tasks with near-universal trace coverage) and take each system's benchmark score $y$ to be its official resolve rate over all 500 tasks.
+Terminal-Bench 2.0 \citep{tbench2026} consists of 89 command-line tasks executed under a standardized harness specification.
+Its leaderboard contains 75 submissions; we exclude two whose traces are not public and one duplicate submission, and of the remaining 72 we evaluate the 65 with trace coverage of at least 90\%.
+Official scores average five trials per task; we use the traces and binary outcomes of a single trial and take $y$ to be the official all-trial mean.
 
-[paragraphs describing evaluaton protocols]
+\paragraph{Evaluation protocols.}
+Modern leaderboards contain many entries that share an underlying model or harness: predicting the score of a system whose near-siblings are among the references is easy -- the reference scores can simply be copied -- and does not reflect the intended use case of evaluating a genuinely new system.
+We therefore consider three reference-exclusion protocols of increasing conservatism.
+Under \emph{leave-one-system-out}, only the target itself is excluded from the references.
+Under \emph{leave-one-family-out}, references whose underlying model family matches the target's are additionally excluded.
+Under \emph{leave-one-harness-out}, references sharing the target's harness are excluded.
+Family and harness labels are derived from submission metadata; systems without a label exclude only themselves.
+Unless stated otherwise, we report leave-one-family-out.
+For each task budget $m$, random task selection averages over 50 shared draws; adaptive task selection follows the information-based procedure of Appendix~\ref{app:baselines}.
 
-[paragraphs describing baselines]
+\paragraph{Baselines.}
+We compare against the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT} (the two-parameter logistic model of Section~\ref{sec:method-pkps}), \emph{raw trace} geometry (the PKPS pipeline applied to embeddings of the start and end of each rendered trace), and \emph{generic} rubric geometry (the PKPS pipeline applied to summaries produced with fixed, task-agnostic field descriptions).
+Implementation details for all baselines are provided in Appendix~\ref{app:baselines}.
 
 \subsection{Results}
 \label{sec:results}
