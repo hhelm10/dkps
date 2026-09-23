@@ -74,6 +74,26 @@ When evaluating a new system, we typically have access to $ \mathcal{D} = \left\
 where $x_{ij} \sim f_{i}(q_{j})$, $y_{ij} = s(x_{ij})$ and $y_{i} = y(f_{i}) $.
 For the target system $f_{0}$, we observe traces (and, optionally, trace-level scores) on only a subset $Q \subset Q^{*}$ of $|Q| = m \ll M$ tasks and our goal is to estimate the system's full benchmark score $ y_{0} $ using only the target's $m$ executions and $\mathcal{D}$.
 
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Representing agentic traces.}
+The standard tools for embedding model outputs are text encoders trained on sentence-level semantic similarity \citep{reimers2019sbert, su2023instructor, nussbaum2025trainingsparsemixtureexperts}.
+Agentic traces, however, implicitly or explicitly encode system metadata that may not be relevant for downstream tasks \citep{sun2025idiosyncrasies, oderinwale2026trajectories} and are not necessarily encoded well by semantic embedding models.
+Instead, traces have primarily been studied through taxonomies of failure modes and actions \citep{cemri2025mast, shu2026traceprobe} and LLM judges of agent behavior \citep{zhuge2025agentjudge, mehtiyev2026beyond}.
+Parallel work uses LLMs to adapt model outputs to be more naturally compared via their semantics \citep{ravfogel2024description, peng2024inbedder, benara2024qaemb}.
+\trubric{} applies this to agentic traces by embedding a task-specific structured summary of each trace, preserving behavior-relevant information while minimizing the presence of system metadata.
+
+\paragraph{Efficient benchmarking.}
+Task-efficient benchmarking estimates a system's full benchmark score from a small number of executions.
+The dominant paradigm for efficient benchmarking centers around item response theory (IRT) \citep{birnbaum1968some, embretson2000item}, where a target system's score is estimated with $ m \le M $ item-level scores by assigning a latent ability estimated from the relationship between a task's difficulty and discriminability based on $ \mathcal{D} $ \citep{maiapolo2024tinybenchmarks, kipnis2025metabench}.
+Extensions of IRT select informative or adaptive task subsets \citep{vivek2024anchor, truong2025amortized} or apply it to agentic benchmarks directly \citep{ge2026psychometrics, ndzomga2026efficient}.
+A complementary paradigm represents the systems themselves, either from their score profiles \citep{ruan2024observational, zhuang2025embedllm} or from the artifacts they produce while executing a task \citep{duderstadt2023data, acharyya2024consistent, helm2025statistical}.
+For example, the Product Kernel Perspective Space (PKPS) \citep{anonpkps} represents language models as Euclidean objects obtained via multidimensional scaling of the distances between their embedded responses.
+\citet{helm2026query} regress benchmark scores on similar representations and prove that the resulting predictions are task-efficient relative to the sample score.
+\trubric{} enables extending geometry-based methods to agentic traces by providing an effective trace encoding.
+We show that these two approaches -- score-based IRT and artifact-based PKPS -- can be combined to outperform either for any number of given executed tasks.
+
 \section{Methods}
 \label{sec:method}
 We first present \trubric{} and compare it to baseline trace embedding functions. We then describe constructing representations of the systems $ f_{0}, f_{1}, \hdots, f_{n} $ based on \trubric{} embeddings that can be used to train a simple regressor in $ \mathbb{R}^{d} $ for efficient benchmarking.
@@ -258,26 +278,6 @@ The thin curves show that some small subsets perform substantially better than t
 Each point selects the lowest average evaluation error among the tested subsets separately for that setting, averaging over probe draws and all 107 target systems even when the reference library contains 20 systems.
 These retrospective selections demonstrate the existence of favorable small rubrics on the evaluation panel, rather than a validated procedure for identifying them in advance.
 The selected subsets need not be nested as field count increases, so their performance need not improve monotonically.
-
-\section{Related work}
-\label{sec:related}
-
-\paragraph{Representing agentic traces.}
-The standard tools for embedding model outputs are text encoders trained on sentence-level semantic similarity \citep{reimers2019sbert, su2023instructor, nussbaum2025trainingsparsemixtureexperts}.
-Agentic traces, however, implicitly or explicitly encode system metadata that may not be relevant for downstream tasks \citep{sun2025idiosyncrasies, oderinwale2026trajectories} and are not necessarily encoded well by semantic embedding models.
-Instead, traces have primarily been studied through taxonomies of failure modes and actions \citep{cemri2025mast, shu2026traceprobe} and LLM judges of agent behavior \citep{zhuge2025agentjudge, mehtiyev2026beyond}.
-Parallel work uses LLMs to adapt model outputs to be more naturally compared via their semantics \citep{ravfogel2024description, peng2024inbedder, benara2024qaemb}.
-\trubric{} applies this to agentic traces by embedding a task-specific structured summary of each trace, preserving behavior-relevant information while minimizing the presence of system metadata.
-
-\paragraph{Efficient benchmarking.}
-Task-efficient benchmarking estimates a system's full benchmark score from a small number of executions.
-The dominant paradigm for efficient benchmarking centers around item response theory (IRT) \citep{birnbaum1968some, embretson2000item}, where a target system's score is estimated with $ m \le M $ item-level scores by assigning a latent ability estimated from the relationship between a task's difficulty and discriminability based on $ \mathcal{D} $ \citep{maiapolo2024tinybenchmarks, kipnis2025metabench}.
-Extensions of IRT select informative or adaptive task subsets \citep{vivek2024anchor, truong2025amortized} or apply it to agentic benchmarks directly \citep{ge2026psychometrics, ndzomga2026efficient}.
-A complementary paradigm represents the systems themselves, either from their score profiles \citep{ruan2024observational, zhuang2025embedllm} or from the artifacts they produce while executing a task \citep{duderstadt2023data, acharyya2024consistent, helm2025statistical}.
-For example, the Product Kernel Perspective Space (PKPS) \citep{anonpkps} represents language models as Euclidean objects obtained via multidimensional scaling of the distances between their embedded responses.
-\citet{helm2026query} regress benchmark scores on similar representations and prove that the resulting predictions are task-efficient relative to the sample score.
-\trubric{} enables extending geometry-based methods to agentic traces by providing an effective trace encoding.
-We show that these two approaches -- score-based IRT and artifact-based PKPS -- can be combined to outperform either for any number of given executed tasks.
 
 \section{Discussion}
 \label{sec:discussion}
