@@ -231,7 +231,7 @@ Unless stated otherwise, we report leave-one-family-out.
 We compare against five baselines: the \emph{population mean} (the mean benchmark score of the reference systems, which ignores the target's executions entirely), the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT}, \emph{raw trace} (the PKPS pipeline applied to the raw-trace embeddings), and \emph{generic} (the PKPS pipeline applied to the generic-rubric embeddings).
 IRT fits the two-parameter logistic model $\mathbb{P}(s(x_{ij}) = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ \citep{birnbaum1968some} to the reference scores, where $\theta_{i}$ is the ability of system $f_{i}$ and $b_{j}$ and $a_{j}$ are the difficulty and discriminability of task $t_{j}$.
 The target's ability is estimated from its $m$ observed trace-level scores and mapped to a benchmark score $\hat{y}_{\mathrm{IRT}}$ via a link function fitted on the references.
-Finally, we consider the convex combination $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{geom}$, with $\alpha \in [0, 1] $ selected via cross-validation.
+Finally, we consider the convex combination $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{geom}$, with $\alpha \in [0, 1] $ selected via cross-validation, which we refer to as IRT $+$ \trubric{}.
 Implementation details for all baselines are provided in Appendix~\ref{app:baselines}.
 
 \paragraph{Task selection methods.}
@@ -271,14 +271,13 @@ On SWE-bench, the geometry produces a more accurate estimate from 1 through 10 r
 On Terminal-Bench, geometry outperforms IRT at one task, but IRT is more accurate from three tasks onward.
 We emphasize that these geometric methods \emph{only} require the target's trace content, and \emph{not} its correctness labels, which means that these methods are applicable in settings where grading (even a small number of) target tasks is infeasible (due to e.g.\ cost, lack of expertise, etc.), provided scored reference systems are available.
 
-\paragraph{Combining trace geometry with IRT dominates.}
-The trace-based predictions and correctness-based predictions exhibit different behavior as the task budget grows: geometric predictions are informative with very few executions, while IRT improves substantially as the number of tasks increases.
-We combine the geometric and IRT predictions using the weighting procedure described in Section~\ref{sec:experiments}, referring to the resulting estimator as IRT $+$ \trubric{}.
-Figure~\ref{fig:protocols} shows that combining their predictions improves accuracy across evaluated budgets and benchmarks.
-At five random tasks on SWE-bench, IRT $+$ \trubric{} achieves 0.063 MAE, compared with 0.069 for geometry alone and 0.088 for IRT.
-On Terminal-Bench -- where IRT is relatively stronger -- the combination achieves 0.090, compared with 0.107 for geometry and 0.097 for IRT.
+\paragraph{Combining trace geometry with IRT is best.}
+The trace-based predictions and correctness-based predictions exhibit different behavior as the task budget grows: trace-based predictions are informative with very few executions, while IRT improves substantially as the number of tasks increases.
+Figure~\ref{fig:protocols} shows that combining their predictions improves prediction across all evaluated budgets and benchmarks.
+At five random tasks on SWE-bench, IRT $+$ \trubric{} achieves 0.063 MAE, compared with 0.069 for geometry alone (Wilcoxon's $ p < 10^{-4} $) and 0.088 for IRT (Wilcoxon's $ p < 10^{-12} $).
+On Terminal-Bench -- where IRT is relatively stronger -- the combination achieves 0.090, compared with 0.107 for geometry (Wilcoxon's $ p < 10^{-3} $) and 0.097 for IRT (Wilcoxon's $ p < 10^{-2} $).
+These results suggest a complementary predictive value of execution artifacts and correctness outcomes.
 
-These results support the complementary predictive value of execution content and correctness outcomes.
 The broad pattern persists across the system-, family-, and harness-exclusion protocols in Figure~\ref{fig:protocols}, although the size of the improvement varies.
 As Table~\ref{tab:hero} shows, IRT $+$ \trubric{} is best or near-best across the reported settings, though its advantage over IRT generally shrinks as the number of correctness observations increases.
 
