@@ -90,12 +90,12 @@ IRT $+$ trubric & {\underline{0.081}} & {\underline{\bfseries 0.063}} & {\underl
 
 For our purposes, an agentic system $f \in \mathcal{F}$ is a random mapping from a task space $\mathcal{T}$ to a trace space $\mathcal{X}$.
 A benchmark is a fixed collection of tasks $T^{*} = \{t_{1}, \hdots, t_{M}\} \subset \mathcal{T}$.
-Each task $t$ has a trace-level scoring function $s(t): \mathcal{X} \to \{0, 1\}$ and the system has a benchmark score $ y(f) = \frac{1}{M} \sum_{j=1}^{M} \mathbb{E}\left[ s(t_{j})(f(t_{j})) \right] $,
+Each trace is evaluated by the benchmark's trace-level scoring function $s: \mathcal{X} \to \{0, 1\}$ and the system has a benchmark score $ y(f) = \frac{1}{M} \sum_{j=1}^{M} \mathbb{E}\left[ s(f(t_{j})) \right] $,
 where the expectation is with respect to the randomness of $f$.
 We write $y$ for $y(f)$ when the context is clear.
 
-When evaluating a new system, we typically have access to $ \mathcal{D} = \left\{ \{ (x_{ij}, s_{ij}) \}_{j=1}^{M} \right\}_{i=1}^{n} $, the traces and trace-level scores of $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$,
-where $x_{ij} \sim f_{i}(t_{j})$, $s_{ij} = s(t_{j})(x_{ij})$, and $y_{i} = y(f_{i}) $.
+When evaluating a new system, we typically have access to $ \mathcal{D} = \left\{ \{ (x_{ij}, s(x_{ij})) \}_{j=1}^{M} \right\}_{i=1}^{n} $, the traces and trace-level scores of $n$ previously-evaluated reference systems $f_{1}, \hdots, f_{n}$,
+where $x_{ij} \sim f_{i}(t_{j})$ and $y_{i} = y(f_{i}) $.
 For the target system $f_{0}$, we observe traces (and, optionally, trace-level scores) on only a subset $T \subset T^{*}$ of $|T| = m \ll M$ tasks and our goal is to estimate the system's full benchmark score $ y_{0} $ using only the target's $m$ executions and $\mathcal{D}$.
 
 \section{Related work}
@@ -171,7 +171,7 @@ Figure \ref{fig:pkps} shows the $ d=2$ perspectives when using the raw-trace emb
 Each dot is a system colored by its full benchmark score on SWE-bench Verified.
 The \trubric{}-based PKPS contains more information, per a lower mean absolute error (MAE) on leave-one-system-out evaluation (LOSO; see Section~\ref{sec:experiments}).
 Finally, we note that $ \hat{y} $ is estimated without any item-level score information.
-In our experiments described in Section \ref{sec:experiments} we include a simple combination of $ \hat{y} $ and an IRT-based estimate that ignores trace information but utilizes the $ \{s_{ij}\} $.
+In our experiments described in Section \ref{sec:experiments} we include a simple combination of $ \hat{y} $ and an IRT-based estimate that ignores trace information but utilizes the $ \{s(x_{ij})\} $.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -205,7 +205,7 @@ For each task budget $m$, random task selection averages over 50 shared draws; a
 \paragraph{Baselines.}
 We compare against four baselines: the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT}, \emph{raw trace} (the PKPS pipeline applied to embeddings of the start and end of each rendered trace), and \emph{generic} (the PKPS pipeline applied to summaries produced with fixed, task-agnostic field descriptions).
 Both the generic and \trubric{} representations use $K = 6$ fields.
-IRT fits the two-parameter logistic model $\mathbb{P}(s_{ij} = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ \citep{birnbaum1968some} to the reference scores, where $\theta_{i}$ is the ability of system $f_{i}$ and $b_{j}$ and $a_{j}$ are the difficulty and discriminability of task $t_{j}$.
+IRT fits the two-parameter logistic model $\mathbb{P}(s(x_{ij}) = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ \citep{birnbaum1968some} to the reference scores, where $\theta_{i}$ is the ability of system $f_{i}$ and $b_{j}$ and $a_{j}$ are the difficulty and discriminability of task $t_{j}$.
 The target's ability is estimated from its $m$ observed trace-level scores and mapped to a benchmark score $\hat{y}_{\mathrm{IRT}}$ via a link function fitted on the references.
 Finally, we consider the convex combination $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{geom}$, with $\alpha \in [0, 1] $ selected via cross-validation.
 Implementation details for all baselines are provided in Appendix~\ref{app:baselines}.
@@ -486,12 +486,12 @@ The generic rubric:
 \subsection{Score-only baselines}
 \label{app:score-baselines}
 
-\paragraph{Sample score.} The mean of the target's $m$ observed trace-level scores, $\hat{y}_{\mathrm{sample}} = \frac{1}{m} \sum_{t \in T_{0}} s(t)(f_{0}(t))$.
+\paragraph{Sample score.} The mean of the target's $m$ observed trace-level scores, $\hat{y}_{\mathrm{sample}} = \frac{1}{m} \sum_{t \in T_{0}} s(f_{0}(t))$.
 
 \paragraph{Population mean.} The mean benchmark score of the reference systems, $\hat{y}_{\mathrm{pop}} = \frac{1}{n} \sum_{i=1}^{n} y_{i}$, which ignores the target's executions entirely.
 
 \paragraph{Item-response model.}
-We fit the two-parameter logistic model $\mathbb{P}(s_{ij} = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ to the reference score matrix by maximum a posteriori estimation, with standard normal priors on the abilities $\theta_{i}$ and difficulties $b_{j}$ and a $\mathcal{N}(0, 1/10)$ prior on the log-discriminations $\log a_{j}$ (centering the slopes at the Rasch value of one), optimized with L-BFGS.
+We fit the two-parameter logistic model $\mathbb{P}(s(x_{ij}) = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ to the reference score matrix by maximum a posteriori estimation, with standard normal priors on the abilities $\theta_{i}$ and difficulties $b_{j}$ and a $\mathcal{N}(0, 1/10)$ prior on the log-discriminations $\log a_{j}$ (centering the slopes at the Rasch value of one), optimized with L-BFGS.
 Because the benchmark score aggregates all $M$ tasks while the model is fit on the $M$-task panel, we additionally fit a monotone link from ability to benchmark score, $y \approx \mathrm{sigmoid}(c_{1} \theta + c_{0})$, by least squares on the reference systems.
 For a target, we form a posterior over ability on a dense grid -- the prior is a normal with the mean and standard deviation of the reference abilities -- update it with the likelihood of the target's $m$ observed trace-level scores, and report the posterior mean of the fitted ability-to-score link as $\hat{y}_{\mathrm{IRT}}$.
 
