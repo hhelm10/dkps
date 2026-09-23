@@ -146,7 +146,7 @@ The geometry-based prediction does not use any item-level score information.
 To incorporate this information we fit a two-parameter logistic item-response model \citep{birnbaum1968some} with $ \mathcal{D} $.
 We apply the fitted item-response model to $ f_{0} $'s $ m $ scored traces to obtain $ \hat{y}_{IRT} $.
 We then consider the combined estimator $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{\mathrm{geom}}$, with $\alpha \in [0, 1] $ selected via cross-validation.
-[irt details in appendix]
+Fitting and prediction details for the item-response model, along with all baselines, are provided in Appendix~\ref{app:baselines}.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -312,6 +312,42 @@ Table~\ref{tab:probes} reports the balanced accuracies underlying Figure~\ref{fi
 \input{figures/trubric_tableA1_probes.tex}
 
 \input{figures/trubric_appendixA_prompts.tex}
+
+
+
+\section{Efficient benchmarking details}
+\label{app:baselines}
+
+\subsection{Score-only baselines}
+\label{app:score-baselines}
+
+\paragraph{Sample score.} The mean of the target's $m$ observed trace-level scores, $\hat{y}_{\mathrm{sample}} = \frac{1}{m} \sum_{q \in Q_{0}} s(f_{0}(q))$.
+
+\paragraph{Population mean.} The mean benchmark score of the reference systems, $\hat{y}_{\mathrm{pop}} = \frac{1}{n} \sum_{i=1}^{n} y_{i}$, which ignores the target's executions entirely.
+
+\paragraph{Item-response model.}
+We fit the two-parameter logistic model $\mathbb{P}(y_{ij} = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ to the reference score matrix by maximum a posteriori estimation, with standard normal priors on the abilities $\theta_{i}$ and difficulties $b_{j}$ and a $\mathcal{N}(0, 1/10)$ prior on the log-discriminations $\log a_{j}$ (centering the slopes at the Rasch value of one), optimized with L-BFGS.
+Because the benchmark score aggregates all $M$ tasks while the model is fit on the $M$-task panel, we additionally fit a monotone link from ability to benchmark score, $y \approx \mathrm{sigmoid}(c_{1} \theta + c_{0})$, by least squares on the reference systems.
+For a target, we form a posterior over ability on a dense grid -- the prior is a normal with the mean and standard deviation of the reference abilities -- update it with the likelihood of the target's $m$ observed trace-level scores, and report the posterior mean of the fitted ability-to-score link as $\hat{y}_{\mathrm{IRT}}$.
+
+\paragraph{Adaptive task selection.}
+Given the fitted item-response model, tasks are selected greedily per target: at each step, the next task is the one with the highest expected Fisher information $a_{j}^{2} \, p_{j}(\theta)(1 - p_{j}(\theta))$ under the current ability posterior, the outcome is observed, and the posterior is updated.
+Random task selection instead draws $Q_{0}$ uniformly; reported random-selection results average over 50 shared draws.
+
+\subsection{Trace-geometry baselines}
+\label{app:geom-baselines}
+
+The raw-trace and generic-rubric estimators replace the \trubric{} representation $\phi$ in the pipeline of Section~\ref{sec:method-pkps} and are otherwise identical.
+The raw-trace representation embeds the first and last portions of the rendered execution log as two blocks with the same encoder $g$; representations are centered by the task-level median across systems and $\ell_{2}$-normalized.
+The generic-rubric representation follows the two-stage construction of Section~\ref{sec:method-trubric} with the fixed field descriptions of Appendix~\ref{app:prompts} in place of task-specific rubrics.
+
+\subsection{Hyperparameters and cross-validation}
+\label{app:hyper}
+
+For each task draw, hyperparameters are selected by treating each reference system as a pseudo-target: its score is predicted from the remaining references (leave-one-out via the hat matrix for the ridge regressor), and the configuration minimizing the mean reference error is selected.
+The candidate grids are the kernel bandwidth $\sigma^{2} \in \{\mathrm{med}/2^{k}\}_{k=0}^{8}$ where $\mathrm{med}$ is the median squared distance between task embeddings, the dimension $d \in \{8, 16\}$, and the ridge penalty $\in \{0.1, 1.0\}$.
+The candidate pool additionally contains a distance-weighted $k$-nearest-neighbor predictor over $\delta$; it is selected in a small minority of draws and its exclusion does not meaningfully change results.
+The blend weight $\alpha$ is selected on a $101$-point grid over $[0, 1]$ by the same reference-pseudo-target procedure.
 
 \end{document}
 % build-hook smoke test
