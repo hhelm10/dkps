@@ -264,14 +264,11 @@ Table~\ref{tab:hero} further shows that generic rubrics are competitive on SWE-b
 \end{figure}
 
 \paragraph{Trace geometry supports task-efficient benchmark prediction.}
-Table~\ref{tab:hero} and Figure~\ref{fig:protocols} show that \trubric{}-based trace geometry predicts full-benchmark performance more accurately than the sample score and population mean for small task budgets.
-This advantage holds from 1 through 10 randomly selected tasks on both benchmarks.
-We emphasize that these geometric methods \emph{only} require the target's trace content, and \emph{not} its correctness labels, which means that these methods are applicable in settings where grading (even a small number of) target tasks is infeasible (due to e.g.\ cost, lack of expertise, etc.), provided scored reference systems are available.
-
+Table~\ref{tab:hero} and Figure~\ref{fig:protocols} show that \trubric{}-based system geometry predicts full-benchmark performance more accurately than the sample score for small task budgets ($ m \le 10 $) and the population mean for all budgets.
 The \trubric{}-based trace geometry can also outperform IRT, which exploits the correctness patterns of reference systems.
-On SWE-bench, geometry is more accurate from 1 through 10 random tasks (Figure~\ref{fig:protocols}).
+On SWE-bench, the geometry produces a more accurate estimate from 1 through 10 random tasks (Figure~\ref{fig:protocols}).
 On Terminal-Bench, geometry outperforms IRT at one task, but IRT is more accurate from three tasks onward.
-The advantage of trace geometry over outcome-only methods is largest when few target executions are available, while its relative performance at larger budgets varies by benchmark.
+We emphasize that these geometric methods \emph{only} require the target's trace content, and \emph{not} its correctness labels, which means that these methods are applicable in settings where grading (even a small number of) target tasks is infeasible (due to e.g.\ cost, lack of expertise, etc.), provided scored reference systems are available.
 
 \paragraph{Combining trace geometry with IRT dominates.}
 The trace-based predictions and correctness-based predictions exhibit different behavior as the task budget grows: geometric predictions are informative with very few executions, while IRT improves substantially as the number of tasks increases.
