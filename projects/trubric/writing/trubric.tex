@@ -371,7 +371,7 @@ UsernameValidator allows trailing newline in usernames \\ Description \\ 	 \\ AS
 \item[final state] The final state shows django/contrib/auth/validators.py with both regex patterns updated to r'\textbackslash{}A[\textbackslash{}w.@+-]+\textbackslash{}Z' in ASCIIUsernameValidator and UnicodeUsernameValidator. No other files were modified, and tests confirm the newline rejection behavior works correctly.
 \end{description}
 
-\subsection{Linear-probe methodology}
+\subsection{Linear classification tasks}
 \label{app:probes}
 
 For each combination of text encoder and trace representation, we assemble one embedding per trace for the executions of the 107 SWE-bench Verified systems on a fixed panel of 20 tasks (2{,}129 traces; a small number of executions are missing from the public archive).
@@ -388,7 +388,7 @@ Table~\ref{tab:probes} reports the balanced accuracies underlying Figure~\ref{fi
 \centering
 \caption{Held-out balanced accuracy of linear probes for the five trace attributes of Section~\ref{sec:method-trubric}, for each text encoder and trace representation; these values underlie Figure~\ref{fig:radar}. For evaluation-relevant attributes (i)--(ii), higher is better; for system-metadata attributes (iii)--(v), lower is better. The final row reports chance balanced accuracy.}
 \label{tab:probes}
-\resizebox{\textwidth}{!}{%
+\tiny
 \begin{tabular}{llccccc}
 \toprule
 encoder & representation & {(i) task} & {(ii) correctness} & {(iii) system} & {(iv) family} & {(v) harness} \\
@@ -424,7 +424,7 @@ encoder & representation & {(i) task} & {(ii) correctness} & {(iii) system} & {(
 \midrule
 \multicolumn{2}{l}{chance} & 0.05 & 0.50 & 0.01 & 0.12 & 0.02 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 
 \subsection{Prompts}
@@ -469,7 +469,6 @@ The generic rubric:
 - final_state: how the run ended (clean finish, step/cost limit,
   submitted unverified)
 \end{verbatim}\end{quote}
-
 
 
 \section{Efficient benchmarking details}
