@@ -176,7 +176,7 @@ In our experiments described in Section \ref{sec:experiments} we include a simpl
 \section{Experiments}
 \label{sec:experiments}
 
-We next describe the datasets we use to evaluate trace-based geometries for efficient evaluation, introduce three different evaluation protocols relevant to agent evaluation, and describe relevant baselines.
+We next describe the datasets we use to evaluate the trace embeddings and the trace-based geometries for efficient evaluation, introduce three different evaluation protocols relevant to agent evaluation, and describe relevant baselines.
 We then evaluate \trubric{}-based estimators against these baselines across benchmarks, evaluation protocols, task budgets, and design choices.
 
 \paragraph{Benchmark data.}
@@ -189,12 +189,14 @@ We consider two agentic benchmarks:
     We consider the 107 systems with complete public trace archives and per-task outcomes.
     We randomly downsampled to $ M = 100 $ with near-universal coverage.
     We let $ y_{i} $ be the official resolve rate over all 500 tasks.
+    The full list of systems is included in Appendix~\ref{app:data}.
     \item \textbf{Terminal-Bench 2.0} \citep{tbench2026} consists of 89 command-line tasks executed under a standardized harness specification.
     Its leaderboard contains submissions from 75 systems.
     Each system attempts each task five times.
     We exclude two whose traces are not public and one duplicate submission.
     We analyze the 65 systems with at least 90\% trace coverage.
     We use a single trial's trace and binary outcome for a given (system, task) and let $ y_{i} $ be the all-trial and all-tasks mean resolve rate.
+    The full list of systems is included in Appendix~\ref{app:data}.
 \end{enumerate}
 
 \paragraph{Trace embedding evaluation protocols.}
@@ -211,7 +213,7 @@ The prompts and fixed field descriptions are provided in Appendix~\ref{app:promp
 
 \paragraph{Efficient benchmarking evaluation protocols.}
 Modern leaderboards contain many entries that share an underlying model or harness.
-To simulate the process of evaluating a new harness or a new model, we consider three different reference-exclusion protocols with increasing conservatism: \emph{leave-one-system-out} where only the target itself is excluded from the references,
+To simulate the process of evaluating a new harness or a new model, we consider three different protocols with increasing conservatism: \emph{leave-one-system-out} where only the target itself is excluded from the references,
 \emph{leave-one-family-out}  where references whose underlying model family matches the target's are additionally excluded, and \emph{leave-one-harness-out} where references sharing the target's harness are excluded.
 Detailed descriptions of a system's assignment to a model family or harness are provided in Appendix \ref{app:data}.
 Unless stated otherwise, we report leave-one-family-out.
@@ -225,8 +227,8 @@ Implementation details for all baselines are provided in Appendix~\ref{app:basel
 
 \paragraph{Task selection methods.}
 For each task budget $m$, we consider two methods for selecting the target's $m$ executed tasks.
-\emph{Random} selection draws the $m$ tasks uniformly; reported results average over 50 shared draws.
-\emph{Adaptive} selection chooses tasks greedily using the fitted item-response model: at each step, the task with the highest expected Fisher information under the current ability posterior is executed and the posterior is updated (Appendix~\ref{app:baselines}).
+\emph{Random} selection draws the $m$ tasks uniformly. Reported results average over 50 randomly sampled task subsets.
+\emph{Adaptive} selection chooses tasks greedily using the fitted item-response model. In particular at each step, the task with the highest expected Fisher information under the current ability posterior is executed and the posterior is updated (Appendix~\ref{app:baselines}).
 
 \subsection{Results}
 \label{sec:results}
