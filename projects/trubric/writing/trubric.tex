@@ -242,10 +242,10 @@ For each task budget $m$, we consider two methods for selecting the target's $m$
 \label{sec:results}
 
 \paragraph{Rubric-based preprocessing produces more useful trace representations.}
-Figure~\ref{fig:radar} shows that both generic and task-specific rubric constructions reduce recoverable information about system identity, model family, and harness while retaining task and correctness information.
-As discussed in Section~\ref{sec:intro}, these attributes can introduce nuisance variation into trace similarity, obscuring similarities in how systems execute tasks.
-Task-specific rubrics generally produce a larger reduction in identity-related signals than generic rubrics.
-This qualitative pattern persists across seven embedding functions with little overall variation, although the precise magnitudes differ.
+Figure~\ref{fig:radar} shows that both generic and task-specific rubrics reduce recoverable information about system identity, model family, and harness while retaining task and correctness information.
+As discussed above, these attributes can introduce nuisance variation into trace similarity, obscuring similarities in how systems execute tasks.
+Task-specific rubrics produce a larger reduction in identity-related signals compared to generic rubrics.
+This qualitative pattern persists across seven embedding functions.
 
 These differences are also reflected in the quality of the system-level geometry.
 Figure~\ref{fig:pkps} shows a clearer relationship between system position in the embedding space and benchmark score for \trubric{} than for raw-trace embeddings.
