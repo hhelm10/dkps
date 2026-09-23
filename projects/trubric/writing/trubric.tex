@@ -176,8 +176,8 @@ In our experiments described in Section \ref{sec:experiments} we include a simpl
 \section{Experiments}
 \label{sec:experiments}
 
-We next describe the datasets we use to evaluate trace-based geometries for efficient evaluation, introduce three different evaluation protocols relevant to efficient agent evaluation, and describe relevant baselines.
-We then evaluate \trubric{}-based estimators against these baselines across benchmarks, evaluation protocols, task budgets, and design choices (Section~\ref{sec:results}).
+We next describe the datasets we use to evaluate trace-based geometries for efficient evaluation, introduce three different evaluation protocols relevant to agent evaluation, and describe relevant baselines.
+We then evaluate \trubric{}-based estimators against these baselines across benchmarks, evaluation protocols, task budgets, and design choices.
 
 \paragraph{Benchmark data.}
 We consider two agentic benchmarks:
@@ -185,26 +185,40 @@ We consider two agentic benchmarks:
 [wide, labelwidth=1pt, labelindent=12pt]
 \setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
     \item \textbf{SWE-bench Verified} \citep{jimenez2024swebench, openai2024verified} consists of 500 human-validated software-engineering tasks drawn from real GitHub issues.
-    Its public leaderboard contains 119 submissions; we retain the 107 with complete public trace archives and per-task outcomes.
-    We construct trace representations on a fixed panel of $M = 100$ tasks (a seeded random subset of the tasks with near-universal trace coverage) and take each system's benchmark score $y$ to be its official resolve rate over all 500 tasks.
+    Its public leaderboard includes submissions from 119 unique systems.
+    We consider the 107 systems with complete public trace archives and per-task outcomes.
+    We randomly downsampled to $ M = 100 $ with near-universal coverage.
+    We let $ y_{i} $ be the official resolve rate over all 500 tasks.
     \item \textbf{Terminal-Bench 2.0} \citep{tbench2026} consists of 89 command-line tasks executed under a standardized harness specification.
-    Its leaderboard contains 75 submissions; we exclude two whose traces are not public and one duplicate submission, and of the remaining 72 we evaluate the 65 with trace coverage of at least 90\%.
-    Official scores average five trials per task; we use the traces and binary outcomes of a single trial and take $y$ to be the official all-trial mean.
+    Its leaderboard contains submissions from 75 systems.
+    Each system attempts each task five times.
+    We exclude two whose traces are not public and one duplicate submission.
+    We analyze the 65 systems with at least 90\% trace coverage.
+    We use a single trial's trace and binary outcome for a given (system, task) and let $ y_{i} $ be the all-trial and all-tasks mean resolve rate.
 \end{enumerate}
 
-\paragraph{Evaluation protocols.}
-Modern leaderboards contain many entries that share an underlying model or harness: predicting the score of a system whose near-siblings are among the references is easy -- the reference scores can simply be copied -- and does not reflect the intended use case of evaluating a genuinely new system.
-We therefore consider three reference-exclusion protocols of increasing conservatism.
-Under \emph{leave-one-system-out}, only the target itself is excluded from the references.
-Under \emph{leave-one-family-out}, references whose underlying model family matches the target's are additionally excluded.
-Under \emph{leave-one-harness-out}, references sharing the target's harness are excluded.
-Family and harness labels are derived from submission metadata; systems without a label exclude only themselves.
+\paragraph{Trace embedding evaluation protocols.}
+To quantify what a trace representation encodes, we train class-balanced linear classifiers to predict each of the five attributes of Section~\ref{sec:method-trubric} for a held-out trace from its embedding.
+Classifiers for the system-level attributes (iii)--(v) are evaluated on held-out tasks.
+Classifiers for (i) and (ii) are evaluated on held-out groups of systems.
+We evaluate trace representations using the cached SWE-bench Verified traces described above and report balanced accuracy for each attribute.
+Detailed descriptions of the classification tasks are provided in Appendix~\ref{app:probes}.
+
+\paragraph{Trace embedding baselines.}
+We compare \trubric{} embeddings to two baseline representations: \emph{raw trace}, which uses $ g $ to embed the start and end of each rendered trace, and \emph{generic}, which follows the two-stage construction of Section~\ref{sec:method-trubric} with fixed, task-agnostic field descriptions in place of a task-specific rubric.
+Both the generic and \trubric{} representations use $K = 6$ fields, with DeepSeek-V4-Flash \citep{deepseek2026v4} as both the rubric generator and summarizer.
+The prompts and fixed field descriptions are provided in Appendix~\ref{app:prompts}.
+
+\paragraph{Efficient benchmarking evaluation protocols.}
+Modern leaderboards contain many entries that share an underlying model or harness.
+To simulate the process of evaluating a new harness or a new model, we consider three different reference-exclusion protocols with increasing conservatism: \emph{leave-one-system-out} where only the target itself is excluded from the references,
+\emph{leave-one-family-out}  where references whose underlying model family matches the target's are additionally excluded, and \emph{leave-one-harness-out} where references sharing the target's harness are excluded.
+Detailed descriptions of a system's assignment to a model family or harness are provided in Appendix \ref{app:data}.
 Unless stated otherwise, we report leave-one-family-out.
 For each task budget $m$, random task selection averages over 50 shared draws; adaptive task selection follows the information-based procedure of Appendix~\ref{app:baselines}.
 
-\paragraph{Baselines.}
-We compare against four baselines: the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT}, \emph{raw trace} (the PKPS pipeline applied to embeddings of the start and end of each rendered trace), and \emph{generic} (the PKPS pipeline applied to summaries produced with fixed, task-agnostic field descriptions).
-Both the generic and \trubric{} representations use $K = 6$ fields.
+\paragraph{Efficient benchmarking baselines.}
+We compare against four baselines: the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT}, \emph{raw trace} (the PKPS pipeline applied to the raw-trace embeddings), and \emph{generic} (the PKPS pipeline applied to the generic-rubric embeddings).
 IRT fits the two-parameter logistic model $\mathbb{P}(s(x_{ij}) = 1) = \mathrm{sigmoid}\left(a_{j} (\theta_{i} - b_{j})\right)$ \citep{birnbaum1968some} to the reference scores, where $\theta_{i}$ is the ability of system $f_{i}$ and $b_{j}$ and $a_{j}$ are the difficulty and discriminability of task $t_{j}$.
 The target's ability is estimated from its $m$ observed trace-level scores and mapped to a benchmark score $\hat{y}_{\mathrm{IRT}}$ via a link function fitted on the references.
 Finally, we consider the convex combination $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{geom}$, with $\alpha \in [0, 1] $ selected via cross-validation.
