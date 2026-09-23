@@ -215,7 +215,6 @@ To simulate the process of evaluating a new harness or a new model, we consider 
 \emph{leave-one-family-out}  where references whose underlying model family matches the target's are additionally excluded, and \emph{leave-one-harness-out} where references sharing the target's harness are excluded.
 Detailed descriptions of a system's assignment to a model family or harness are provided in Appendix \ref{app:data}.
 Unless stated otherwise, we report leave-one-family-out.
-For each task budget $m$, random task selection averages over 50 shared draws; adaptive task selection follows the information-based procedure of Appendix~\ref{app:baselines}.
 
 \paragraph{Efficient benchmarking baselines.}
 We compare against four baselines: the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT}, \emph{raw trace} (the PKPS pipeline applied to the raw-trace embeddings), and \emph{generic} (the PKPS pipeline applied to the generic-rubric embeddings).
@@ -223,6 +222,11 @@ IRT fits the two-parameter logistic model $\mathbb{P}(s(x_{ij}) = 1) = \mathrm{s
 The target's ability is estimated from its $m$ observed trace-level scores and mapped to a benchmark score $\hat{y}_{\mathrm{IRT}}$ via a link function fitted on the references.
 Finally, we consider the convex combination $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{geom}$, with $\alpha \in [0, 1] $ selected via cross-validation.
 Implementation details for all baselines are provided in Appendix~\ref{app:baselines}.
+
+\paragraph{Task selection methods.}
+For each task budget $m$, we consider two methods for selecting the target's $m$ executed tasks.
+\emph{Random} selection draws the $m$ tasks uniformly; reported results average over 50 shared draws.
+\emph{Adaptive} selection chooses tasks greedily using the fitted item-response model: at each step, the task with the highest expected Fisher information under the current ability posterior is executed and the posterior is updated (Appendix~\ref{app:baselines}).
 
 \subsection{Results}
 \label{sec:results}
