@@ -301,18 +301,18 @@ In this calculation, we treat the cost of LLMs used to do (t)rubric summarizatio
 These comparisons illustrate how extracting additional information from each execution can make accurate benchmark estimation feasible at substantially smaller task budgets.
 
 \paragraph{Performance improves with larger reference sets.}
-Figure~\ref{fig:ablations}a shows that increasing the number of reference models generally improves both IRT and geometry-based estimators.
+The left panel of Figure~\ref{fig:ablations} shows that increasing the number of reference models generally improves both IRT and geometry-based estimators.
 At five random tasks on SWE-bench, expanding the library from 20 to 107 systems reduces geometry-only MAE from 0.086 to 0.069 and IRT $+$ \trubric{} MAE from 0.081 to 0.063.
 The contribution of geometry depends on reference availability: given a small number of reference models and a large target-task budget, IRT can outperform geometry-based methods.
 
 \paragraph{Adaptive task selection composes with trace-based estimation.}
 Adaptive task selection provides a further improvement.
 With five adaptive tasks, IRT $+$ \trubric{} achieves 0.048 MAE on SWE-bench, compared with 0.063 for five random tasks (Table~\ref{tab:hero}).
-Together, Table~\ref{tab:hero} and Figure~\ref{fig:ablations}b show that adaptive selection improves both IRT and geometry-based prediction.
-These findings demonstrate that trace-based estimation can be used alongside adaptive sampling.
+Together, Table~\ref{tab:hero} and center panel of Figure~\ref{fig:ablations} show that adaptive selection improves both IRT and geometry-based prediction and further improves evaluation efficiency.
 
-Figure~\ref{fig:ablations}c further shows that the qualitative behavior persists across seven embedding functions.
-On SWE-bench, the impact of encoder choice appears small compared with the effects of the number of target tasks and the number of reference models.
+\paragraph{Prediction is insensitive to the choice of text encoder.} We evaluate the sensitivity of \trubric{}-based prediction on SWE-bench to the choice of text encoder in the right panel of Figure~\ref{fig:ablations}.
+We include \texttt{text-embedding-3-small}, \texttt{nomic-embed-text-v1.5}, \texttt{bge-large-en-v1.5}, \texttt{gte-large}, \texttt{e5-large-v2}, \texttt{all-mpnet-base-v2}, and \texttt{all-MiniLM-L6-v2}.
+The impact of encoder choice is small (at most 0.008 MAE at any fixed setting) compared with the effects of the number of target tasks or task selection (0.081 to 0.060 from 1 to 20 random tasks; 0.063 to 0.048 for random versus adaptive selection at five tasks) and the number of reference models (0.086 to 0.069 at five tasks).
 
 \begin{figure}[t]
 \centering
