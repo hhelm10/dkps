@@ -132,7 +132,7 @@ For systems $f_{a}$ and $f_{b}$ evaluated on task sets $Q_{a}$ and $Q_{b}$, defi
 \label{method:pkps}
 \langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')},
 \end{equation}
-the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$, and $ \Delta_{ab} = \delta^{2}(a,b) $. With $ \Delta $ defined on $ f_{0}, \hdots f_{n} $, the $d$-dimensional Euclidean representations $(\psi_{0}, \psi_{1}, \hdots, \psi_{n}) \in \mathbb{R}^{(n+1) \times d}$ are low-dimensional representations of the systems with respect to their task sets.
+the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$, and $ \Delta_{ab} = \delta^{2}(a,b) $. With $ \Delta $ defined on $ f_{0}, \hdots f_{n} $, applying classical multidimensional scaling (MDS) to $ \Delta $ yields $d$-dimensional Euclidean representations $(\psi_{0}, \psi_{1}, \hdots, \psi_{n}) \in \mathbb{R}^{(n+1) \times d}$ of the systems with respect to their task sets.
 Importantly, Eq. \eqref{method:pkps} is defined when $ |Q_{a} | \neq |Q_{b}| $ if both $ |Q_{a}| > 0 $ and $ |Q_{b}| > 0 $, so the target system is naturally represented in the same space as the reference systems.
 
 In benchmarking settings, it is typical that $ |Q_{0} | = m \ll M $ and $ |Q_{i} | = M $ for all $ i \in \{1, \hdots, n\} $.
