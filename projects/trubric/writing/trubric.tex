@@ -297,7 +297,7 @@ For this comparison, we assume a cost of \$2 per agent execution \citep{kapoor20
 On SWE-bench, IRT $+$ \trubric{} reaches an MAE below 0.10 with one random task, compared with five tasks for IRT and twenty for the sample score -- the smallest tested budgets meeting this threshold.
 This corresponds to estimated target execution costs of \$2, \$10, and \$40, respectively.
 
-Combining trace information with adaptive sampling also reduces cost at a more stringent accuracy level: five adaptive tasks with IRT $+$ \trubric{} achieve approximately the same error as twenty random tasks with IRT, .048 MAE (Table~\ref{tab:hero}), corresponding to \$10 rather than \$40.
+Combining trace information with adaptive sampling also reduces cost at a more stringent accuracy level: five adaptive tasks with IRT $+$ \trubric{} achieve approximately the same error as twenty random tasks with IRT, 0.048 MAE (Table~\ref{tab:hero}), corresponding to \$10 rather than \$40.
 These comparisons concern the cost of executing tasks for a new system and assume an existing reference collection.
 We assume that reference executions are available from community archives or that their acquisition cost is amortized over a large number of target evaluations.
 In this calculation, we treat the cost of LLMs used to do (t)rubric summarization and the cost of API-based embedding functions as negligible compared to the cost of running the agents on the task.
@@ -305,12 +305,12 @@ These comparisons illustrate how extracting additional information from each exe
 
 \paragraph{Performance improves with larger reference sets.}
 Figure~\ref{fig:ablations}a shows that increasing the number of reference models generally improves both IRT and geometry-based estimators.
-At five random tasks on SWE-bench, expanding the library from 20 to 107 systems reduces geometry-only MAE from .086 to .069 and IRT $+$ \trubric{} MAE from .081 to .063.
+At five random tasks on SWE-bench, expanding the library from 20 to 107 systems reduces geometry-only MAE from 0.086 to 0.069 and IRT $+$ \trubric{} MAE from 0.081 to 0.063.
 The contribution of geometry depends on reference availability: given a small number of reference models and a large target-task budget, IRT can outperform geometry-based methods.
 
 \paragraph{Adaptive task selection composes with trace-based estimation.}
 Adaptive task selection provides a further improvement.
-With five adaptive tasks, IRT $+$ \trubric{} achieves .048 MAE on SWE-bench, compared with .063 for five random tasks (Table~\ref{tab:hero}).
+With five adaptive tasks, IRT $+$ \trubric{} achieves 0.048 MAE on SWE-bench, compared with 0.063 for five random tasks (Table~\ref{tab:hero}).
 Together, Table~\ref{tab:hero} and Figure~\ref{fig:ablations}b show that adaptive selection improves both IRT and geometry-based prediction.
 These findings demonstrate that trace-based estimation can be used alongside adaptive sampling.
 
@@ -327,7 +327,7 @@ On SWE-bench, the impact of encoder choice appears small compared with the effec
 \paragraph{Larger rubrics improve average performance.}
 Figure~\ref{fig:sensitivity} varies the number of fields included in generic and task-specific rubrics, averaging performance over subsets drawn from a bank of 32 fields.
 For both constructions, adding fields generally improves average prediction accuracy, with diminishing returns.
-At five tasks and the larger reference library, increasing a task-specific rubric from one to six fields reduces average MAE from .090 to .081; using all 32 fields reduces it further to .077.
+At five tasks and the larger reference library, increasing a task-specific rubric from one to six fields reduces average MAE from 0.090 to 0.081; using all 32 fields reduces it further to 0.077.
 This pattern is consistent with an ensembling effect from combining descriptions of multiple aspects of execution.
 Task-specific rubrics generally outperform generic rubrics in this experiment, with small reversals at the one-task budget.
 
