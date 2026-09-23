@@ -104,25 +104,38 @@ Appendix~\ref{app:traces} provides a complete worked example (i.e., a task descr
 \subsection{Inference in the Product Kernel Perspective Space}
 \label{sec:method-pkps}
 
-Given trace representations, we represent \emph{systems} following the Product Kernel Perspective Space (PKPS) construction \citep{anonpkps}.
-Before constructing the geometry, trace representations are centered by subtracting task-level means -- the average across systems for each task and field -- removing content shared by every attempt of a task and emphasizing differences in behavior.
+Given trace representations, we represent systems via the Product Kernel Perspective Space (PKPS).
+Before constructing the geometry of systems, trace representations are centered by subtracting task-level means -- the average across systems for each task and field -- to emphasize differences in behavior.
 Let $\tau$ denote a text embedding of the task description and $\kappa_{\sigma}(q, q') = \exp\left(-\| \tau(q) - \tau(q') \|^{2} / 2\sigma^{2}\right)$ a Gaussian kernel on tasks.
-For systems $f_{a}$ and $f_{b}$ observed on task sets $Q_{a}$ and $Q_{b}$, define the kernel-weighted similarity
-\begin{equation*}
-\langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')}
-\end{equation*}
-and the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$.
-Collecting the distances $\delta(a, b)$ for all pairs of systems yields the $(n+1) \times (n+1)$ pairwise distance matrix $\Delta$.
-Applying classical multidimensional scaling (MDS) to $\Delta$ yields $d$-dimensional Euclidean representations $\psi_{0}, \psi_{1}, \hdots, \psi_{n} \in \mathbb{R}^{d}$ of the target and reference systems.
-We then fit a ridge regressor from the reference representations $\psi_{1}, \hdots, \psi_{n}$ to their benchmark scores $y_{1}, \hdots, y_{n}$ and estimate $\hat{y}_{\mathrm{geom}}$ by evaluating the fitted regressor at $\psi_{0}$; reference predictions are made leave-one-out via the hat matrix so that they remain honest.
-All hyperparameters -- the bandwidth $\sigma$, the dimension $d$, and the ridge penalty -- are selected by treating each reference system as a pseudo-target, predicting its score from the remaining references, and minimizing the mean reference error.
-No target labels are used at any point, so the geometric estimator applies even when the target's executions cannot be graded.
+For systems $f_{a}$ and $f_{b}$ evaluated on task sets $Q_{a}$ and $Q_{b}$, define the weighted similarity
+\begin{equation}
+\label{method:pkps}
+\langle a, b \rangle = \frac{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q') \, \langle \phi(x_{aq}), \phi(x_{bq'}) \rangle}{\sum_{q \in Q_{a}} \sum_{q' \in Q_{b}} \kappa_{\sigma}(q, q')},
+\end{equation}
+the corresponding squared distance $\delta^{2}(a, b) = \langle a, a \rangle + \langle b, b \rangle - 2 \langle a, b \rangle$, and $ \Delta_{ab} = \delta^{2}(a,b) $. With $ \Delta $ defined on $ f_{0}, \hdots f_{n} $, applying classical multidimensional scaling (MDS) yields $d$-dimensional Euclidean representations $(\psi_{0}, \psi_{1}, \hdots, \psi_{n}) \in \mathbb{R}^{(n+1) \times d}$ of the systems with respect to their task sets.
+Importantly, Eq. \eqref{method:pkps} is defined when $ |Q_{a} | \neq |Q_{b}| $ if both $ |Q_{a}| > 0 $ and $ |Q_{b}| > 0 $, so the target system is naturally represented in the same space as the reference systems.
 
-As a score-only baseline and blending partner we use a two-parameter logistic (2PL) item-response model \citep{birnbaum1968some}: $\mathbb{P}(y_{ij} = 1) = \mathrm{logistic}\left(a_{j} (\theta_{i} - b_{j})\right)$ with item discriminations $a_{j}$ and difficulties $b_{j}$ fit on $\mathcal{D}$, the target ability $\theta_{0}$ estimated from its $m$ graded executions, and $\hat{y}_{\mathrm{IRT}}$ given by the average predicted success probability over $Q^{*}$.
-The combined estimator is the convex blend $\hat{y} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{\mathrm{geom}}$, with $\alpha \in [0, 1]$ selected by the same reference-pseudo-target procedure.
-For adaptive task selection, tasks are chosen sequentially to maximize Fisher information about the target's ability under the reference-fit 2PL model.
+In benchmarking settings, it is typical that $ |Q_{0} | = m \ll M $ and $ |Q_{i} | = M $ for all $ i \in \{1, \hdots, n\} $.
+Given $ \mathcal{D} $ and $ \psi_{1}, \hdots, \psi_{n} $, we train a simple regressor on $ (\psi_{1}, y_{1}), \hdots, (\psi_{n}, y_{n})$ and apply it to $ \psi_{0} $ to obtain $ \hat{y}_{geom} $.
+In practice, all hyperparameters -- the task kernel bandwidth $\sigma$, the dimension $d$, and the ridge penalty -- are selected via cross-validation.
 
-\section{Results}
+The geometry-based prediction does not use any item-level score information.
+To incorporate this information we fit a two-parameter logistic item-response model \citep{birnbaum1968some} using $ \mathcal{D} $.
+We apply the fitted item-response model on $ f_{0} $'s $ m $ scored traces to obtain $ \hat{y}_{IRT} $.
+We then consider the combined estimator $ \hat{y}_{\alpha} = \alpha \, \hat{y}_{\mathrm{IRT}} + (1 - \alpha) \, \hat{y}_{\mathrm{geom}}$, with $\alpha \in [0, 1] $ selected via cross-validation.
+
+\section{Experiments}
+\label{sec:experiments}
+
+[sentence guiding the reader]
+
+[paragraphs describing data]
+
+[paragraphs describing evaluaton protocols]
+
+[paragraphs describing baselines]
+
+\subsection{Results}
 \label{sec:results}
 
 \begin{figure}[t]
