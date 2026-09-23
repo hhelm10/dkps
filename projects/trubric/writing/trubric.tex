@@ -172,28 +172,16 @@ We consider two agentic benchmarks:
 
 \paragraph{Evaluation protocols.}
 Modern leaderboards contain many entries that share an underlying model or harness: predicting the score of a system whose near-siblings are among the references is easy -- the reference scores can simply be copied -- and does not reflect the intended use case of evaluating a genuinely new system.
-We therefore consider three reference-exclusion protocols of increasing conservatism:
-\begin{enumerate}
-[wide, labelwidth=1pt, labelindent=12pt]
-\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
-    \item \emph{Leave-one-system-out}: only the target itself is excluded from the references.
-    \item \emph{Leave-one-family-out}: references whose underlying model family matches the target's are additionally excluded.
-    \item \emph{Leave-one-harness-out}: references sharing the target's harness are excluded.
-\end{enumerate}
+We therefore consider three reference-exclusion protocols of increasing conservatism.
+Under \emph{leave-one-system-out}, only the target itself is excluded from the references.
+Under \emph{leave-one-family-out}, references whose underlying model family matches the target's are additionally excluded.
+Under \emph{leave-one-harness-out}, references sharing the target's harness are excluded.
 Family and harness labels are derived from submission metadata; systems without a label exclude only themselves.
 Unless stated otherwise, we report leave-one-family-out.
 For each task budget $m$, random task selection averages over 50 shared draws; adaptive task selection follows the information-based procedure of Appendix~\ref{app:baselines}.
 
 \paragraph{Baselines.}
-We compare against four baselines:
-\begin{enumerate}
-[wide, labelwidth=1pt, labelindent=12pt]
-\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
-    \item \emph{Sample score}: the mean of the target's $m$ observed trace-level scores.
-    \item \emph{IRT}: the two-parameter logistic model of Section~\ref{sec:method-pkps}.
-    \item \emph{Raw trace}: the PKPS pipeline applied to embeddings of the start and end of each rendered trace.
-    \item \emph{Generic}: the PKPS pipeline applied to summaries produced with fixed, task-agnostic field descriptions.
-\end{enumerate}
+We compare against four baselines: the \emph{sample score} (the mean of the target's $m$ observed trace-level scores), \emph{IRT} (the two-parameter logistic model of Section~\ref{sec:method-pkps}), \emph{raw trace} (the PKPS pipeline applied to embeddings of the start and end of each rendered trace), and \emph{generic} (the PKPS pipeline applied to summaries produced with fixed, task-agnostic field descriptions).
 Implementation details for all baselines are provided in Appendix~\ref{app:baselines}.
 
 \subsection{Results}
