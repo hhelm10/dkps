@@ -2,6 +2,7 @@
 \usepackage{iclr2027_conference,times}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -500,6 +501,229 @@ The generic-rubric representation follows the two-stage construction of Section~
 For each task draw, hyperparameters are selected by treating each reference system as a pseudo-target: its score is predicted from the remaining references (leave-one-out via the hat matrix for the ridge regressor), and the configuration minimizing the mean reference error is selected.
 The candidate grids are the kernel bandwidth $\sigma^{2} \in \{\mathrm{med}/2^{k}\}_{k=0}^{8}$ where $\mathrm{med}$ is the median squared distance between task embeddings, the dimension $d \in \{8, 16\}$, and the ridge penalty $\in \{0.1, 1.0\}$.
 The ensemble weight $\alpha$ is selected on a $101$-point grid over $[0, 1]$ by the same reference-pseudo-target procedure.
+
+
+\section{Systems and tasks}
+\label{app:data}
+
+\subsection{SWE-bench Verified systems}
+Table~\ref{tab:swe-systems} lists the 107 evaluated leaderboard submissions with their model-family tag (used by the leave-one-family-out protocol; \emph{--} indicates no tag could be derived from submission metadata) and official resolve rate $y$.
+
+\begin{center}\scriptsize
+\begin{longtable}{llc}
+\caption{SWE-bench Verified systems.}\label{tab:swe-systems}\\
+\toprule
+system & family & $y$ \\
+\midrule
+\endfirsthead
+\toprule
+system & family & $y$ \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\texttt{20240402\_sweagent\_gpt4} & gpt & 0.224 \\
+\texttt{20240612\_MASAI\_gpt4o} & gpt & 0.326 \\
+\texttt{20240620\_sweagent\_claude3.5sonnet} & claude & 0.336 \\
+\texttt{20240721\_amazon-q-developer-agent-20240719-dev} & -- & 0.388 \\
+\texttt{20240820\_epam-ai-run-gpt-4o} & gpt & 0.240 \\
+\texttt{20240820\_honeycomb} & -- & 0.406 \\
+\texttt{20240824\_gru} & -- & 0.452 \\
+\texttt{20240918\_lingma-agent\_lingma-swe-gpt-72b} & gpt & 0.250 \\
+\texttt{20240918\_lingma-agent\_lingma-swe-gpt-7b} & gpt & 0.102 \\
+\texttt{20240920\_solver} & -- & 0.436 \\
+\texttt{20240924\_solver} & -- & 0.454 \\
+\texttt{20241001\_nfactorial} & -- & 0.258 \\
+\texttt{20241002\_lingma-agent\_lingma-swe-gpt-72b} & gpt & 0.288 \\
+\texttt{20241002\_lingma-agent\_lingma-swe-gpt-7b} & gpt & 0.182 \\
+\texttt{20241016\_composio\_swekit} & claude & 0.406 \\
+\texttt{20241016\_epam-ai-run-gpt-4o} & gpt & 0.270 \\
+\texttt{20241022\_tools\_claude-3-5-haiku} & claude & 0.406 \\
+\texttt{20241022\_tools\_claude-3-5-sonnet-updated} & claude & 0.490 \\
+\texttt{20241023\_emergent} & -- & 0.466 \\
+\texttt{20241025\_composio\_swekit} & -- & 0.486 \\
+\texttt{20241028\_agentless-1.5\_gpt4o} & gpt & 0.388 \\
+\texttt{20241028\_solver} & -- & 0.500 \\
+\texttt{20241029\_OpenHands-CodeAct-2.1-sonnet-20241022} & claude & 0.530 \\
+\texttt{20241029\_epam-ai-run-claude-3-5-sonnet} & claude & 0.396 \\
+\texttt{20241030\_nfactorial} & -- & 0.416 \\
+\texttt{20241105\_nfactorial} & -- & 0.492 \\
+\texttt{20241106\_navie-2-gpt4o-sonnet} & -- & 0.472 \\
+\texttt{20241108\_autocoderover-v2.0-claude-3-5-sonnet-20241022} & claude & 0.462 \\
+\texttt{20241108\_devlo} & claude & 0.542 \\
+\texttt{20241113\_nebius-search-open-weight-models-11-24} & -- & 0.406 \\
+\texttt{20241120\_artemis\_agent} & -- & 0.320 \\
+\texttt{20241125\_enginelabs} & claude & 0.518 \\
+\texttt{20241125\_marscode-agent-dev} & -- & 0.500 \\
+\texttt{20241202\_agentless-1.5\_claude-3.5-sonnet-20241022} & claude & 0.508 \\
+\texttt{20241202\_amazon-q-developer-agent-20241202-dev} & -- & 0.550 \\
+\texttt{20241208\_gru} & -- & 0.570 \\
+\texttt{20241212\_epam-ai-run-claude-3-5-sonnet} & claude & 0.554 \\
+\texttt{20241212\_google\_jules\_gemini\_2.0\_flash\_experimental} & gemini & 0.522 \\
+\texttt{20241213\_devlo} & -- & 0.582 \\
+\texttt{20241223\_emergent} & -- & 0.572 \\
+\texttt{20250110\_blackboxai\_agent\_v1.1} & -- & 0.628 \\
+\texttt{20250110\_learn\_by\_interact\_claude3.5} & claude & 0.602 \\
+\texttt{20250117\_wandb\_programmer\_o1\_crosscheck5} & o1 & 0.646 \\
+\texttt{20250118\_codeshellagent\_gemini\_2.0\_flash\_experimental} & gemini & 0.442 \\
+\texttt{20250120\_Bracket} & -- & 0.532 \\
+\texttt{20250122\_autocoderover-v2.1-claude-3-5-sonnet-20241022} & claude & 0.516 \\
+\texttt{20250203\_openhands\_4x\_scaled} & -- & 0.608 \\
+\texttt{20250206\_agentscope} & claude & 0.634 \\
+\texttt{20250214\_agentless\_lite\_o3\_mini} & o3 & 0.424 \\
+\texttt{20250224\_tools\_claude-3-7-sonnet} & claude & 0.632 \\
+\texttt{20250226\_swerl\_llama3\_70b} & llama & 0.412 \\
+\texttt{20250228\_epam-ai-run-claude-3-5-sonnet} & claude & 0.628 \\
+\texttt{20250316\_augment\_agent\_v0} & -- & 0.654 \\
+\texttt{20250405\_amazon-q-developer-agent-20250405-dev} & -- & 0.654 \\
+\texttt{20250410\_cortexa} & -- & 0.582 \\
+\texttt{20250415\_openhands} & -- & 0.658 \\
+\texttt{20250430\_zencoder\_ai} & -- & 0.700 \\
+\texttt{20250511\_sweagent\_lm\_32b} & -- & 0.402 \\
+\texttt{20250514\_aime\_coder} & claude & 0.664 \\
+\texttt{20250515\_Refact\_Agent} & -- & 0.704 \\
+\texttt{20250516\_cortexa\_o3} & -- & 0.682 \\
+\texttt{20250519\_devlo} & -- & 0.702 \\
+\texttt{20250519\_trae} & -- & 0.706 \\
+\texttt{20250520\_openhands\_devstral\_small} & devstral & 0.468 \\
+\texttt{20250522\_sweagent\_claude-4-sonnet-20250514} & claude & 0.666 \\
+\texttt{20250522\_tools\_claude-4-opus} & claude & 0.732 \\
+\texttt{20250522\_tools\_claude-4-sonnet} & claude & 0.724 \\
+\texttt{20250524\_openhands\_claude\_4\_sonnet} & claude & 0.704 \\
+\texttt{20250527\_amazon.nova-premier-v1.0} & nova & 0.424 \\
+\texttt{20250603\_Refact\_Agent\_claude-4-sonnet} & -- & 0.744 \\
+\texttt{20250610\_augment\_agent\_v1} & -- & 0.704 \\
+\texttt{20250611\_moatless\_claude-4-sonnet-20250514} & claude & 0.708 \\
+\texttt{20250612\_trae} & -- & 0.752 \\
+\texttt{20250616\_Skywork-SWE-32B} & qwen & 0.380 \\
+\texttt{20250616\_Skywork-SWE-32B+TTS\_Bo8} & -- & 0.470 \\
+\texttt{20250623\_warp} & -- & 0.710 \\
+\texttt{20250629\_deepswerl\_r2eagent} & -- & 0.422 \\
+\texttt{20250629\_deepswerl\_r2eagent\_tts} & o1 & 0.588 \\
+\texttt{20250710\_bloop} & claude & 0.712 \\
+\texttt{20250715\_qodo\_command} & -- & 0.712 \\
+\texttt{20250716\_openhands\_kimi\_k2} & kimi & 0.654 \\
+\texttt{20250720\_Lingxi-v1.5\_claude-4-sonnet-20250514} & claude & 0.746 \\
+\texttt{20250725\_sweagent\_devstral\_small\_2507} & devstral & 0.380 \\
+\texttt{20250728\_zai\_glm4-5} & -- & 0.642 \\
+\texttt{20250731\_harness\_ai} & claude & 0.748 \\
+\texttt{20250804\_codesweep\_sweagent\_kimi\_k2\_instruct} & kimi & 0.534 \\
+\texttt{20250804\_epam-ai-run-claude-4-sonnet} & claude & 0.768 \\
+\texttt{20250806\_SWE-Exp\_DeepSeek-V3} & -- & 0.420 \\
+\texttt{20250807\_openhands\_gpt5} & gpt & 0.718 \\
+\texttt{20250819\_ACoder} & -- & 0.764 \\
+\texttt{20250901\_entroPO\_R2E\_QwenCoder30BA3B} & qwen & 0.522 \\
+\texttt{20250901\_entroPO\_R2E\_QwenCoder30BA3B\_tts} & qwen & 0.604 \\
+\texttt{20250901\_warp} & -- & 0.756 \\
+\texttt{20250902\_atlassian-rovo-dev} & -- & 0.768 \\
+\texttt{20250915\_JoyCode} & -- & 0.746 \\
+\texttt{20250924\_artemis\_agent\_v2} & claude & 0.570 \\
+\texttt{20250928\_trae\_doubao\_seed\_code} & doubao & 0.788 \\
+\texttt{20250930\_zai\_glm4-6} & -- & 0.682 \\
+\texttt{20251014\_Lingxi\_kimi\_k2} & kimi & 0.712 \\
+\texttt{20251021\_SalesforceAIResearch\_SAGE\_bash\_only} & -- & 0.730 \\
+\texttt{20251103\_SalesforceAIResearch\_SAGE\_OpenHands} & -- & 0.738 \\
+\texttt{20251103\_sonar-foundation-agent\_claude-sonnet-4-5} & claude & 0.748 \\
+\texttt{20251110\_frogboss-32b} & -- & 0.536 \\
+\texttt{20251110\_frogmini-14b} & -- & 0.450 \\
+\texttt{20251120\_livesweagent\_gemini-3-pro-preview} & gemini & 0.774 \\
+\texttt{20251127\_openhands\_claude-opus-4-5} & claude & 0.776 \\
+\texttt{20251205\_sonar-foundation-agent\_claude-opus-4-5} & claude & 0.792 \\
+\end{longtable}
+\end{center}
+
+\subsection{Terminal-Bench 2.0 systems}
+Table~\ref{tab:tb2-systems} lists the 65 evaluated submissions with their harness, underlying-model tags, and official score $y$ (mean over five trials).
+
+\begin{center}\tiny
+\begin{longtable}{lllc}
+\caption{Terminal-Bench 2.0 systems.}\label{tab:tb2-systems}\\
+\toprule
+system & harness & model tags & $y$ \\
+\midrule
+\endfirsthead
+\toprule
+system & harness & model tags & $y$ \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\texttt{Ante\_\_Gemini-3-Pro-Preview} & ante & gemini-3-pro-preview & 0.647 \\
+\texttt{Ante\_\_Gemini-3.1-Pro-Preview} & ante & gemini-3-pro-preview & 0.742 \\
+\texttt{BashAgent\_\_TermiGen-32B} & bash-agent & termigen-32b & 0.197 \\
+\texttt{Capy\_\_GPT-5.5} & capy & gpt-5-5 & 0.834 \\
+\texttt{ClaudeCode\_\_GLM-4.7} & claude-code & glm-4-7 & 0.333 \\
+\texttt{CodeBrain-1.5\_\_GPT-5.3-Codex} & codebrain-1 & gpt-5-3-codex & 0.816 \\
+\texttt{CodeBrain-1\_\_GPT-5.3-Codex} & codebrain-1 & gpt-5-3-codex & 0.703 \\
+\texttt{CodeBrain-1\_\_Gemini-3-Pro-Preview} & codebrain-1 & gemini-3-pro-preview & 0.622 \\
+\texttt{Codelia\_\_GPT-5.3-Codex} & codelia & gpt-5-3-codex & 0.757 \\
+\texttt{Deep-Agents\_\_GPT-5.2-Codex} & deep-agents & gpt-5-2-codex & 0.667 \\
+\texttt{Dirac\_\_Gemini-3-Flash-Preview} & dirac & gemini-3-flash-preview & 0.652 \\
+\texttt{Forge\_\_GPT-5.4} & forgecode & gpt-5-4 & 0.818 \\
+\texttt{Forge\_\_Gemini-3.1-Pro-Preview} & forge-code & gemini-3-1-pro-preview & 0.787 \\
+\texttt{Forge\_\_Opus-4.6} & forgecode & claude-opus-4-6 & 0.818 \\
+\texttt{Gemini\_CLI\_\_Gemini-3-Flash-Preview} & gemini-cli & gemini-3-flash-preview & 0.480 \\
+\texttt{Gemini\_CLI\_\_Gemini-3.1-Pro-Preview} & gemini-cli & gemini-3-1-pro-preview & 0.608 \\
+\texttt{IndusAGICodingAgent\_\_MiniMax-M2.7} & indusagi-coding-agent & minimax-m2-7 & 0.452 \\
+\texttt{IndusAGICodingAgent\_\_gpt-5.3-codex} & indusagi-coding-agent & gpt-5-3-codex & 0.691 \\
+\texttt{JJAgent\_\_Multiple} & jjagent & -- & 0.871 \\
+\texttt{Judy\_\_Claude-Opus-4.6} & judy & claude-opus-4-6 & 0.721 \\
+\texttt{Judy\_\_Gemini-3.1-Pro-Preview} & tongagents & gemini-3-1-pro-preview & 0.805 \\
+\texttt{Junie\_CLI\_\_Gemini-3-Flash-Preview-Gemini-3.1-Pro-Preview-Claude-Opus-4.6-GPT-5.3-Codex} & junie-cli & claude-opus-4-6/gemini-3-1-pro-preview/gemini-3-flash-preview/gpt-5-3-codex & 0.710 \\
+\texttt{LemonCode\_\_GPT-5.3-Codex} & lemon-code & gemini-3-1-pro-preview/gpt-5-3-codex & 0.799 \\
+\texttt{LemonHarness\_GPT-5.3-CodeX} & lemonharness & gemini-3-1-pro-preview/gpt-5-3-codex & 0.849 \\
+\texttt{MAYA\_\_Claude-4.5-sonnet} & maya & claude-sonnet-4-5 & 0.427 \\
+\texttt{MAYA\_\_Claude-4.6-opus} & maya-v2 & claude-opus-4-6 & 0.725 \\
+\texttt{Meta-Harness\_\_Claude-Opus-4.6} & meta-harness & claude-opus-4-6 & 0.764 \\
+\texttt{Mux\_\_Claude-Opus-4.5} & mux & claude-opus-4-5 & 0.584 \\
+\texttt{Mux\_\_Claude-Opus-4.6} & mux & claude-opus-4-6 & 0.665 \\
+\texttt{Mux\_\_GPT-5.2} & mux & gpt-5-2 & 0.621 \\
+\texttt{Mux\_\_GPT-5.3-Codex} & mux & gpt-5-3-codex & 0.746 \\
+\texttt{NexAU-AHE\_\_gpt-5.5} & nexau-ahe & gpt-5-5 & 0.847 \\
+\texttt{OB-1\_GPT-5.3-Codex-Claude-Opus-4.5-Claude-Opus-4.6} & ob-1 & claude-opus-4-5/claude-opus-4-6/gpt-5-3-codex & 0.727 \\
+\texttt{OB-1\_GPT-5.4-GPT-5.3-Codex-Claude-Opus-4.5-Claude-Opus-4.6} & ob-1 & claude-opus-4-5/claude-opus-4-6/gpt-5-3-codex/gpt-5-4 & 0.825 \\
+\texttt{OpenCode\_\_Claude-Opus-4.5} & opencode & claude-opus-4-5 & 0.523 \\
+\texttt{OpenSage\_\_GPT-5.3-Codex} & sageagent & gpt-5-3-codex & 0.794 \\
+\texttt{OpenSage\_\_Gemini-3-Pro-Preview} & sageagent & gemini-3-pro-preview & 0.652 \\
+\texttt{Polaris\_\_Claude-Opus-4.7-GPT-5.5-Gemini-3.1-Pro} & polaris & claude-opus-4-7/gemini-3-1-pro-preview/gpt-5-5 & 0.822 \\
+\texttt{Simplai-Agent\_\_Claude-Sonnet-4.6} & simplai-agent & claude-sonnet-4-6 & 0.535 \\
+\texttt{Simple-Codex\_\_GPT-5.3-Codex} & simple-codex & gpt-5-3-codex & 0.752 \\
+\texttt{Terminus-KIRA\_\_Claude-Opus-4.6} & terminus-kira & claude-opus-4-6 & 0.747 \\
+\texttt{Terminus-KIRA\_\_Gemini-3.1-Pro-Preview} & terminus-kira & gemini-3-1-pro-preview & 0.748 \\
+\texttt{Terminus2\_\_Claude-Opus-4.6} & terminus2 & claude-opus-4-6 & 0.629 \\
+\texttt{Terminus2\_\_DeepSeek-V3.2} & terminus2 & deepseek-v3-2 & 0.396 \\
+\texttt{Terminus2\_\_GLM-4.7} & terminus2 & glm-4-7 & 0.334 \\
+\texttt{Terminus2\_\_GLM-5} & terminus2 & glm-5 & 0.538 \\
+\texttt{Terminus2\_\_GPT-5.3-Codex} & terminus2 & gpt-5-3-codex & 0.647 \\
+\texttt{Terminus2\_\_Kimi-k2.5} & terminus2 & kimi-k2-5 & 0.433 \\
+\texttt{Terminus2\_\_Minimax-m2.5} & terminus2 & minimax-m2-5 & 0.426 \\
+\texttt{WOZCODE\_\_Claude-Opus-4-7} & wozcode & claude-opus-4-7 & 0.802 \\
+\texttt{Wecode\_\_GPT-5.5} & wecode & gpt-5-5 & 0.881 \\
+\texttt{WozCode\_\_Claude-Opus-4.6} & wozcode & claude-opus-4-6 & 0.681 \\
+\texttt{cchuter\_\_minimax-m2.5} & cchuter & minimax-m2-5 & 0.427 \\
+\texttt{clnkr\_\_GPT-5.5} & clnkr & gpt-5-5 & 0.661 \\
+\texttt{copilot-cli\_\_claude-opus-4.6} & copilot-cli & claude-opus-4-6 & 0.607 \\
+\texttt{dakou\_\_qwen3-coder-480b} & dakou-agent & qwen3-coder-480b-a35b-instruct-fp8 & 0.272 \\
+\texttt{grok-cli\_\_grok-4.20-0309-reasoning} & grok-cli & grok-4-20-0309-reasoning & 0.573 \\
+\texttt{logos-latest\_\_claude-opus-4.7} & logos & -- & 0.852 \\
+\texttt{logos-ts\_\_claude-opus-4.7} & logos & -- & 0.807 \\
+\texttt{logos\_\_claude-opus-4.6} & logosagent & claude-opus-4-6 & 0.686 \\
+\texttt{pilot-real\_\_claude-opus-4-6} & pilot & claude-opus-4-6 & 0.831 \\
+\texttt{spoox-o-m\_\_GPT-5-Nano} & spoox-o-m & gpt-5-nano & 0.218 \\
+\texttt{spoox-o-m\_\_GPT-5.3-Codex} & spoox-o-m & gpt-5-3-codex & 0.721 \\
+\texttt{terminus-2\_\_AfterQuery-GPT-OSS-20B} & terminus2 & gpt-oss-20b-rl & 0.172 \\
+\texttt{vix\_\_claude-opus-4-7} & vix & claude-opus-4-7 & 0.903 \\
+\end{longtable}
+\end{center}
+
+\subsection{Task panels}
+The SWE-bench Verified panel consists of the following $M = 100$ instances (a fixed 20-task panel united with a seeded random draw of 80 further instances):
+
+{\scriptsize\texttt{astropy\_\_astropy-14096, astropy\_\_astropy-7336, django\_\_django-10973, django\_\_django-11099, django\_\_django-11206, django\_\_django-11333, django\_\_django-11477, django\_\_django-11490, django\_\_django-11532, django\_\_django-11880, django\_\_django-12276, django\_\_django-12419, django\_\_django-13012, django\_\_django-13121, django\_\_django-13128, django\_\_django-13297, django\_\_django-13346, django\_\_django-13410, django\_\_django-13590, django\_\_django-13807, django\_\_django-13810, django\_\_django-13933, django\_\_django-14034, django\_\_django-14053, django\_\_django-14122, django\_\_django-14238, django\_\_django-14315, django\_\_django-14539, django\_\_django-14559, django\_\_django-14725, django\_\_django-14999, django\_\_django-15037, django\_\_django-15098, django\_\_django-15315, django\_\_django-15525, django\_\_django-15554, django\_\_django-15695, django\_\_django-15814, django\_\_django-15916, django\_\_django-15930, django\_\_django-15957, django\_\_django-16100, django\_\_django-16145, django\_\_django-16333, django\_\_django-16429, django\_\_django-16454, django\_\_django-16527, django\_\_django-16560, django\_\_django-16642, django\_\_django-16801, django\_\_django-16877, django\_\_django-9296, matplotlib\_\_matplotlib-20859, matplotlib\_\_matplotlib-23299, matplotlib\_\_matplotlib-24149, matplotlib\_\_matplotlib-24177, matplotlib\_\_matplotlib-25287, matplotlib\_\_matplotlib-25332, matplotlib\_\_matplotlib-25479, matplotlib\_\_matplotlib-25775, matplotlib\_\_matplotlib-26113, pallets\_\_flask-5014, psf\_\_requests-1724, pydata\_\_xarray-3305, pydata\_\_xarray-4075, pydata\_\_xarray-4094, pydata\_\_xarray-4966, pydata\_\_xarray-6744, pydata\_\_xarray-7229, pydata\_\_xarray-7233, pydata\_\_xarray-7393, pylint-dev\_\_pylint-6386, pylint-dev\_\_pylint-6528, scikit-learn\_\_scikit-learn-10908, scikit-learn\_\_scikit-learn-13439, sphinx-doc\_\_sphinx-10435, sphinx-doc\_\_sphinx-10466, sphinx-doc\_\_sphinx-10614, sphinx-doc\_\_sphinx-8120, sphinx-doc\_\_sphinx-8475, sphinx-doc\_\_sphinx-8593, sphinx-doc\_\_sphinx-8595, sphinx-doc\_\_sphinx-8638, sphinx-doc\_\_sphinx-9258, sphinx-doc\_\_sphinx-9367, sphinx-doc\_\_sphinx-9461, sphinx-doc\_\_sphinx-9658, sphinx-doc\_\_sphinx-9673, sphinx-doc\_\_sphinx-9698, sympy\_\_sympy-13551, sympy\_\_sympy-13647, sympy\_\_sympy-13974, sympy\_\_sympy-14248, sympy\_\_sympy-14531, sympy\_\_sympy-15875, sympy\_\_sympy-17655, sympy\_\_sympy-20154, sympy\_\_sympy-21596, sympy\_\_sympy-23950, sympy\_\_sympy-24661}}
+
+The Terminal-Bench 2.0 panel uses all 89 tasks:
+
+{\scriptsize\texttt{adaptive-rejection-sampler, bn-fit-modify, break-filter-js-from-html, build-cython-ext, build-pmars, build-pov-ray, caffe-cifar-10, cancel-async-tasks, chess-best-move, circuit-fibsqrt, cobol-modernization, code-from-image, compile-compcert, configure-git-webserver, constraints-scheduling, count-dataset-tokens, crack-7z-hash, custom-memory-heap-crash, db-wal-recovery, distribution-search, dna-assembly, dna-insert, extract-elf, extract-moves-from-video, feal-differential-cryptanalysis, feal-linear-cryptanalysis, filter-js-from-html, financial-document-processor, fix-code-vulnerability, fix-git, fix-ocaml-gc, gcode-to-text, git-leak-recovery, git-multibranch, gpt2-codegolf, headless-terminal, hf-model-inference, install-windows-3.11, kv-store-grpc, large-scale-text-editing, largest-eigenval, llm-inference-batching-scheduler, log-summary-date-ranges, mailman, make-doom-for-mips, make-mips-interpreter, mcmc-sampling-stan, merge-diff-arc-agi-task, model-extraction-relu-logits, modernize-scientific-stack, mteb-leaderboard, mteb-retrieve, multi-source-data-merger, nginx-request-logging, openssl-selfsigned-cert, overfull-hbox, password-recovery, path-tracing, path-tracing-reverse, polyglot-c-py, polyglot-rust-c, portfolio-optimization, protein-assembly, prove-plus-comm, pypi-server, pytorch-model-cli, pytorch-model-recovery, qemu-alpine-ssh, qemu-startup, query-optimize, raman-fitting, regex-chess, regex-log, reshard-c4-data, rstan-to-pystan, sam-cell-seg, sanitize-git-repo, schemelike-metacircular-eval, sparql-university, sqlite-db-truncate, sqlite-with-gcov, torch-pipeline-parallelism, torch-tensor-parallelism, train-fasttext, tune-mjcf, video-processing, vulnerable-secret, winning-avg-corewars, write-compressor}}
 
 \end{document}
 % build-hook smoke test
