@@ -363,7 +363,8 @@ Developing validated procedures for selecting or learning rubric fields, such as
 We also note that \trubric{}'s fields can be reconfigured to amplify or dampen arbitrary dimensions of variation in the input data.
 
 In our analysis we only consider DeepSeek-V4-Flash (as accessed via OpenRouter) as the rubric generator and trace summarizer.
-We had intended to add other frontier models as part of our ablation study but were banned from their API services and accused of attempting to distill reasoning traces.
+We had intended to add other frontier models as part of our ablation study, but a provider's API service banned our account and accused us of attempting to distill reasoning traces.
+We include this note as a warning to readers: summarizing traces at the scale required for trace-based evaluation can resemble distillation to automated enforcement systems and may result in account bans.
 In any case, we leave the sensitivity analysis of the two roles to future work.
 
 Finally, we only consider highly curated, paired settings where every reference system has executed (nearly) every task of a single benchmark.
