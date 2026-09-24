@@ -345,7 +345,30 @@ The full list of the 32 field names is provided in Appendix~\ref{app:fields}.
 
 \section{Discussion}
 \label{sec:discussion}
-% TODO.
+
+We introduced \trubric{}, a trace representation constructed by extracting a task-specific structured summary of a trace with an LLM and embedding the summary with a standard text encoder.
+Across seven text encoders, \trubric{} embeddings preserve information about the task and the correctness of an execution while minimizing information about the system, model family, and harness that produced it.
+
+We then proposed using \trubric{} embeddings to induce representations of agentic systems for task-efficient evaluation.
+The resulting geometry supports accurate benchmark score prediction from as little as a single executed task and, combined with an item-response model, is never worse than either constituent at any task budget.
+
+The combined estimator reduces the cost of reaching an MAE below 0.10 on SWE-bench Verified from \$10--\$40 to \$2 per system.
+These results are relatively robust to the major design choices: the text encoder, the number of rubric fields, and the task selection method.
+We believe that extracting more than binary correctness from cached executions is a promising direction for scaling agentic evaluation as the number of systems and benchmarks continues to grow.
+
+\subsection{Limitations}
+
+We evaluated \trubric{} along the five attributes relevant to efficient evaluation.
+We make no claims about the usefulness of the representation for other tasks one might consider with traces, such as change detection \citep{bridgeford2025perspective}, online monitoring \citep{helm2026control}, early stopping \citep{ruan2026doomed, wang2026failfast}, or steering \citep{rahn2024entropic}.
+We leave the study of \trubric{}-like representations for these tasks to future work.
+
+We also did not attempt to optimize the rubric.
+The rubric-size experiment of Section~\ref{sec:results} demonstrates that favorable small rubrics exist, and retrospective selection suggests meaningful headroom over the average rubric of a given size.
+Developing validated procedures for selecting or learning rubric fields in advance is an open problem.
+
+Finally, we consider a highly curated, paired setting: every reference system executes (nearly) every task of a single benchmark.
+We do not consider references with sparse or disjoint task coverage, nor signal shared across benchmarks.
+The PKPS formulation supports both -- Eq. \eqref{method:pkps} is defined for unpaired task sets \citep{anonpkps} -- and we expect less curated, larger reference collections to further reduce evaluation cost.
 
 \bibliography{references}
 \bibliographystyle{iclr2027_conference}
