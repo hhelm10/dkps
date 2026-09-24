@@ -291,16 +291,16 @@ As Table~\ref{tab:hero} shows, IRT $+$ \trubric{} is best or near-best across th
 \end{figure}
 
 \paragraph{Trace-informed estimation reduces the cost of reaching a given prediction error.}
-Figure~\ref{fig:cost} translates the error curves into the cost of evaluating a system, illustrating how more informative estimates can reduce the number of tasks required for a desired accuracy.
-For this comparison, we assume a cost of \$2 per agent execution \citep{jimenez2024swebench, tbench2026, kapoor2025hal}.
-On SWE-bench, IRT $+$ \trubric{} reaches an MAE below 0.10 with one random task, compared with five tasks for IRT and twenty for the sample score -- the smallest tested budgets meeting this threshold.
+Figure~\ref{fig:cost} translates the error curves into the cost of evaluating a system.
+For this comparison, we assume a cost of \$2 per agent execution \citep{jimenez2024swebench, tbench2026, kapoor2025hal} and assume both the cost of using LLMs to do (t)rubric creation and summarization and the cost of embedding the traces are negligible.
+On SWE-bench, IRT $+$ \trubric{} reaches an MAE below 0.10 with one random task, compared with five tasks for IRT and twenty for the sample score.
 This corresponds to estimated target execution costs of \$2, \$10, and \$40, respectively.
 
-Combining trace information with adaptive sampling also reduces cost at a more stringent accuracy level: five adaptive tasks with IRT $+$ \trubric{} achieve approximately the same error as twenty random tasks with IRT, 0.048 MAE (Table~\ref{tab:hero}), corresponding to \$10 rather than \$40.
-These comparisons concern the cost of executing tasks for a new system and assume an existing reference collection.
-We assume that reference executions are available from community archives or that their acquisition cost is amortized over a large number of target evaluations.
-In this calculation, we treat the cost of LLMs used to do (t)rubric summarization and the cost of API-based embedding functions as negligible compared to the cost of running the agents on the task.
-These comparisons illustrate how extracting additional information from each execution can make accurate benchmark estimation feasible at substantially smaller task budgets.
+We also evaluate methods for comparing two systems head to head.
+For each pair of systems whose true benchmark scores differ by at least 0.05, we exclude both systems from the references and ask whether an estimator correctly identifies the better system from $m$ random executions per system (right two panels of Figure~\ref{fig:cost}).
+On SWE-bench, IRT $+$ \trubric{} decides 88\% of pairs correctly from a single task per system, compared with 79\% for IRT and 69\% for the sample score.
+By five tasks per system, all estimators exceed 90\% and the score-based estimators are competitive or better; on Terminal-Bench, IRT is the most accurate decision rule at every tested budget.
+Trace information is thus most valuable for head-to-head comparisons in the lowest-budget regime, where executing a single task per system (\$4 for the pair) already identifies the better system in nearly nine of ten pairs.
 
 \paragraph{Performance improves with larger reference sets.}
 The left panel of Figure~\ref{fig:ablations} shows that increasing the number of reference models generally improves both IRT and geometry-based estimators.
