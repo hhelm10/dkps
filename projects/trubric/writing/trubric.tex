@@ -324,15 +324,16 @@ The impact of encoder choice is small (at most 0.008 MAE at any fixed setting) c
 
 \paragraph{Larger rubrics improve average performance.}
 Figure~\ref{fig:sensitivity} varies the number of fields included in generic and task-specific rubrics, averaging performance over subsets drawn from a bank of 32 fields.
-For both constructions, adding fields generally improves average prediction accuracy, with diminishing returns.
-At five tasks and the larger reference library, increasing a task-specific rubric from one to six fields reduces average MAE from 0.090 to 0.081; using all 32 fields reduces it further to 0.077.
-This pattern is consistent with an ensembling effect from combining descriptions of multiple aspects of execution.
-Task-specific rubrics generally outperform generic rubrics in this experiment, with small reversals at the one-task budget.
+For both constructions, adding fields generally improves average prediction accuracy, though with diminishing returns.
+At $ m = 5 $ and a large set of reference systems, increasing a task-specific rubric from one to six fields reduces average MAE from 0.090 to 0.081 (Wilcoxon's $ p < 10^{-5} $); using all 32 fields reduces it further to 0.077 (Wilcoxon's $ p < 10^{-3} $).
+Task-specific rubrics generally outperform generic rubrics, especially with fewer reference systems and larger number of executed tasks.
 
-The thin curves show that some small subsets perform substantially better than the average subset of the same size.
-Each point selects the lowest average evaluation error among the tested subsets separately for that setting, averaging over probe draws and all 107 target systems even when the reference library contains 20 systems.
-These retrospective selections demonstrate the existence of favorable small rubrics on the evaluation panel, rather than a validated procedure for identifying them in advance.
-The selected subsets need not be nested as field count increases, so their performance need not improve monotonically.
+Figure~\ref{fig:sensitivity} also reports the best performing rubric (thin curves).
+Each point selects the lowest average evaluation error among the tested subsets separately for that setting.
+These retrospective selections demonstrate the existence of favorable small rubrics on the evaluation panel.
+We did not attempt to optimize the fields.
+Importantly, the selected subsets need not be nested as field count increases, so their performance need not improve monotonically.
+The full list of the 32 field names is provided in Appendix~\ref{app:fields}.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/trubric_figure6_sensitivity.pdf}
@@ -556,6 +557,11 @@ The generic rubric:
   submitted unverified)
 \end{verbatim}\end{quote}
 
+\subsection{Rubric field bank}
+\label{app:fields}
+
+The rubric-size experiment of Figure~\ref{fig:sensitivity} draws field subsets from a bank of 32 fields.
+The bank consists of the six canonical fields used throughout the paper -- understanding, localization, reproduction, editing, verification, and final state -- together with 26 additional fields: requirements, causal diagnosis, code context, planning, test design, edge cases, regression scope, feedback response, tool recovery, patch review, exploration breadth, hypothesis testing, search strategy, dependency handling, error interpretation, incrementalism, backtracking, code reuse, instruction adherence, efficiency, state tracking, assumption checking, output quality, risk management, domain knowledge, and completion confidence.
 
 \section{Efficient benchmarking details}
 \label{app:baselines}
