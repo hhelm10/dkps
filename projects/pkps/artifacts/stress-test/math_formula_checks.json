@@ -1,0 +1,68 @@
+{
+  "note": "Numerical algebra sanity checks, not proofs of stochastic rates or population CI coverage.",
+  "diagonal_v_statistic": {
+    "sample_size": 3,
+    "enumerated_expectations": [
+      0.6266666666666666,
+      0.8666666666666667
+    ],
+    "formula_expectations": [
+      0.6266666666666667,
+      0.8666666666666667
+    ],
+    "query_support": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        0.6,
+        0.8
+      ]
+    ],
+    "response_support": [
+      [
+        1.0,
+        0.0
+      ],
+      [
+        -0.2,
+        0.9797958971132712
+      ]
+    ],
+    "support_probabilities": [
+      0.5,
+      0.5
+    ]
+  },
+  "conditional_affinity_bound": {
+    "random_cases": 5000,
+    "max_observed_error_over_bound": 0.412270026051686,
+    "rng_seed": 42
+  },
+  "weighted_noise": {
+    "exact_mse": 0.0132,
+    "formula_mse": 0.013199999999999995,
+    "noise_variance": 0.006800000000000001,
+    "effective_neighbors": 1.4705882352941173,
+    "weights": [
+      0.8,
+      0.2
+    ],
+    "true_reference_scores": [
+      0.2,
+      0.8
+    ],
+    "target_score": 0.4,
+    "independent_noise_support": [
+      -0.1,
+      0.1
+    ]
+  },
+  "guard_union_bound": 0.050000000000000024,
+  "ci": {
+    "seeds": 16,
+    "pointwise_t_multiplier": 2.131449545559776,
+    "bonferroni_44_t_multiplier": 4.009833328859515
+  }
+}

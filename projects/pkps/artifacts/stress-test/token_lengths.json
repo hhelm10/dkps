@@ -1,0 +1,16 @@
+{
+  "n_unique_texts": 28590,
+  "limit_tokens": 2048,
+  "n_truncated": 1018,
+  "fraction_truncated": 0.03560685554389647,
+  "quantiles": {
+    "min": 10.0,
+    "median": 158.0,
+    "p90": 748.1000000000022,
+    "p95": 1502.0,
+    "p99": 6612.74000000002,
+    "max": 181503.0
+  },
+  "total_untruncated_tokens": 15428594,
+  "total_limited_tokens": 9046372
+}
