@@ -298,10 +298,10 @@ For a direct replacement of Eq. 2, write the objective and its solution explicit
 ```math
 \begin{aligned}
 B&=J\widetilde A J=-\tfrac12 J D^{\circ 2}J,\\
-B&=U\operatorname{diag}(\lambda_1,\ldots,\lambda_n)U^\top,
+B&=U\mathrm{diag}(\lambda_1,\ldots,\lambda_n)U^\top,
 \quad \lambda_1\ge\cdots\ge\lambda_n,\\
 \widehat G_d
-&\in\operatorname*{arg\,min}_{G=G^\top,\ G\succeq0,\ \operatorname{rank}(G)\le d}
+&\in\underset{G=G^\top,\ G\succeq0,\ \mathrm{rank}(G)\le d}{\arg\min}
 \|B-G\|_F^2,\\
 \widehat G_d&=\sum_{\ell=1}^{\min(d,n)}\max(\lambda_\ell,0)u_\ell u_\ell^\top,\\
 \widehat\Psi\widehat\Psi^\top&=\widehat G_d.
@@ -431,7 +431,7 @@ splitting alone. Developer-related models also need a dependence-aware validatio
 analysis rather than being counted as independent validation units.
 
 A possible fixed-budget analysis would target residual risk such as
-$\mathbb E[\operatorname{Var}(Y\mid C_m)]$, where $C_m$ is the permitted cache or a
+$\mathbb E[\mathrm{Var}(Y\mid C_m)]$, where $C_m$ is the permitted cache or a
 fixed representation of it. More reference models cannot generally eliminate
 uncertainty absent from a fixed target cache. This is a direction for new theory,
 not an established result for the current jointly fitted MDS estimator.
@@ -449,8 +449,8 @@ reference noises; these are assumptions to justify, not consequences of kNN:
 \begin{aligned}
 \mathbb E[(\widehat y_0-y_0)^2\mid\mathcal F]
 &=\left(\sum_i w_i y_i-y_0\right)^2
-+\sum_i w_i^2\operatorname{Var}(\epsilon_i\mid\mathcal F),\\
-\operatorname{Var}(\epsilon_i\mid\mathcal F)\le\frac{\sigma_q^2}{m_i}
++\sum_i w_i^2\mathrm{Var}(\epsilon_i\mid\mathcal F),\\
+\mathrm{Var}(\epsilon_i\mid\mathcal F)\le\frac{\sigma_q^2}{m_i}
 &\quad\Longrightarrow\quad
 \mathbb E[(\widehat y_0-y_0)^2\mid\mathcal F]
 \le\left(\sum_i w_i y_i-y_0\right)^2
@@ -462,7 +462,7 @@ Only equal weights on $K$ references with equal budget $m$ reduce the final term
 to $\sigma_q^2/(mK)$. Distance-weighted kNN generally does not; with equal budgets
 its effective reference count is $K_{\mathrm{eff}}=1/\sum_i w_i^2\le K$.
 Without conditional uncorrelatedness, retain
-$\sum_{i,j}w_iw_j\operatorname{Cov}(\epsilon_i,\epsilon_j\mid\mathcal F)$.
+$\sum_{i,j}w_iw_j\mathrm{Cov}(\epsilon_i,\epsilon_j\mid\mathcal F)$.
 Without conditional zero means, a selection-bias term also remains. Features and
 scores derived from the same responses need not satisfy either condition.
 Independent label sampling can help only when its independence is justified and
@@ -495,7 +495,7 @@ R(h)&=\mathbb E[(h(X)-Y)^2],\\
 &=\begin{cases}
 h_0,&\mathcal K_{\mathrm{safe}}=\varnothing,\\
 h_{\widehat k},\quad
-\widehat k\in\operatorname*{arg\,min}_{k\in\mathcal K_{\mathrm{safe}}}\widehat\Delta_k,
+\widehat k\in\underset{k\in\mathcal K_{\mathrm{safe}}}{\arg\min}\widehat\Delta_k,
 &\mathcal K_{\mathrm{safe}}\ne\varnothing,
 \end{cases}\\
 \Pr\{R(\widehat h)\le R(h_0)\}&\ge1-\delta,
@@ -604,11 +604,11 @@ kernel/bandwidth candidates and $\Gamma=\{0,0.05,\ldots,1\}$:
 ```math
 \begin{aligned}
 \widehat\theta_F
-&\in\operatorname*{arg\,min}_{\theta\in\Theta}
+&\in\underset{\theta\in\Theta}{\arg\min}
 \frac1{|\mathcal V_F|}\sum_{(j,t)\in\mathcal V_F}
 |p_{\theta,jt}^{(-F,-g(j))}-y_{jt}^{\mathrm{ref}}|,\\
 \widehat\alpha_F
-&\in\operatorname*{arg\,min}_{\alpha\in\Gamma}
+&\in\underset{\alpha\in\Gamma}{\arg\min}
 \frac1{|\mathcal V_F|}\sum_{(j,t)\in\mathcal V_F}
 \left|\alpha\widetilde y_{jt}
 +(1-\alpha)p_{\widehat\theta_F,jt}^{(-F,-g(j))}
@@ -1031,7 +1031,7 @@ of aggregation: models within task, tasks within run, then runs. Define
 \overline\Delta&=\frac1S\sum_{s=1}^{S}\Delta_s,\\
 s_\Delta^2&=\frac1{S-1}\sum_{s=1}^{S}(\Delta_s-\overline\Delta)^2,
 \qquad
-\operatorname{SE}(\overline\Delta)=\frac{s_\Delta}{\sqrt S}.
+\mathrm{SE}(\overline\Delta)=\frac{s_\Delta}{\sqrt S}.
 \end{aligned}
 ```
 
@@ -1073,7 +1073,7 @@ the contrast, retaining every dependent cell and every method within a run:
 ```math
 \begin{aligned}
 (C_1^{(r)},\ldots,C_S^{(r)})
-&\sim\operatorname{Multinomial}(S;1/S,\ldots,1/S),\\
+&\sim\mathrm{Multinomial}(S;1/S,\ldots,1/S),\\
 \Delta_{\mathrm{run}}^{*(r)}
 &=\frac1S\sum_{s=1}^{S}C_s^{(r)}\Delta_s,\\
 I_{\mathrm{run\,boot}}(\alpha)
@@ -1099,9 +1099,9 @@ Independently sample developer and benchmark multiplicities:
 d_{it}&=\frac1S\sum_{s=1}^{S}
 \left(\ell_{sit}^{(a)}-\ell_{sit}^{(b)}\right),\\
 (U_1^{(r)},\ldots,U_G^{(r)})
-&\sim\operatorname{Multinomial}(G;1/G,\ldots,1/G),\\
+&\sim\mathrm{Multinomial}(G;1/G,\ldots,1/G),\\
 (V_1^{(r)},\ldots,V_H^{(r)})
-&\sim\operatorname{Multinomial}(H;1/H,\ldots,1/H),\\
+&\sim\mathrm{Multinomial}(H;1/H,\ldots,1/H),\\
 \Delta_{\mathrm{cross}}^{*(r)}
 &=\frac{
 \displaystyle\sum_{i=1}^{45}\sum_{t=1}^{16}
