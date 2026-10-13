@@ -166,6 +166,7 @@ cython_debug/
 
 # pixi environments
 .pixi
+.conda-eee/
 *.egg-info
 
 # Shared local payloads (downloads, embedding parquets, caches) -- never tracked

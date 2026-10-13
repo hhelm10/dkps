@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 75,
+  "n_validation_cells": 15,
+  "n_inner_rows": 960,
+  "n_outer_rows": 1200,
+  "actual_coverage": 0.46875,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "google/gemma-2-9b-it",
+    "google/gemma-3-27b-it",
+    "google/gemma-4-e2b-it",
+    "meta/llama-4-maverick-17b-128e-instruct-fp8",
+    "openai/gpt-5-mini",
+    "qwen/qwen3-next-80b-a3b-thinking",
+    "xiaomi/mimo-v2-flash",
+    "zai-org/glm-4-7-fp8",
+    "zai-org/glm-5-1-fp8",
+    "zai-org/glm-5-fp8"
+  ],
+  "mask_sha256": "9022419b84cc6f98fbcd4bafe9eeb48245f4a1d44944893cdcc546395370000d",
+  "seconds": 0.6113525829860009
+}

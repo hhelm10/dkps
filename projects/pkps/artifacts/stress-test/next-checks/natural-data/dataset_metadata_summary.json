@@ -1,0 +1,912 @@
+{
+  "gpqa-diamond": {
+    "n_runs": 66,
+    "generation_configs": [
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.7,
+            "top_p": 0.95
+          }
+        },
+        "count": 3
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {}
+        },
+        "count": 8
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 9
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 8192,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_p": 0.95
+          }
+        },
+        "count": 8
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "none"
+          },
+          "generation_args": {}
+        },
+        "count": 2
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 1.0,
+            "top_k": 64,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_k": 40,
+            "top_p": 0.95
+          }
+        },
+        "count": 2
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "xhigh"
+          },
+          "generation_args": {}
+        },
+        "count": 1
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "high"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 2
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_k": 20,
+            "top_p": 0.95
+          }
+        },
+        "count": 8
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "temperature": 0.8,
+            "top_p": 0.95
+          }
+        },
+        "count": 1
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      }
+    ],
+    "source_definitions": [
+      {
+        "source": {
+          "additional_details": {},
+          "dataset_name": "GPQA Diamond",
+          "hf_repo": "reasoningMIA/gpqa_diamond",
+          "hf_split": "train",
+          "source_type": "hf_dataset"
+        },
+        "count": 66
+      }
+    ]
+  },
+  "gsm-mc": {
+    "n_runs": 68,
+    "generation_configs": [
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.7,
+            "top_p": 0.95
+          }
+        },
+        "count": 3
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {}
+        },
+        "count": 9
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 10
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 8192,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_p": 0.95
+          }
+        },
+        "count": 8
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "none"
+          },
+          "generation_args": {}
+        },
+        "count": 1
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 1.0,
+            "top_k": 64,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_k": 40,
+            "top_p": 0.95
+          }
+        },
+        "count": 2
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "xhigh"
+          },
+          "generation_args": {}
+        },
+        "count": 1
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "low"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 2
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_k": 20,
+            "top_p": 0.95
+          }
+        },
+        "count": 8
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "temperature": 0.8,
+            "top_p": 0.95
+          }
+        },
+        "count": 1
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      }
+    ],
+    "source_definitions": [
+      {
+        "source": {
+          "additional_details": {},
+          "dataset_name": "GSM-MC",
+          "source_type": "url",
+          "url": [
+            "https://github.com/Geralt-Targaryen/MC-Evaluation",
+            "https://arxiv.org/abs/2405.11966"
+          ]
+        },
+        "count": 68
+      }
+    ]
+  },
+  "judgebench": {
+    "n_runs": 52,
+    "generation_configs": [
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.7,
+            "top_p": 0.95
+          }
+        },
+        "count": 8
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 24
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 8192,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 12
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_p": 0.95
+          }
+        },
+        "count": 16
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_p": 0.95
+          }
+        },
+        "count": 28
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {}
+        },
+        "count": 32
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "none"
+          },
+          "generation_args": {}
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 12
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 1.0,
+            "top_k": 64,
+            "top_p": 0.95
+          }
+        },
+        "count": 12
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_k": 40,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "xhigh"
+          },
+          "generation_args": {}
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "high"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "low"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_k": 20,
+            "top_p": 0.95
+          }
+        },
+        "count": 24
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "temperature": 0.8,
+            "top_p": 0.95
+          }
+        },
+        "count": 4
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 16
+      }
+    ],
+    "source_definitions": [
+      {
+        "source": {
+          "additional_details": {},
+          "dataset_name": "JudgeBench",
+          "hf_repo": "ScalerLab/JudgeBench",
+          "hf_split": "gpt",
+          "source_type": "hf_dataset"
+        },
+        "count": 208
+      }
+    ]
+  },
+  "math-mc": {
+    "n_runs": 69,
+    "generation_configs": [
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.7,
+            "top_p": 0.95
+          }
+        },
+        "count": 15
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {}
+        },
+        "count": 45
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 50
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 8192,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 20
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 25
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_p": 0.95
+          }
+        },
+        "count": 30
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_p": 0.95
+          }
+        },
+        "count": 40
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "none"
+          },
+          "generation_args": {}
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 1.0,
+            "top_k": 64,
+            "top_p": 0.95
+          }
+        },
+        "count": 20
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_k": 40,
+            "top_p": 0.95
+          }
+        },
+        "count": 10
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "xhigh"
+          },
+          "generation_args": {}
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "low"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "high"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_k": 20,
+            "top_p": 0.95
+          }
+        },
+        "count": 40
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "temperature": 0.8,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 25
+      }
+    ],
+    "source_definitions": [
+      {
+        "source": {
+          "additional_details": {},
+          "dataset_name": "MATH-MC",
+          "source_type": "url",
+          "url": [
+            "https://github.com/Geralt-Targaryen/MC-Evaluation",
+            "https://arxiv.org/abs/2405.11966"
+          ]
+        },
+        "count": 345
+      }
+    ]
+  },
+  "reward-bench-2": {
+    "n_runs": 52,
+    "generation_configs": [
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 30
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "max_tokens": 8192,
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 15
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.7,
+            "top_p": 0.95
+          }
+        },
+        "count": 10
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_p": 0.95
+          }
+        },
+        "count": 25
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_p": 0.95
+          }
+        },
+        "count": 40
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "none"
+          },
+          "generation_args": {}
+        },
+        "count": 10
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {}
+        },
+        "count": 35
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.3,
+            "top_p": 0.95
+          }
+        },
+        "count": 10
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "max_tokens": 16384,
+            "temperature": 1.0,
+            "top_k": 64,
+            "top_p": 0.95
+          }
+        },
+        "count": 10
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1.0,
+            "top_k": 40,
+            "top_p": 0.95
+          }
+        },
+        "count": 10
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "xhigh"
+          },
+          "generation_args": {}
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "high"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {
+            "reasoning_effort": "low"
+          },
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 0.6,
+            "top_k": 20,
+            "top_p": 0.95
+          }
+        },
+        "count": 20
+      },
+      {
+        "config": {
+          "additional_details": {
+            "chat_template_enable_thinking": "true"
+          },
+          "generation_args": {
+            "temperature": 0.8,
+            "top_p": 0.95
+          }
+        },
+        "count": 5
+      },
+      {
+        "config": {
+          "additional_details": {},
+          "generation_args": {
+            "temperature": 1,
+            "top_p": 0.95
+          }
+        },
+        "count": 25
+      }
+    ],
+    "source_definitions": [
+      {
+        "source": {
+          "additional_details": {},
+          "dataset_name": "RewardBench 2",
+          "hf_repo": "allenai/reward-bench-2",
+          "hf_split": "test",
+          "source_type": "hf_dataset"
+        },
+        "count": 260
+      }
+    ]
+  }
+}

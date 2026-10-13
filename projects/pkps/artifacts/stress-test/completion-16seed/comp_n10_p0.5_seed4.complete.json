@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 71,
+  "n_validation_cells": 14,
+  "n_inner_rows": 912,
+  "n_outer_rows": 1136,
+  "actual_coverage": 0.44375,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "cohere/c4ai-command-r7b-12-2024",
+    "meta/llama-4-maverick-17b-128e-instruct-fp8",
+    "openai/gpt-5-5",
+    "openai/gpt-5-mini",
+    "qwen/qwen3-5-2b",
+    "qwen/qwen3-5-397b-a17b",
+    "qwen/qwen3-next-80b-a3b-thinking",
+    "zai-org/glm-4-6-fp8",
+    "zai-org/glm-4-7-flash",
+    "zai-org/glm-5-1-fp8"
+  ],
+  "mask_sha256": "02590441c5ba898b6a10c6a9d57b5101fbd31882c2402d46042c1ca3e1a84bd1",
+  "seconds": 0.5947279160027392
+}

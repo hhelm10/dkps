@@ -1,0 +1,53 @@
+{
+  "variants": [
+    "original",
+    "json",
+    "blockquote"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "m": 1,
+  "n_models": 44,
+  "n_tasks": 16,
+  "pool_rows": 23040,
+  "eligible_rows": 21636,
+  "eligible_rows_before_cohort": 21923,
+  "excluded_models": [
+    "deepseek/deepseek-v3-2-speciale"
+  ],
+  "excluded_rows": 1404,
+  "unique_selected_rows": 2046,
+  "max_tokens_including_prompt": 2048,
+  "response_truncation": false,
+  "intervention": "reversible JSON and blockquote serialization; original content exactly recoverable",
+  "evaluation": "change one outer developer cache at a time; other developers remain original",
+  "note": "controlled formatting interventions; not a test of generated prose styles",
+  "embedding": {
+    "model": "google/embeddinggemma-2",
+    "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+    "model_path": "/Users/avijit/Documents/dkps/data/models/embeddinggemma-2",
+    "dtype": "float32",
+    "device": "mps:0",
+    "prompt": "SentenceSimilarity",
+    "max_length": 2048,
+    "dimension": 768,
+    "text_sha256": "1418cb94634560eba173c37446dc5d88a6afdb68ff36479a96843bcd021cb9e7",
+    "n_texts": 7421,
+    "chunk_size": 128,
+    "batch_size": 8,
+    "normalize": true,
+    "fallback_enabled": false,
+    "versions": {
+      "torch": "2.14.1",
+      "transformers": "5.19.0",
+      "sentence-transformers": "6.1.0",
+      "numpy": "2.5.3"
+    },
+    "reused_texts": 3535,
+    "base_text_sha256": "612b2a72b6608bee68e0b6a7280ce2d15ec8494cfbf693fc681c9840bbdddbee"
+  },
+  "source_sha256": "95d994e2be76513586b17e7045b05e2fbd3ad8874a9b42f9a92d8c869449d0eb"
+}

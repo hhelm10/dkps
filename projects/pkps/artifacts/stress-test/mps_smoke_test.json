@@ -1,0 +1,49 @@
+{
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "model_revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+  "mps_available": true,
+  "prompt": "SentenceSimilarity",
+  "n_texts": 16,
+  "max_length": 2048,
+  "fallback_enabled": false,
+  "versions": {
+    "torch": "2.14.1",
+    "transformers": "5.19.0",
+    "sentence-transformers": "6.1.0",
+    "numpy": "2.5.3"
+  },
+  "mps_float32": {
+    "seconds": 1.2358276669983752,
+    "texts_per_second": 12.946788963595065,
+    "shape": [
+      16,
+      768
+    ],
+    "finite": true,
+    "max_unit_norm_error": 1.1920928955078125e-07
+  },
+  "cpu_float32": {
+    "seconds": 3.038296500017168,
+    "texts_per_second": 5.266108821146847,
+    "shape": [
+      16,
+      768
+    ],
+    "finite": true,
+    "max_unit_norm_error": 1.1920928955078125e-07,
+    "min_cosine_to_mps_float32": 0.9999999403953552,
+    "max_absolute_error": 3.5762786865234375e-07
+  },
+  "mps_bfloat16": {
+    "seconds": 1.2597987079934683,
+    "texts_per_second": 12.700441664592464,
+    "shape": [
+      16,
+      768
+    ],
+    "finite": true,
+    "max_unit_norm_error": 1.1920928955078125e-07,
+    "min_cosine_to_mps_float32": 0.9999459981918335,
+    "max_absolute_error": 0.0022811293601989746
+  }
+}

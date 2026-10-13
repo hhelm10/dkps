@@ -1,0 +1,39 @@
+{
+  "completed": true,
+  "shape": [
+    28590,
+    768
+  ],
+  "dtype": "float32",
+  "all_finite": true,
+  "max_unit_norm_error": 1.1920928955078125e-07,
+  "shards": 224,
+  "timed_texts": 28590,
+  "successful_shard_seconds": 2786.1299530816323,
+  "actual_batch_sizes": [
+    8
+  ],
+  "timing_note": "Sum of successful encoding shard timings; excludes model loading, failed OOM work, restart delays and setup.",
+  "configuration": {
+    "model": "google/embeddinggemma-2",
+    "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+    "model_path": "/Users/avijit/Documents/dkps/data/models/embeddinggemma-2",
+    "dtype": "float32",
+    "device": "mps:0",
+    "prompt": "SentenceSimilarity",
+    "max_length": 2048,
+    "dimension": 768,
+    "text_sha256": "612b2a72b6608bee68e0b6a7280ce2d15ec8494cfbf693fc681c9840bbdddbee",
+    "n_texts": 28590,
+    "chunk_size": 128,
+    "batch_size": 8,
+    "normalize": true,
+    "fallback_enabled": false,
+    "versions": {
+      "torch": "2.14.1",
+      "transformers": "5.19.0",
+      "sentence-transformers": "6.1.0",
+      "numpy": "2.5.3"
+    }
+  }
+}

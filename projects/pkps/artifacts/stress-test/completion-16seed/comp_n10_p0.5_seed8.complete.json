@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 90,
+  "n_validation_cells": 18,
+  "n_inner_rows": 1152,
+  "n_outer_rows": 1440,
+  "actual_coverage": 0.5625,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "deepseek/deepseek-v3-2",
+    "deepseek/deepseek-v3-2-speciale",
+    "google/gemma-2-27b-it",
+    "google/gemma-2-9b-it",
+    "moonshot/kimi-k2-thinking",
+    "openai/gpt-5-5",
+    "openai/gpt-5-nano",
+    "qwen/qwen3-5-2b",
+    "stepfun/step-3-5-flash",
+    "xiaomi/mimo-v2-flash"
+  ],
+  "mask_sha256": "ee1814c55486da9f4ce815fefaf82853d7d6029e62b9420840cd6f33ac869495",
+  "seconds": 0.7297313330054749
+}

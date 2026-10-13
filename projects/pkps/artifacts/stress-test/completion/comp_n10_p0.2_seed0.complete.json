@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 33,
+  "n_validation_cells": 7,
+  "n_inner_rows": 416,
+  "n_outer_rows": 528,
+  "actual_coverage": 0.20625,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "cohere/c4ai-command-a-03-2025",
+    "cohere/c4ai-command-r-08-2024",
+    "cohere/c4ai-command-r7b-12-2024",
+    "deepseek/deepseek-v3-2",
+    "deepseek/deepseek-v4-pro",
+    "google/gemma-2-27b-it",
+    "meta/llama-4-maverick-17b-128e-instruct-fp8",
+    "moonshot/kimi-k2-5",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3-6-plus"
+  ],
+  "mask_sha256": "16fa52b30a84fca5ecb39deac13b1cc14812f05cee0aef24ace9355791c58ed6",
+  "seconds": 0.4875010830000974
+}

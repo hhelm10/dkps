@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-12",
+  "tests": {
+    "passed": 62,
+    "existing_warnings": 3,
+    "command": "MPLCONFIGDIR=/tmp/pkps-next-mpl .conda-eee/bin/python -m pytest tests -q"
+  },
+  "additive_prediction_rows": 207360,
+  "sparse_prediction_files": 48,
+  "sparse_prediction_rows": 64320,
+  "style_prediction_files": 9,
+  "selective_mask_seeds": 16,
+  "checks": {
+    "matched_method_support": true,
+    "finite_predictions": true,
+    "recomputed_absolute_errors": true,
+    "all_six_sparse_kernel_control_pointwise_intervals_include_zero": true,
+    "all_three_sparse_additive_advantages_survive_12_contrast_correction": true,
+    "original_28590_embeddings_preserved_exactly": true,
+    "all_947_targets_match_companion_aggregates": true
+  },
+  "natural_embedding": {
+    "model": "google/embeddinggemma-2",
+    "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+    "model_path": "/Users/avijit/Documents/dkps/data/models/embeddinggemma-2",
+    "dtype": "float32",
+    "device": "mps:0",
+    "prompt": "SentenceSimilarity",
+    "max_length": 2048,
+    "dimension": 768,
+    "text_sha256": "68224c958485bf8b3c0e888d3a90739594da9ad3cfc3a695909c5cd483958f9b",
+    "n_texts": 36441,
+    "chunk_size": 128,
+    "batch_size": 8,
+    "normalize": true,
+    "fallback_enabled": false,
+    "versions": {
+      "torch": "2.14.1",
+      "transformers": "5.19.0",
+      "sentence-transformers": "6.1.0",
+      "numpy": "2.5.3"
+    },
+    "reused_texts": 28590,
+    "base_text_sha256": "612b2a72b6608bee68e0b6a7280ce2d15ec8494cfbf693fc681c9840bbdddbee"
+  },
+  "source_sha256": {
+    "projects/pkps/scripts/experiments/stress_next_checks.py": "274a5c25ec9ce472d8e0afa86b3c5b0d48099fc989012f59a4a2a5de77bc62b5",
+    "projects/pkps/scripts/experiments/stress_style.py": "95d994e2be76513586b17e7045b05e2fbd3ad8874a9b42f9a92d8c869449d0eb",
+    "projects/pkps/scripts/experiments/stress_selective.py": "3264a6012c57b76059e206526370506cdeffb7c5ae86ee2f6d6bd45e0d1ca9e4",
+    "projects/pkps/scripts/experiments/report_stress_next_checks.py": "f0a085ce97ab49a27948739a14d15eecbac53d032455e56fa29e66dcad99660b",
+    "projects/pkps/scripts/data/embed_stress_extensions.py": "1133a82a70f74cae961e93a29a407dbf070d9ef1c8127e023c1703b09671ebb5",
+    "projects/pkps/scripts/data/prepare_eee_followups.py": "b99520dc2de7ff2bbad217293f8b4640ea81937f899c10c6fe28b08bbc27cbe8",
+    "tests/test_stress_next_checks.py": "da48689976b4ba39b1c1b7be69fcb68144c5d8aa7584287c2de1224e4ebcd070"
+  }
+}

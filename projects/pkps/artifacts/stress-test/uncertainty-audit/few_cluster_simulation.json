@@ -1,0 +1,16 @@
+{
+  "n_datasets": 2000,
+  "n_boot": 4000,
+  "rng_seed": 519,
+  "task_counts": [
+    1,
+    1,
+    4,
+    5,
+    5
+  ],
+  "nominal_coverage": 0.95,
+  "measured_coverage": 0.817,
+  "simulation_sem": 0.008646126300257245,
+  "note": "Illustrative benchmark-effect Gaussian simulation; not calibrated EEE coverage"
+}

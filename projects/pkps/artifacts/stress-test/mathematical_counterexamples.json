@@ -1,0 +1,10 @@
+{
+  "squared_distances": {
+    "original": -0.08356585222840085,
+    "model_normalized": 0.7421850052718704
+  },
+  "raw_stress": {
+    "classical": 4.222912360003365,
+    "alternative": 2.9429123600033646
+  }
+}
