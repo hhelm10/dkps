@@ -86,11 +86,10 @@ the main findings reproducible without those external attachments.
 | Add EmbeddingGemma-2 support and test it on a Mac | Completed: MPS float32 and bfloat16 verified against CPU; float32 selected |
 | Download EEE, regenerate embeddings, and run benchmark follow-ups | Completed: original 48 query and 64 completion runs; additional additive, natural-graph, temporal, formatting, and 16-seed selective-reporting checks below |
 
-Initial audit used standard-library reproductions. Subsequently the supplied NumPy
-checks were executed in the existing `py314` conda environment. Because this package
-requires Python <3.13, the installed conda distribution was used to create the
-project-local `.conda-eee` Python 3.12 environment. The unchanged package baseline
-passed **29 tests** (three warnings). The expanded suite now passes **62 tests**
+The mathematical checks were independently reproduced with standard-library and
+NumPy implementations. Benchmark follow-ups use Python 3.12, consistent with the
+package's Python <3.13 requirement. The unchanged package baseline passed
+**29 tests** (three warnings). The expanded suite now passes **62 tests**
 (three existing warnings). Archived paper CSVs remain historical results; the
 separate EG2 artifacts report executed follow-ups under the corrected pipeline.
 
@@ -125,8 +124,8 @@ The [preprocessing/regression page](artifacts/stress-test/paper-14.png) and
 - Dataset: `evaleval/EEE_datastore`, revision
   `8b9632422dd2b3806431efd758c7cdc84044169f`; latest manifest `added_at` per
   model/benchmark, restricted to the intersection of the five named collections.
-- Downloaded and checksum-verified **225 runs, 45 models, 16 tasks** in
-  `/Users/avijit/Documents/EEE Datastore`. Full-depth targets were calculated before
+- Downloaded and checksum-verified **225 runs, 45 models, 16 tasks**.
+  Full-depth targets were calculated before
   sampling. A deterministic cap of 32 yields **23,040 response rows and 6,774 unique
   query IDs**. Extending to all 69 models yields **30,304 response rows**, reconciling
   the paper's response-pool count (p. 15): embeddings are pooled before the loader
@@ -538,37 +537,38 @@ selective encoder loading, symmetric similarity prompts, and float32 or bfloat16
 **float16 is unsupported**. The pinned checkpoint's Sentence Transformers config
 requires version 6.1+. This run uses Python 3.12.15, torch 2.14.1, transformers
 5.19.0, sentence-transformers 6.1.0, Pillow 12.3.0, and torchvision 0.29.1.
-The existing conda installation created `.conda-eee` because the user's `py314`
-environment cannot satisfy this repository's Python <3.13 requirement.
+Run the commands below from the repository root. They create a Python 3.12 conda
+environment named `eee`; an existing compatible environment can also be used.
 
 ```bash
-# Reproduce setup using the existing conda installation (already done here).
-/opt/miniconda3/bin/conda create --prefix "$PWD/.conda-eee" \
+# Create and activate the environment for a fresh setup.
+conda create --name eee \
   --override-channels -c https://repo.anaconda.com/pkgs/main python=3.12 pip -y
-.conda-eee/bin/python -m pip install -e . \
+conda activate eee
+python -m pip install -e . \
   'sentence-transformers==6.1.0' 'transformers==5.19.0' 'torch==2.14.1' \
   'torchvision==0.29.1' pillow huggingface_hub pyarrow python-dotenv rich pytest matplotlib
 
 # Download the immutable model snapshot once.
-HF_HUB_DISABLE_XET=1 .conda-eee/bin/hf download google/embeddinggemma-2 \
+HF_HUB_DISABLE_XET=1 hf download google/embeddinggemma-2 \
   --revision 914f7f89142e33e77833254d9c9b90c3cef7303b \
   --local-dir data/models/embeddinggemma-2 --exclude '*.onnx' --exclude '*.tflite'
 
 # Full-depth targets are prepared before applying the 32-query pool cap.
-.conda-eee/bin/python projects/pkps/scripts/data/prepare_eee_followups.py \
-  --source '/Users/avijit/Documents/EEE Datastore' --download
+python projects/pkps/scripts/data/prepare_eee_followups.py \
+  --source data/eee-raw --download
 
-# Run in a normal Terminal process with Metal access; the agent sandbox hides MPS.
-.conda-eee/bin/python projects/pkps/scripts/data/embed_eee_followups.py --smoke
-.conda-eee/bin/python projects/pkps/scripts/data/embed_eee_followups.py \
+# These GPU checks require an Apple Silicon process with Metal access.
+python projects/pkps/scripts/data/embed_eee_followups.py --smoke
+python projects/pkps/scripts/data/embed_eee_followups.py \
   --device mps --dtype float32 --batch-size 8 --max-length 2048
 
-.conda-eee/bin/python -m pytest tests -q
-.conda-eee/bin/python projects/pkps/scripts/experiments/stress_followups.py \
+python -m pytest tests -q
+python projects/pkps/scripts/experiments/stress_followups.py \
   --budgets 1 4 8 --seeds 0 1 2
-.conda-eee/bin/python projects/pkps/scripts/experiments/stress_completion.py \
+python projects/pkps/scripts/experiments/stress_completion.py \
   --cohorts 10 45 --coverage 0.2 0.5 --m 16 --seeds 0 1 2
-MPLCONFIGDIR=/tmp/pkps-mpl .conda-eee/bin/python \
+MPLCONFIGDIR=/tmp/pkps-mpl python \
   projects/pkps/scripts/experiments/report_stress_followups.py
 ```
 
@@ -778,20 +778,21 @@ Reproduce from the repository root after the original cache is present (the
 extended preparation downloads additional pinned runs; embedding requires Metal):
 
 ```bash
-.conda-eee/bin/python projects/pkps/scripts/data/prepare_eee_followups.py \
+conda activate eee
+python projects/pkps/scripts/data/prepare_eee_followups.py \
   --source data/eee-extended-raw --out data/eee-extensions --all-models --download
-.conda-eee/bin/python projects/pkps/scripts/data/embed_stress_extensions.py \
+python projects/pkps/scripts/data/embed_stress_extensions.py \
   natural --source data/eee-extensions
-.conda-eee/bin/python projects/pkps/scripts/data/embed_stress_extensions.py \
+python projects/pkps/scripts/data/embed_stress_extensions.py \
   style --source data/eee-style
-.conda-eee/bin/python projects/pkps/scripts/experiments/stress_next_checks.py additive
-.conda-eee/bin/python projects/pkps/scripts/experiments/stress_next_checks.py \
+python projects/pkps/scripts/experiments/stress_next_checks.py additive
+python projects/pkps/scripts/experiments/stress_next_checks.py \
   sparse --source data/eee-extensions
-.conda-eee/bin/python projects/pkps/scripts/experiments/stress_style.py
-.conda-eee/bin/python projects/pkps/scripts/experiments/stress_selective.py
-MPLCONFIGDIR=/tmp/pkps-next-mpl .conda-eee/bin/python \
+python projects/pkps/scripts/experiments/stress_style.py
+python projects/pkps/scripts/experiments/stress_selective.py
+MPLCONFIGDIR=/tmp/pkps-next-mpl python \
   projects/pkps/scripts/experiments/report_stress_next_checks.py
-MPLCONFIGDIR=/tmp/pkps-next-mpl .conda-eee/bin/python -m pytest tests -q
+MPLCONFIGDIR=/tmp/pkps-next-mpl python -m pytest tests -q
 ```
 
 ## 6. Manuscript edits and completion criteria
