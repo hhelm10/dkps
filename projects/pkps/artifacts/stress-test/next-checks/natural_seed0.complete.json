@@ -1,0 +1,15 @@
+{
+  "design": "natural",
+  "seed": 0,
+  "n_models": 69,
+  "n_tasks": 16,
+  "observed_cell_sha256": "9a33a66e253552b672f81cf10097c2f0a3d4fadd0e47802c6d566cfaa66d6581",
+  "n_naturally_observed": 947,
+  "n_naturally_missing": 157,
+  "n_early_cells": 758,
+  "n_supported_future_cells": 189,
+  "n_observed_cells": 758,
+  "n_validation_cells": 152,
+  "n_inner_rows": 9696,
+  "n_outer_rows": 12128
+}

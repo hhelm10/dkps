@@ -1,7 +1,8 @@
 """Download a pinned EEE cohort and prepare a deterministic bounded response pool.
 
-Raw files stay in --source; derived inputs stay in --out. Only latest runs for the
-shared five-benchmark cohort are needed, not every historical datastore object.
+Raw files stay in --source; derived inputs stay in --out. By default, use latest
+runs for the shared five-benchmark cohort. --all-models retains the naturally
+incomplete graph across those same five benchmarks.
 """
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -27,7 +28,7 @@ def digest(path):
     return h.hexdigest()
 
 
-def selected_runs(manifest, benchmarks=BENCHMARKS):
+def selected_runs(manifest, benchmarks=BENCHMARKS, shared_only=True):
     latest = {}
     for path, meta in manifest['files'].items():
         parts = path.split('/')
@@ -37,6 +38,8 @@ def selected_runs(manifest, benchmarks=BENCHMARKS):
         key = (parts[1], '/'.join(parts[2:4]))
         if key not in latest or meta['added_at'] > latest[key][1]['added_at']:
             latest[key] = (path, meta)
+    if not shared_only:
+        return dict(sorted(latest.items()))
     shared = set.intersection(*(set(m for b, m in latest if b == bench) for bench in benchmarks))
     if not shared:
         raise ValueError('no models shared by the requested benchmark collections')
@@ -58,13 +61,13 @@ def fetch(source, revision, path, expected=None):
     return dest
 
 
-def preserve_metadata(source, out, revision, workers=4):
+def preserve_metadata(source, out, revision, workers=4, shared_only=True):
     """Retain the exact aggregate companions, including generation configurations."""
     manifest = json.loads((source / 'manifest.json').read_text())
     marker = json.loads((source / 'pkps_snapshot.json').read_text())
     if marker['revision'] != revision:
         raise ValueError('metadata revision differs from downloaded samples')
-    runs = selected_runs(manifest)
+    runs = selected_runs(manifest, shared_only=shared_only)
     paths = [path.replace('_samples.jsonl', '.json') for path, _ in runs.values()]
     with ThreadPoolExecutor(max_workers=workers) as executor:
         jobs = [executor.submit(fetch, source, revision, p, manifest['files'][p].get('sha256')) for p in paths]
@@ -86,7 +89,7 @@ def preserve_metadata(source, out, revision, workers=4):
     print(f'preserved metadata for {len(result)} pinned runs', flush=True)
 
 
-def prepare(source, out, revision, cap=32, download=False, workers=4):
+def prepare(source, out, revision, cap=32, download=False, workers=4, shared_only=True):
     if cap < 1:
         raise ValueError('pool cap must be positive')
     out.mkdir(parents=True, exist_ok=True)
@@ -100,8 +103,8 @@ def prepare(source, out, revision, cap=32, download=False, workers=4):
     manifest = json.loads((source / 'manifest.json').read_text())
     if not marker.exists():
         raise ValueError('snapshot provenance missing; run once with --download')
-    runs = selected_runs(manifest)
-    print(f'{len(runs)} runs, {len(set(m for _, m in runs))} shared models', flush=True)
+    runs = selected_runs(manifest, shared_only=shared_only)
+    print(f'{len(runs)} runs, {len(set(m for _, m in runs))} models; shared_only={shared_only}', flush=True)
     if download:
         with ThreadPoolExecutor(max_workers=workers) as executor:
             jobs = {executor.submit(fetch, source, revision, path, meta.get('sha256')): path
@@ -179,14 +182,15 @@ def main():
     ap.add_argument('--cap', type=int, default=32)
     ap.add_argument('--download', action='store_true')
     ap.add_argument('--workers', type=int, default=4)
+    ap.add_argument('--all-models', action='store_true', help='retain the naturally incomplete model/benchmark graph')
     ap.add_argument('--metadata-only', action='store_true', help='fetch companions after sample preparation')
     args = ap.parse_args()
     if args.metadata_only:
-        preserve_metadata(args.source, args.out, args.revision, args.workers)
+        preserve_metadata(args.source, args.out, args.revision, args.workers, not args.all_models)
     else:
-        prepare(args.source, args.out, args.revision, args.cap, args.download, args.workers)
+        prepare(args.source, args.out, args.revision, args.cap, args.download, args.workers, not args.all_models)
         if args.download:
-            preserve_metadata(args.source, args.out, args.revision, args.workers)
+            preserve_metadata(args.source, args.out, args.revision, args.workers, not args.all_models)
 
 
 if __name__ == '__main__':

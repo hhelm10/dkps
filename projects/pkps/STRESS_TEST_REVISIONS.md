@@ -3,6 +3,66 @@
 Audit date: 2026-10-12. Code reviewed at commit
 `4097f3a3b95020504eed50ea2ff602a9e1df2029`.
 
+## Summary for coauthors
+
+**Decision: narrow the claim to what response features contribute under explicitly
+stated reference-score access.** These EEE experiments do not establish an added
+benefit from query similarity or general robustness to selective reporting. The
+additive query baseline, natural incomplete graph, temporal holdouts, and controlled
+formatting interventions have now been tested with **EmbeddingGemma-2 (EG2)**.
+EG2 is the accepted encoder for this revision; the measurements below describe
+the corrected follow-up pipeline, separately from the historical paper results.
+
+- **The query kernel has no demonstrated predictive advantage here.** At one
+  response per task, full-reference MAE is **0.0674** for the expanded PKPS selector
+  and **0.0672** for the constant kernel. The selector chooses constant in
+  **350/624** full-reference folds across budgets. All 12 original constant/shuffle
+  comparisons have intervals containing zero; this is absence of demonstrated
+  benefit, not proof of equivalence.
+- **The missing additive baseline does not explain away the full-reference
+  result, but wins in cache-only query prediction.** At the same m=1 budget
+  (**16 responses per model**), nested additive MAE is **0.0794**, versus PKPS
+  **0.0674** with other developers' full scores. With only cached sample scores,
+  fixed raw additive reaches **0.0880**, versus PKPS **0.1290** and fixed
+  sample/task-mean shrinkage **0.1146**. Cache-only nested additive selection itself
+  fails at m=1 (**0.1352**); the fixed and tuned results must both be reported.
+- **Score-only completion remains a strong baseline under the new checks.**
+  Additive beats PKPS on the naturally incomplete graph (**0.0636 vs 0.0743**) and
+  both evaluation-time holdouts (**0.0638 vs 0.0731**, **0.0602 vs 0.0679**).
+  All three paired advantages survive correction across the 12 sparse-completion
+  contrasts. Natural-graph evaluation hides known outcomes; the 157 genuinely
+  absent outcomes remain unscorable. Temporal results cover only 51 and 95 future
+  cells with earlier model/task support.
+- **Selective-reporting protection survives only as a narrower finding.** In
+  the repeated oracle poor-score-hiding probe, PKPS beats additive and LRMC on
+  matched hidden cells (**0.1713 vs 0.2007 and 0.2045**), across 16 seeds. Constant
+  is **0.1672**. This supports response features under that particular mask, not
+  an advantage from query similarity or a general real-cache robustness claim.
+- **Cache composition and formatting affect the representation.** The earlier
+  task-mix probe moves models by about **0.90×** typical between-model distance
+  for median-bandwidth RBF, versus **0.61×** for constant. In a new, exactly
+  reversible JSON-formatting intervention, PKPS full-reference MAE rises from
+  **0.0682 to 0.0832** with answer content and scores fixed. This style check uses
+  44 eligible models and three seeds; blockquote formatting has a much smaller
+  effect. It does not test every prose style.
+- **The geometry repair is valid; replacement statistical theory is unfinished.**
+  Model-wise query-mass normalization gives a PSD affinity for PSD kernels with
+  positive self-masses. It does not establish concentration or strict prediction
+  improvement. The guarded-selector statement also requires a guard that ordinary
+  nested MAE selection does not implement.
+
+The manuscript still needs the raw-stress/MDS correction, reference-label and
+ensemble-leakage corrections, observed-only preprocessing, actual bandwidth/cohort
+grids, and matched IRT coverage; EEE scores are not all binary. The response-pool
+count is now reconciled: **30,304 rows across 69 models**, versus **23,040** in the
+complete 45-model cohort. The new checks use 16 seeds except formatting (three).
+Intervals describe randomized runs conditional on this frozen dataset, not new
+model populations. **62 tests pass.**
+
+See the [completed checks and their limits](#completed-additional-eg2-checks),
+[result figure](artifacts/stress-test/next-checks/overview.pdf), and
+[verification record](artifacts/stress-test/next-checks/verification.json).
+
 This document records mathematical repairs, implementation findings, proposed
 manuscript changes, and local follow-up experiments for *Predicting Benchmark Scores
 from Sparse and Unpaired Cached Responses*. Completed checks and measurements are
@@ -14,27 +74,6 @@ The review considered the supplied `Stress Test Claims.pdf` and
 The mathematical examples were independently recomputed. The examples below make
 the main findings reproducible without those external attachments.
 
-Mathematics uses GitHub's supported inline math and fenced `math` blocks, following
-[GitHub's mathematical-expression guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/writing-mathematical-expressions).
-The formulas below are explicit manuscript replacements or qualified proof steps;
-they do not depend on custom macros from the paper's LaTeX preamble.
-
-| Formula to revise | Replacement supplied here | Status |
-| --- | --- | --- |
-| Eq. 1, `eq:A` | Per-model query-mass normalization and its Gram feature map | Implemented in follow-ups; estimator and population target change |
-| Eq. 2, `eq:mds` | Positive-eigenvalue, rank-constrained Gram approximation | Implemented in follow-ups |
-| Definition 2, `def:pop`; `lem:conc` | Matching population affinity, diagonal V-statistic expectation, and conditional perturbation bound | Algebra supplied; new stochastic/spectral theorem still needs proof |
-| `lem:noisy` | Conditional weighted-noise decomposition | Requires explicit conditional noise assumptions |
-| `thm:qeff` | Guarded selector and qualified risk statement | Valid under the stated independent-validation assumptions; ordinary CV does not implement it |
-| Ensemble in Appendix C | Inner predictions excluding the entire outer family's full labels | Implemented in follow-ups |
-| Reporting and uncertainty | Paired task-macro loss, SEM, t/Bonferroni intervals, and bootstrap statistics | Matches the uncertainty-audit implementation; scope of inference stated |
-
-[Numerical formula checks](artifacts/stress-test/math_formula_checks.json) verify
-the diagonal expectation by exact enumeration, the weighted-noise decomposition,
-the guard's tail-bound constant, and the t quantiles. Random numerical checks of
-the conditional perturbation inequalities supplement the algebra below; these
-checks do not establish the outstanding stochastic or population-coverage claims.
-
 ## Status and scope
 
 | Work | Status |
@@ -45,15 +84,15 @@ checks do not establish the outstanding stochastic or population-coverage claims
 | Propose a positive-semidefinite affinity and consistent MDS definition | Implemented and tested in the separate follow-up drivers; revised statistical proofs pending |
 | Modify estimators, preprocessing, validation, or manuscript | Corrected follow-up pipeline implemented; original package defaults and manuscript unchanged |
 | Add EmbeddingGemma-2 support and test it on a Mac | Completed: MPS float32 and bfloat16 verified against CPU; float32 selected |
-| Download EEE and regenerate embeddings | Completed: 225 pinned runs SHA256-verified; all 28,590 unique texts embedded on M5 MPS |
-| Run benchmark follow-ups | Completed: 48 query-budget/seed runs, 64 completion runs, and controlled E5/E6 probes; results below |
+| Download EEE, regenerate embeddings, and run benchmark follow-ups | Completed: original 48 query and 64 completion runs; additional additive, natural-graph, temporal, formatting, and 16-seed selective-reporting checks below |
 
 Initial audit used standard-library reproductions. Subsequently the supplied NumPy
 checks were executed in the existing `py314` conda environment. Because this package
 requires Python <3.13, the installed conda distribution was used to create the
 project-local `.conda-eee` Python 3.12 environment. The unchanged package baseline
-passed **29 tests** (three warnings). Existing result CSVs remain historical results,
-not validation of the proposed changes.
+passed **29 tests** (three warnings). The expanded suite now passes **62 tests**
+(three existing warnings). Archived paper CSVs remain historical results; the
+separate EG2 artifacts report executed follow-ups under the corrected pipeline.
 
 ### Reference PDF and evidence
 
@@ -71,7 +110,6 @@ below are PDF page numbers, also matching the printed page numbers.
 | p. 14, lines 747–755 | The claimed common logit/standardization/bias pipeline differs from the raw-score query-efficiency driver. |
 | p. 15, lines 763–767 | The assertion that no predicted family's full scores enter the ensemble requires nested predictions; deleting validation rows alone is insufficient. |
 | p. 15, lines 769–794 | Published sweeps use 16 seeds and Gemini embeddings. New EmbeddingGemma pilot measurements must be identified separately. |
-| p. 16, lines 810–849 | The 45 model names match the pinned cohort exactly. The statement that all EEE scores are binary conflicts with fractional judging scores in the snapshot and the archived IRT coverage. |
 
 Rendered evidence (from the supplied PDF, using `pdftoppm -r 100 -png`):
 
@@ -81,8 +119,6 @@ Rendered evidence (from the supplied PDF, using `pdftoppm -r 100 -png`):
 
 The [preprocessing/regression page](artifacts/stress-test/paper-14.png) and
 [ensemble/evaluation page](artifacts/stress-test/paper-15.png) are retained too.
-The [EEE composition and binary-score assertion](artifacts/stress-test/paper-16.png)
-are retained on page 16.
 
 ### Local execution record
 
@@ -92,15 +128,14 @@ are retained on page 16.
 - Downloaded and checksum-verified **225 runs, 45 models, 16 tasks** in
   `/Users/avijit/Documents/EEE Datastore`. Full-depth targets were calculated before
   sampling. A deterministic cap of 32 yields **23,040 response rows and 6,774 unique
-  query IDs**. This is not the paper's 30,304-row response pool (p. 15).
+  query IDs**. Extending to all 69 models yields **30,304 response rows**, reconciling
+  the paper's response-pool count (p. 15): embeddings are pooled before the loader
+  restricts to complete models. The new deterministic sampling gives 7,617 unique
+  queries in that larger pool, versus the paper's 7,665, so this is not an exact
+  recreation of its query sample.
 - Provenance, full-depth targets, and pooled rows are under `data/eee-followups/`;
   large raw data/model weights remain ignored by Git. The sampling and download
   implementation is [prepare_eee_followups.py](scripts/data/prepare_eee_followups.py).
-- All 225 aggregate companion files were also preserved with SHA256 hashes,
-  source dataset definitions, metrics, evaluation timestamps, and generation
-  configurations. The [metadata summary](artifacts/stress-test/dataset_metadata_summary.json)
-  records 15–16 distinct generation configurations within each collection; these
-  are properties of the historical cached runs, not controlled generation settings.
 - Hardware: Apple M5, 10 GPU cores, Metal 4; macOS 27.0.1. PyTorch 2.14.1 reports
   `is_built=True`, `is_available=True` outside the execution sandbox. A sandboxed
   probe reports unavailable; this is a process-access limitation, not missing M5
@@ -111,18 +146,6 @@ are retained on page 16.
   uses the same symmetric prompt for query and response embeddings, and writes
   resumable shards. CPU fallback is disabled during GPU measurements. The processor
   still requires Pillow and torchvision even with unused encoders disabled.
-
-The full-target audit found **three scored rows with empty response text**. Pool
-eligibility and target construction are now separate: those rows contribute to
-full-depth scores but cannot enter the response embedding pool. A regression test
-covers this distinction. The initial discrepancies from stored aggregate scores
-were below 0.0009 but were systematic, not numerical roundoff.
-After the correction, **all 720 full-depth target cells agree with the pinned
-companion aggregates to 1.12e-16**; see the
-[cell-level verification](artifacts/stress-test/target_score_verification.csv).
-All 45 model names match PDF p. 16, and the
-[full-depth counts for all 16 tasks](artifacts/stress-test/task_depths.csv) match
-Table 3 exactly for every model (including the scored empty responses).
 
 ### Check against the reported EEE results
 
@@ -152,29 +175,12 @@ Its table error therefore does not represent the same supported task set as the
 other methods. Add coverage and a matched-task comparison before interpreting
 that number as an across-method ranking.
 
-The supplied PDF also says all EEE scores are binary (p. 16, lines 816–817).
-The [score-value audit](artifacts/stress-test/score_value_audit.csv) instead finds
-**0.5-valued JudgeBench scores and 0.25-valued RewardBench 2 scores**, affecting
-589 of 23,040 pooled rows across all nine judging tasks. Only the seven accuracy
-tasks have exclusively binary pooled scores. Replace the binary-score assertion,
-restrict the binary Rasch baseline to its supported tasks, and report matched
-coverage; do not silently threshold graded scores into binary labels. If the
-original study used a differently processed snapshot, supply and document it.
-
 The [matched-task recomputation](artifacts/stress-test/archival_matched_irt_tasks.csv)
 gives, at m=1, sample **0.150186**, IRT **0.164993**, DKPS **0.101646**, PKPS
 **0.054057**, and ensemble **0.051556**. In particular, IRT does not outperform the
 sample baseline on its own supported tasks, despite that apparent ordering in the
 unmatched Table 1 entries. This is a concrete reporting correction based on the
 paper's existing results, independent of the new embedding experiment.
-
-One additional configuration mismatch: p. 15 specifies the EEE cohort sweep as
-`{10,20,30,45}`, while both archived query-efficiency and completion sweep CSVs
-contain `{10,20,40,45}` (16 seeds each). Correct the text to the actual grid or
-provide the missing 30-model rerun. The Table 1 endpoints at 10 and 45 are unaffected.
-Also clarify whether the paper's larger embedding workload count (30,304 responses)
-includes models embedded before restricting to the 45-by-16 cohort: the latter's
-32-query-per-cell pool has at most 23,040 responses.
 
 ## 1. Repair the affinity and embedding definition
 
@@ -191,11 +197,6 @@ D12^2 = -0.0835658522284
 negative centered-Gram eigenvalue = -0.0417829261142
 ```
 
-![Recomputed geometry counterexamples](artifacts/stress-test/mathematical_counterexamples.png)
-
-[Exact numeric values](artifacts/stress-test/mathematical_counterexamples.json)
-and a [vector PDF](artifacts/stress-test/mathematical_counterexamples.pdf) are saved.
-
 This disproves a general geometric guarantee for that normalization. It does not
 disprove a theorem explicitly conditional on Euclidean distances.
 
@@ -209,29 +210,17 @@ must inspect the raw values before that information is lost.
 
 Define
 
-```math
+$$
 S_{ij}=\sum_{a\in Q_i}\sum_{b\in Q_j}
 k_Q(u_a,u_b)k_R(x_{ia},x_{jb}),\qquad
 Z_{ij}=\sum_{a\in Q_i}\sum_{b\in Q_j}k_Q(u_a,u_b).
-```
-
-Here $Q_i$ indexes cached observations, preserving multiplicities, and
-$m_i=|Q_i|>0$. A query ID alone need not uniquely index a response if repeated
-responses are retained. The unequal-budget form is equivalently
-
-```math
-\widehat s_{ij}=\frac{S_{ij}}{m_i m_j},\qquad
-\widehat z_i=\frac{Z_{ii}}{m_i^2},\qquad
-\widetilde A_{ij}
-=\frac{\widehat s_{ij}}{\sqrt{\widehat z_i\widehat z_j}}
-=\frac{S_{ij}}{\sqrt{Z_{ii}Z_{jj}}}.
-```
+$$
 
 Replace the original $A_{ij}=S_{ij}/Z_{ij}$ with
 
-```math
+$$
 \widetilde A_{ij}=\frac{S_{ij}}{\sqrt{Z_{ii}Z_{jj}}}.
-```
+$$
 
 Require positive-semidefinite query and response kernels and $Z_{ii}>0$. RBF query
 kernels satisfy the latter for nonempty caches. A linear response kernel is
@@ -241,18 +230,18 @@ the manuscript should not require its codomain to be nonnegative.
 To see the geometric guarantee, let $\phi_Q$ and $\phi_R$ be kernel feature maps and
 define
 
-```math
+$$
 v_i=\frac{\sum_{a\in Q_i}\phi_Q(u_a)\otimes\phi_R(x_{ia})}
 {\sqrt{Z_{ii}}}.
-```
+$$
 
 Then $\widetilde A_{ij}=\langle v_i,v_j\rangle$, so $\widetilde A$ is positive
 semidefinite and
 
-```math
+$$
 D_{ij}^2=\widetilde A_{ii}+\widetilde A_{jj}-2\widetilde A_{ij}
 =\|v_i-v_j\|^2\ge0.
-```
+$$
 
 This construction agrees with the original affinity when all models have the same
 query set, with matching multiplicities. The delta query kernel on a common query
@@ -280,11 +269,11 @@ Alternative raw stress: 2.942912360003
 
 Use a consistent spectral definition instead:
 
-```math
+$$
 J=I-\frac1n\mathbf1\mathbf1^\top,\qquad
 B=J\widetilde A J,\qquad
 \widehat\Psi=U_d\Lambda_d^{1/2}.
-```
+$$
 
 Here $U_d$ contains eigenvectors for the largest positive eigenvalues, retaining
 at most $d$ of them. This produces a best rank-at-most-$d$ positive-semidefinite
@@ -292,29 +281,6 @@ approximation of $B$ in Frobenius norm. It need not minimize raw distance stress
 If numerical rank is below $d$, use the available positive directions; handle a
 zero-rank result explicitly. Only tolerance-sized negative values may be treated
 as roundoff after the PSD construction.
-
-For a direct replacement of Eq. 2, write the objective and its solution explicitly:
-
-```math
-\begin{aligned}
-B&=J\widetilde A J=-\tfrac12 J D^{\circ 2}J,\\
-B&=U\mathrm{diag}(\lambda_1,\ldots,\lambda_n)U^\top,
-\quad \lambda_1\ge\cdots\ge\lambda_n,\\
-\widehat G_d
-&\in\underset{G=G^\top,\ G\succeq0,\ \mathrm{rank}(G)\le d}{\arg\min}
-\|B-G\|_F^2,\\
-\widehat G_d&=\sum_{\ell=1}^{\min(d,n)}\max(\lambda_\ell,0)u_\ell u_\ell^\top,\\
-\widehat\Psi\widehat\Psi^\top&=\widehat G_d.
-\end{aligned}
-```
-
-$D^{\circ 2}$ denotes elementwise squared distances. Factor $\widehat G_d$ using
-the retained positive eigenvalues; zero-pad coordinates if exactly $d$ columns
-are required. An eigenvalue tie can make the best rank-$d$ approximation nonunique.
-The displayed minimization is over Gram matrices, not the raw-distance stress in
-the original Eq. 2. The identity with $J\widetilde A J$ uses raw squared distances,
-before any entrywise clipping. This definition also specifies the positive-part
-projection used for the original-ratio comparison.
 
 Use a symmetric eigendecomposition with explicit signed-eigenvalue handling.
 Do not assume the installed `ClassicalMDS` implementation has the intended behavior
@@ -327,92 +293,6 @@ Projection changes the geometry and must be reported as part of the estimator.
 ## 2. Align the theory with the estimator and information budget
 
 The labels below refer to [the manuscript source](writing/main.tex).
-
-### Replace the population affinity alongside Eq. 1
-
-In Definition 2 (`def:pop`), let $W_i=(U_i,X_i)\sim P_i$, with independent copies
-used in every expectation below, including self-pairs. Assume the kernel feature
-means exist. Define the query and joint feature means, self-mass, and population
-affinity by
-
-```math
-\begin{aligned}
-\eta_i&=\mathbb E_{P_i}[\phi_Q(U_i)],
-&\mu_i&=\mathbb E_{P_i}[\phi_Q(U_i)\otimes\phi_R(X_i)],\\
-z_i^*&=\mathbb E[k_Q(U_i,U_i')]=\|\eta_i\|^2>0,
-&s_{ij}^*&=\mathbb E[k_Q(U_i,U_j')k_R(X_i,X_j')]
-=\langle\mu_i,\mu_j\rangle,\\
-v_i^*&=\frac{\mu_i}{\sqrt{z_i^*}},
-&\widetilde A_{ij}^*&=\frac{s_{ij}^*}{\sqrt{z_i^*z_j^*}}
-=\langle v_i^*,v_j^*\rangle,\\
-(D_{ij}^*)^2&=\|v_i^*-v_j^*\|^2,
-&B^*&=J\widetilde A^*J.
-\end{aligned}
-```
-
-The relevant normalization lower bound is now **self query mass**,
-$\kappa_Q=\min_i z_i^*>0$, rather than the old minimum cross-model mass.
-Use the same positive-eigenvalue definition for the population coordinates.
-Neither positive self-mass nor this Gram representation implies score regularity,
-query-design invariance, or accuracy under missingness. Those require additional
-assumptions or evidence. The cached finite-benchmark sampling design also needs
-its own analysis; it is not automatically the i.i.d. population model above.
-
-### Correct the diagonal term and state a conditional perturbation bound
-
-The self terms in `lem:conc` use a **V-statistic**, not two independent samples.
-For i.i.d. $W_1,\ldots,W_m\sim P_i$ and
-$h(W,W')=k_Q(U,U')k_R(X,X')$, the exact expectation is
-
-```math
-\begin{aligned}
-\widehat s_{ii}&=\frac{1}{m^2}\sum_{a=1}^{m}\sum_{b=1}^{m}h(W_a,W_b),\\
-\mathbb E[\widehat s_{ii}]
-&=\left(1-\frac1m\right)s_{ii}^*
-+\frac1m\mathbb E[h(W,W)],\\
-\mathbb E[\widehat s_{ii}]-s_{ii}^*
-&=\frac{\mathbb E[h(W,W)]-s_{ii}^*}{m},\\
-\mathbb E[\widehat z_i]-z_i^*
-&=\frac{\mathbb E[k_Q(U,U)]-z_i^*}{m}.
-\end{aligned}
-```
-
-These are expectations of the numerator and self-mass separately; they do not
-make the normalized ratio unbiased. Keeping the diagonal terms preserves the
-empirical Gram construction. Subtracting diagonal bias entry by entry would need
-a new PSD argument. Within-sample dependence, the displayed bias, and the actual
-finite-population sampling must be included in a stochastic proof.
-
-One valid algebraic transfer bound is available without asserting a stochastic
-rate. Suppose $|s_{ij}^*|\le M$, $z_i^*\ge\kappa_Q$, and an event satisfies
-
-```math
-\max_{i,j}|\widehat s_{ij}-s_{ij}^*|\le\varepsilon_S,
-\qquad
-\max_i|\widehat z_i-z_i^*|\le\varepsilon_Z\le\frac{\kappa_Q}{2}.
-```
-
-On that event, all empirical self-masses are at least $\kappa_Q/2$, and
-
-```math
-\begin{aligned}
-\max_{i,j}|\widetilde A_{ij}-\widetilde A_{ij}^*|
-&\le\frac{2\varepsilon_S}{\kappa_Q}
-+\frac{4M\varepsilon_Z}{\kappa_Q^2}
-\;=:e_A,\\
-\|J(\widetilde A-\widetilde A^*)J\|_{\mathrm{op}}&\le n e_A,\\
-\max_{i,j}|D_{ij}^2-(D_{ij}^*)^2|&\le4e_A.
-\end{aligned}
-```
-
-For the first bound, split the numerator error from the denominator error. On
-$x,y\ge\kappa_Q/2$, each partial derivative of $(xy)^{-1/2}$ has magnitude at
-most $2/\kappa_Q^2$. The remaining bounds follow from centering's operator norm
-one and the four affinity contributions to a squared distance. This does **not**
-yet prove a high-probability representation rate: one must establish the event
-under the chosen sampling assumptions and then apply a justified spectral
-perturbation result with the relevant eigenvalue gap. The paper's original
-concentration constants and query-efficiency theorem do not transfer unchanged.
 
 | Claim or proof component | Required revision |
 | --- | --- |
@@ -431,94 +311,28 @@ splitting alone. Developer-related models also need a dependence-aware validatio
 analysis rather than being counted as independent validation units.
 
 A possible fixed-budget analysis would target residual risk such as
-$\mathbb E[\mathrm{Var}(Y\mid C_m)]$, where $C_m$ is the permitted cache or a
+$\mathbb E[\operatorname{Var}(Y\mid C_m)]$, where $C_m$ is the permitted cache or a
 fixed representation of it. More reference models cannot generally eliminate
 uncertainty absent from a fixed target cache. This is a direction for new theory,
 not an established result for the current jointly fitted MDS estimator.
-
-### Correct the noisy-reference variance term
-
-For `lem:noisy`, write reference scores as $\widetilde y_i=y_i+\epsilon_i$ and
-the prediction as $\widehat y_0=\sum_i w_i\widetilde y_i$, with nonnegative
-weights summing to one. Let $\mathcal F$ include the selected references, weights,
-true scores, and feature information used in selection. The following decomposition
-requires $\mathbb E[\epsilon_i\mid\mathcal F]=0$ and conditionally uncorrelated
-reference noises; these are assumptions to justify, not consequences of kNN:
-
-```math
-\begin{aligned}
-\mathbb E[(\widehat y_0-y_0)^2\mid\mathcal F]
-&=\left(\sum_i w_i y_i-y_0\right)^2
-+\sum_i w_i^2\mathrm{Var}(\epsilon_i\mid\mathcal F),\\
-\mathrm{Var}(\epsilon_i\mid\mathcal F)\le\frac{\sigma_q^2}{m_i}
-&\quad\Longrightarrow\quad
-\mathbb E[(\widehat y_0-y_0)^2\mid\mathcal F]
-\le\left(\sum_i w_i y_i-y_0\right)^2
-+\sigma_q^2\sum_i\frac{w_i^2}{m_i}.
-\end{aligned}
-```
-
-Only equal weights on $K$ references with equal budget $m$ reduce the final term
-to $\sigma_q^2/(mK)$. Distance-weighted kNN generally does not; with equal budgets
-its effective reference count is $K_{\mathrm{eff}}=1/\sum_i w_i^2\le K$.
-Without conditional uncorrelatedness, retain
-$\sum_{i,j}w_iw_j\mathrm{Cov}(\epsilon_i,\epsilon_j\mid\mathcal F)$.
-Without conditional zero means, a selection-bias term also remains. Features and
-scores derived from the same responses need not satisfy either condition.
-Independent label sampling can help only when its independence is justified and
-its extra queries are counted. This squared-loss identity does not supply an MAE
-guarantee or prove the paper's fixed-budget strict-improvement claim.
 
 ### A valid guarded-selector statement to replace the unconditional claim
 
 One limited replacement can be proved without assuming that ordinary CV is a
 guard. Freeze a baseline $h_0$ and $K$ candidate predictors before observing an
 independent validation set of $N$ i.i.d. evaluation units. Predictions and labels
-are in $[0,1]$, $N,K\ge1$, and $0<\delta<1$. Let $\widehat\Delta_k$ be the mean
-validation difference in squared loss, candidate minus baseline, and set
+are in $[0,1]$. Let $\widehat\Delta_k$ be the mean validation difference in squared
+loss, candidate minus baseline, and set
 
-```math
+$$
 \epsilon_N=\sqrt{\frac{2\log(K/\delta)}{N}}.
-```
-
-The complete replacement rule and its target risk are
-
-```math
-\begin{aligned}
-R(h)&=\mathbb E[(h(X)-Y)^2],\\
-\widehat\Delta_k
-&=\frac1N\sum_{r=1}^{N}
-\left[(h_k(X_r)-Y_r)^2-(h_0(X_r)-Y_r)^2\right],\\
-\mathcal K_{\mathrm{safe}}
-&=\{k\in\{1,\ldots,K\}:\widehat\Delta_k+\epsilon_N\le0\},\\
-\widehat h
-&=\begin{cases}
-h_0,&\mathcal K_{\mathrm{safe}}=\varnothing,\\
-h_{\widehat k},\quad
-\widehat k\in\underset{k\in\mathcal K_{\mathrm{safe}}}{\arg\min}\widehat\Delta_k,
-&\mathcal K_{\mathrm{safe}}\ne\varnothing,
-\end{cases}\\
-\Pr\{R(\widehat h)\le R(h_0)\}&\ge1-\delta,
-\qquad
-\mathbb E[R(\widehat h)-R(h_0)]\le\delta.
-\end{aligned}
-```
-
-The probability and final expectation are over the independent validation sample,
-conditional on the frozen candidate predictors; $R$ uses a fresh evaluation unit
-from that same population. The risk-difference loss has range length two, which
-explains the factor two inside $\epsilon_N$.
+$$
 
 Choose a candidate only if $\widehat\Delta_k+\epsilon_N\le0$; otherwise retain
 $h_0$. Each loss difference lies in $[-1,1]$. One-sided Hoeffding plus a union
 bound yields $\Delta_k\le\widehat\Delta_k+\epsilon_N$ simultaneously for all $K$
 candidates with probability at least $1-\delta$. Thus, on that event, the selected
 predictor's population squared risk is no worse than the baseline's.
-Since excess risk is at most 1 on the remaining event, expected excess risk is at
-most $\delta$. Taking $\delta_N\to0$ gives weak asymptotic noninferiority for this
-guarded procedure; useful candidate acceptance additionally needs
-$\log(K/\delta_N)/N\to0$. The baseline must be the actual comparator, including
-its zero-overlap behavior, rather than an informal near-delta surrogate.
 
 This establishes **high-probability guarded noninferiority under explicit
 validation assumptions**, not strict improvement, an unconditional expected-risk
@@ -530,20 +344,6 @@ preserved only with the required conditional zero-mean noise relative to both
 predictors; reusing the same response-derived label can violate that condition.
 All extra validation observations must be counted. The local pilot below uses
 ordinary nested MAE selection and therefore does **not** claim this theorem.
-
-The fixed-budget quantifiers must also remain distinct. Even a repaired statement
-of the first form below would not establish the second:
-
-```math
-\underbrace{\forall\epsilon>0\ \exists n_\epsilon,m_\epsilon:
-R(h_{n_\epsilon,m_\epsilon})\le\epsilon}_{\text{budgets may grow with desired accuracy}}
-\quad\not\Longrightarrow\quad
-\underbrace{\forall m\ \lim_{n\to\infty}R(h_{n,m})=0}_{\text{fixed target budget}}.
-```
-
-Neither displayed achievability assertion is proved here for the revised
-estimator. Supply a proof with explicit model-count, query-budget, and spectral
-conditions before replacing the original strict-improvement theorem.
 
 ## 3. Implementation findings and required changes
 
@@ -594,38 +394,6 @@ validation predictions using only remaining families, choose all supervised
 hyperparameters and ensemble weights, then fit on those references and predict
 the outer targets. Permitted target cache responses and scores may remain
 available as specified by the protocol; full target scores may not.
-
-For the full-reference query ensemble, the corrected equations are explicit.
-Let $g(j)$ denote model $j$'s developer, $\mathcal V_F$ the validation cells outside
-outer family $F$, and $p_{\theta,jt}^{(-F,-g(j))}$ the inner prediction trained
-without either family's full labels. Let $\theta$ index the declared
-kernel/bandwidth candidates and $\Gamma=\{0,0.05,\ldots,1\}$:
-
-```math
-\begin{aligned}
-\widehat\theta_F
-&\in\underset{\theta\in\Theta}{\arg\min}
-\frac1{|\mathcal V_F|}\sum_{(j,t)\in\mathcal V_F}
-|p_{\theta,jt}^{(-F,-g(j))}-y_{jt}^{\mathrm{ref}}|,\\
-\widehat\alpha_F
-&\in\underset{\alpha\in\Gamma}{\arg\min}
-\frac1{|\mathcal V_F|}\sum_{(j,t)\in\mathcal V_F}
-\left|\alpha\widetilde y_{jt}
-+(1-\alpha)p_{\widehat\theta_F,jt}^{(-F,-g(j))}
--y_{jt}^{\mathrm{ref}}\right|,\\
-\widehat y_{it}^{\mathrm{ens}}
-&=\widehat\alpha_F\widetilde y_{it}
-+(1-\widehat\alpha_F)p_{\widehat\theta_F,it}^{(-F)},
-\qquad g(i)=F.
-\end{aligned}
-```
-
-This specifies the implemented sequential kernel-then-weight selection, rather
-than claiming a jointly optimized objective. The superscripts exclude forbidden
-**full labels**; the declared transductive geometry can still use permitted
-observed cache features. In the cache-only follow-up, the ensemble weight is fixed
-at $1/2$, because validating the sample component against the same sampled labels
-would be circular. The independent-validation risk guard is a separate procedure.
 
 For completion, inner validation must remove the validation cells' responses
 as well as scores. Leaving their response-derived features in the representation
@@ -712,10 +480,10 @@ model release without verification.
 
 ### Budgets, diagnostics, and reporting
 
-The local design starts with three masking seeds and $m\in\{1,4,8\}$ at full task
-coverage, then extends the main comparisons to 16 seeds after correctness checks.
-Completion uses coverage $p\in\{0.2,0.5\}$ and cohorts of 10 and the full frozen
-cohort. Use identical masks across methods. Report both per-task and
+Start with three masking seeds and $m\in\{1,4,8\}$ at full task coverage. For
+completion, start with coverage $p\in\{0.2,0.5\}$ and cohorts of 10 and the full
+frozen cohort. Use identical masks across methods. Expand the planned final
+comparisons to 16 seeds once correctness checks pass. Report both per-task and
 total target budgets: 16 tasks at $m=1$ means 16 responses, not one total response.
 Account separately for historical reference labels and any additional validation
 queries. Define completion depth relative to the capped pool or full benchmark
@@ -761,7 +529,7 @@ in float32 after encoding to avoid storing bfloat16 norm-rounding error.
 ![M5 embedding throughput](artifacts/stress-test/mps_throughput.png)
 
 [Raw smoke-test measurements](artifacts/stress-test/mps_smoke_test.json) and
-[resolved environment](artifacts/stress-test/environment.txt) are saved evidence.
+[resolved environment](artifacts/stress-test/environment.txt) are committed evidence.
 The latter is an environment inventory, not a portable requirements file (it
 contains conda build paths and an editable checkout).
 
@@ -794,26 +562,14 @@ HF_HUB_DISABLE_XET=1 .conda-eee/bin/hf download google/embeddinggemma-2 \
 .conda-eee/bin/python projects/pkps/scripts/data/embed_eee_followups.py --smoke
 .conda-eee/bin/python projects/pkps/scripts/data/embed_eee_followups.py \
   --device mps --dtype float32 --batch-size 8 --max-length 2048
-.conda-eee/bin/python projects/pkps/scripts/data/audit_eee_followups.py \
-  --source '/Users/avijit/Documents/EEE Datastore' --token-lengths
 
 .conda-eee/bin/python -m pytest tests -q
-# Sixteen-seed outputs are separate from the initial three-seed pilot folders.
 .conda-eee/bin/python projects/pkps/scripts/experiments/stress_followups.py \
-  --out projects/pkps/artifacts/stress-test/query-16seed \
-  --budgets 1 4 8 --seeds 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+  --budgets 1 4 8 --seeds 0 1 2
 .conda-eee/bin/python projects/pkps/scripts/experiments/stress_completion.py \
-  --out projects/pkps/artifacts/stress-test/completion-16seed \
-  --cohorts 10 45 --coverage 0.2 0.5 --m 16 \
-  --seeds 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+  --cohorts 10 45 --coverage 0.2 0.5 --m 16 --seeds 0 1 2
 MPLCONFIGDIR=/tmp/pkps-mpl .conda-eee/bin/python \
-  projects/pkps/scripts/experiments/stress_cache_design.py
-MPLCONFIGDIR=/tmp/pkps-mpl .conda-eee/bin/python \
-  projects/pkps/scripts/experiments/report_stress_followups.py \
-  --query-dir projects/pkps/artifacts/stress-test/query-16seed \
-  --completion-dir projects/pkps/artifacts/stress-test/completion-16seed
-MPLCONFIGDIR=/tmp/pkps-mpl .conda-eee/bin/python \
-  projects/pkps/scripts/experiments/audit_stress_uncertainty.py --n-boot 100000
+  projects/pkps/scripts/experiments/report_stress_followups.py
 ```
 
 The separate follow-up drivers preserve the historical drivers and results.
@@ -832,19 +588,6 @@ allocations). The adapter now releases unused Metal allocations between shards
 and retries memory failures with smaller batches, recording actual batch sizes.
 It resumes existing shards and keeps the default GPU memory safety limit enabled.
 The 2,048-token cap was independently checked on a 5,000-word tokenizer input.
-The [token-length audit](artifacts/stress-test/token_lengths.json) counts **1,018
-of 28,590 unique texts truncated (3.56%)**, including the similarity prompt.
-Median input length is 158 tokens; the maximum is 181,503. The capped workload
-contains about 9.05 million tokens, versus 15.43 million without truncation.
-Long reasoning responses are therefore a relevant sensitivity limitation.
-
-**Embedding is complete.** All 224 shards contain finite float32 vectors of shape
-28,590 by 768; the maximum unit-norm error is 1.20e-7. All successful shards used
-batch size eight. Successful shard encoding times total **46.44 minutes**, excluding
-model loading, failed allocation work, restart delays, and setup. The
-[completion record](artifacts/stress-test/embedding_completion.json) preserves the
-cache fingerprint, settings, versions, counts, and checks. Reusing this cache does
-not require further GPU inference for the experiments below.
 
 The query-efficiency runner compares original ratio plus historical clipping/SVD,
 original ratio plus signed PSD projection, and model normalization. It tunes each
@@ -874,423 +617,182 @@ fallback frequency reported. At m=16, depth is half of the 32-query pool, not ha
 the original benchmark. Minimum-coverage conditioning changes realized coverage;
 run manifests report actual counts and masks.
 
-The [cache-design probes](scripts/experiments/stress_cache_design.py) provide small
-E5/E6 checks. E5 holds 10 model identities and 128 responses per cache fixed, then
-changes either the task mix (four tasks at 32 responses versus 16 at eight) or
-selects low-scoring items within each task. It compares same-model cache shifts to
-between-model distances directly in the full PSD geometry, avoiding coordinate
-rotation or dimension-reduction artifacts. E6 compares uniform and deliberately
-poor-score-hiding task masks on all 45 models at exactly eight observed tasks and
-16 responses per task per model. Both masks preserve task coverage. Full scores
-are used only by the **oracle mask generator** and final evaluator, never by the
-completion learner. Results include the common hidden-cell intersection so changes
-are not explained only by evaluating different cells. These one-seed stress probes
-do not replace temporal/developer shift studies or evaluation of natural missingness.
+### Completed additional EG2 checks
 
-### Completed query-efficiency follow-up: 16 masking seeds
+All results below were executed on the pinned EEE snapshot with the same EG2
+checkpoint, symmetric prompt, MPS float32, normalized 768-dimensional vectors,
+and no learned PCA. The original 28,590 cached vectors were preserved exactly;
+only additional texts were encoded. MAE averages models within each evaluated
+task, then tasks within each seed, then seeds. `PKPS` below means the
+model-normalized expanded selector, whose candidates include constant and delta.
+The original [query results](artifacts/stress-test/query_summary.csv),
+[kernel selections](artifacts/stress-test/query_selection_counts.csv), and
+[uncertainty audit](artifacts/stress-test/uncertainty-audit/paired_run_intervals.csv)
+remain available for the earlier findings in the opening summary.
 
-All 48 query-budget/seed combinations completed on the frozen 45-model, 16-task
-cohort. Each method predicts every cell on the same masks; $m=1,4,8$ means
-**16, 64, or 128 responses per model**, respectively. The following are task-macro
-MAEs, averaged over seeds 0–15. They use EmbeddingGemma-2, the protocol above, and
-the corrected full-depth targets, so they must not replace the Gemini table under
-its original caption.
+![Additional EG2 checks](artifacts/stress-test/next-checks/overview.png)
 
-| Full-reference method | m=1 | m=4 | m=8 |
+**Additive query efficiency: 45 models, 16 tasks, 16 matched seeds.** The new
+score-only predictor estimates task means from permitted reference labels and
+target strength from its sample scores on the **other 15 tasks**. It never uses
+the predicted task's sample score to estimate strength. Fixed raw, fixed
+logit/standardized, and nested MAE selection over both scales and five strengths
+are reported. Outer developer full scores are absent from full-reference inputs;
+cache-only receives no full-score table. Sample-score matrices match the archived
+EG2 runs exactly. Budgets m=1,4,8 mean 16,64,128 responses per model.
+
+| Regime / method | m=1 | m=4 | m=8 |
 | --- | ---: | ---: | ---: |
-| Own sample mean | 0.220294 | 0.115319 | 0.081347 |
-| Nested sample/task-mean shrinkage | 0.100109 | 0.078359 | 0.064156 |
-| Original ratio, historical clipping/SVD | 0.067567 | 0.060742 | 0.060556 |
-| Original ratio, signed PSD projection | 0.067717 | 0.060708 | 0.060583 |
-| Model-normalized RBF | 0.068354 | 0.060826 | 0.058954 |
-| Expanded model-normalized selector | 0.067434 | 0.060550 | 0.059072 |
-| Constant query kernel / mean response | 0.067215 | 0.060247 | 0.058750 |
-| Task-only query kernel | 0.079216 | 0.061155 | 0.058925 |
-| Shared within-task shuffled RBF | 0.067783 | 0.060822 | 0.059085 |
-| Exact-ID delta kernel | 0.121669 | 0.122583 | 0.121576 |
-| Nested sample/perspective ensemble | 0.064689 | 0.053674 | 0.047757 |
+| Full-reference PKPS | 0.067434 | 0.060550 | 0.059072 |
+| Full-reference raw additive | 0.080922 | 0.063298 | 0.060903 |
+| Full-reference logit additive | 0.126649 | 0.102590 | 0.081982 |
+| Full-reference nested additive | 0.079430 | 0.063595 | 0.060903 |
+| Cache-only PKPS | 0.128981 | 0.085126 | 0.073165 |
+| Cache-only raw additive | 0.088003 | 0.066489 | 0.062464 |
+| Cache-only logit additive | 0.136387 | 0.115558 | 0.091515 |
+| Cache-only nested additive | 0.135153 | 0.076998 | 0.062464 |
 
-| Cache-only method | m=1 | m=4 | m=8 |
+At m=1, full-reference PKPS minus nested additive is **−0.011996** with a
+Bonferroni-adjusted 95% interval **[−0.021128, −0.002865]** across 18 contrasts.
+Cache-only PKPS minus fixed raw additive is **+0.040977 [0.036564, 0.045391]**.
+The raw additive advantage over standalone cache-only PKPS holds at all three
+budgets, but it does not beat every response-based predictor: the existing fixed
+ensemble has MAE **0.053864** at m=8. Cache-only nested selection often chooses the
+poor logit variant at m=1; selecting against noisy sample-label MAE does not ensure
+good full-depth MAE. At m=4 and m=8, the small full-reference PKPS advantages over
+raw additive have adjusted intervals containing zero.
+[All additive results](artifacts/stress-test/next-checks/additive_summary.csv),
+[paired intervals](artifacts/stress-test/next-checks/additive_paired_intervals.csv),
+and [selections](artifacts/stress-test/next-checks/additive_selection.csv) are saved.
+
+**Natural incomplete graph and temporal holdouts: 16 seeds, m=16 per observed
+cell.** The extended snapshot contains **307 selected runs, 69 models, 16 tasks,
+947 known cells, and 157 naturally absent cells**. Twenty-four models are outside
+the original complete cohort. All 947 full-depth targets match their aggregate
+companions to numerical precision. For the natural-graph check, hide 189 known
+cells per seed, preserving row/column support, and learn only from the remaining
+758 cells. Both response rows and scores for held-out cells are excluded, including
+inside tuning. Actual absent outcomes are not filled with fabricated ground truth.
+
+Temporal cutoffs are the 60th and 80th percentiles of the ordered **evaluation
+timestamps** of selected runs: **2026-03-13 16:12:32 UTC** and
+**2026-04-18 09:07:34 UTC**. Only earlier response rows and sample scores enter
+learning. Of 288 and 164 later known cells, respectively, **51 and 95** have
+earlier support for both their model and task. They cover 11 models/14 tasks and
+33 models/16 tasks. Earlier training has 659 and 783 cells. The first split
+excludes 237 cells with missing model/task support; the second excludes 69.
+These are retrospective splits of the selected-run snapshot, not verified
+public-availability or model-release simulations. Sixteen seeds vary response
+sampling and inner validation, not the temporal cutoffs or future target sets.
+
+| Design | Additive | PKPS | Constant | Shuffled RBF | Tuned LRMC | Nested ensemble |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Natural graph | 0.063565 | 0.074323 | 0.072249 | 0.074315 | 0.070693 | 0.067706 |
+| March 13 cutoff | 0.063820 | 0.073096 | 0.074396 | 0.074139 | 0.067969 | 0.066286 |
+| April 18 cutoff | 0.060226 | 0.067918 | 0.068177 | 0.067249 | 0.065226 | 0.062393 |
+
+Completion uses the existing observed-only logit/standardized additive bias model,
+shared with PKPS and LRMC; it is distinct from the raw query additive baseline.
+PKPS minus additive differences are **+0.010758 [0.007761, 0.013755]**,
+**+0.009276 [0.005734, 0.012818]**, and **+0.007693 [0.002450, 0.012935]**, using
+95% paired t intervals adjusted across all 12 completion contrasts. All six
+constant/shuffled-control comparisons have pointwise t intervals containing zero;
+PKPS/LRMC adjusted intervals also contain zero. These are exploratory intervals
+conditional on the frozen data and protocol, not population-level generalization.
+
+The [incomplete-model subgroup](artifacts/stress-test/next-checks/incomplete_models_summary.csv)
+has the same additive/PKPS ordering: **0.0700/0.0828**, **0.0577/0.0914**, and
+**0.0600/0.1012**. Its temporal support is only 19 and 24 cells, so it is descriptive.
+Saved evidence includes [all methods](artifacts/stress-test/next-checks/sparse_summary.csv),
+[paired intervals](artifacts/stress-test/next-checks/sparse_paired_intervals.csv),
+[training coverage](artifacts/stress-test/next-checks/sparse_coverage.csv),
+[evaluation support](artifacts/stress-test/next-checks/evaluation_support.csv), and
+[aggregate-target verification](artifacts/stress-test/next-checks/natural-data/target_score_verification.csv).
+
+**Selective-reporting follow-up: repeat the oracle probe over 16 seeds.** Each
+model retains eight tasks and 16 responses per task (128 responses). Uniform and
+poor-score-hiding masks are compared on their common hidden cells within each
+seed: 166–190 cells across 11–12 tasks. This matched support changes the estimand
+from the earlier single-seed, separately supported tables.
+
+| Mask | PKPS | Constant | Additive | Tuned LRMC | Nested ensemble |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Uniform | 0.118559 | 0.117477 | 0.114129 | 0.116871 | 0.112626 |
+| Oracle hides poor scores | 0.171307 | 0.167211 | 0.200681 | 0.204539 | 0.177120 |
+
+Under poor-score hiding, PKPS minus additive is **−0.029374** with an adjusted
+95% interval **[−0.040849, −0.017899]**; versus LRMC it is **−0.033233
+[−0.044134, −0.022332]** (six contrasts). Versus constant the interval contains
+zero. Thus the response-feature advantage survives repeated masks, but the mask
+still uses oracle scores and the natural/temporal results do not support a broad
+selective-reporting robustness claim.
+[Summary](artifacts/stress-test/next-checks/selective-16seed/summary.csv) and
+[paired intervals](artifacts/stress-test/next-checks/selective-16seed/paired_intervals.csv).
+
+**Controlled style intervention: 44 models, 16 tasks, m=1, three seeds.** Encode
+each response unchanged, wrapped as a JSON string in a `response` field, or with
+blockquote prefixes on every line. Both transformations round-trip to the exact
+original text. Scores and queries stay fixed; only the held-out developer's
+response formatting changes, and geometry/allowed tuning are recomputed. Every
+eligible response fits within 2,048 tokens including the prompt under all three
+renderings, so response truncation cannot explain the changes. The eligible pool
+contains 21,636 rows; `deepseek/deepseek-v3-2-speciale` is excluded because it lacks
+eligible responses on every task. This cohort's baseline differs from the main
+45-model experiment.
+
+| Regime / method | Original | JSON | Blockquote |
 | --- | ---: | ---: | ---: |
-| Own sample mean | 0.220294 | 0.115319 | 0.081347 |
-| Fixed 50:50 sample/task-mean shrinkage | 0.114642 | 0.078578 | 0.069110 |
-| Original ratio, historical clipping/SVD | 0.129536 | 0.087179 | 0.074549 |
-| Original ratio, signed PSD projection | 0.129410 | 0.086234 | 0.074616 |
-| Expanded model-normalized selector | 0.128981 | 0.085126 | 0.073165 |
-| Constant query kernel / mean response | 0.127999 | 0.084877 | 0.073204 |
-| Task-only query kernel | 0.135535 | 0.085147 | 0.074202 |
-| Shared within-task shuffled RBF | 0.129328 | 0.085036 | 0.073256 |
-| Fixed 50:50 sample/perspective ensemble | 0.125058 | 0.070320 | 0.053864 |
+| Full-reference PKPS | 0.068171 | 0.083207 | 0.068552 |
+| Full-reference constant | 0.067563 | 0.081120 | 0.067006 |
+| Cache-only PKPS | 0.127917 | 0.133003 | 0.125769 |
+| Cache-only constant | 0.128381 | 0.134279 | 0.126830 |
 
-The PSD repair preserves competitive prediction error in this experiment, but
-does not establish a general accuracy improvement. The constant kernel is slightly
-better than the expanded selector at all three full-reference budgets. Shuffling
-query embeddings within tasks changes little. These controls do **not support
-attributing the gains to query-semantic neighborhoods** on this cohort. The delta
-control also shows that changing normalization is not a guarantee of good
-prediction under little exact overlap; it is not the historical DKPS fallback.
-The expanded full-reference selector chooses the constant kernel in **350 of 624
-outer folds**; all remaining choices use the median-scale or three-times-median
-RBF. [Selection counts](artifacts/stress-test/query_selection_counts.csv) make this
-diagnostic reproducible. These folds are repeated uses of the same cohort.
+Full-reference PKPS mean absolute prediction change is **0.046114** for JSON and
+**0.018761** for blockquotes. JSON's MAE change is **+0.015036**, positive in all
+three seeds (range **+0.008601 to +0.021638**); blockquotes average **+0.000381**
+(range **−0.002900 to +0.002258**). Score-only controls are exactly invariant.
+Median same-model geometry shift divided by typical original between-model
+distance is **0.297 RBF / 0.540 constant** for JSON and **0.137 / 0.232** for
+blockquotes. RBF reduces relative full-space formatting shift in this probe,
+without establishing better predictions. These are controlled serialization
+tests, not generated paraphrase, verbosity, or all-style robustness tests; no
+three-seed population inference is claimed.
+[MAE](artifacts/stress-test/next-checks/style_summary.csv),
+[paired changes](artifacts/stress-test/next-checks/style_paired_changes.csv),
+[geometry](artifacts/stress-test/next-checks/style_geometry_summary.csv), and
+[eligibility/configuration](artifacts/stress-test/next-checks/style_config.json)
+are retained.
 
-The mean fraction of shared query IDs between model pairs is 0.53%, 2.20%, and
-4.42% at m=1,4,8. Respectively, 91.81%, 22.83%, and 0.21% of pairs share no IDs.
-This is measured accidental overlap under independent within-cell sampling,
-not a strict-disjoint or intentionally paired experiment.
+The [new experiment driver](scripts/experiments/stress_next_checks.py),
+[style driver](scripts/experiments/stress_style.py), and
+[selective-reporting driver](scripts/experiments/stress_selective.py) save per-cell
+predictions, selections, and run configurations under
+`artifacts/stress-test/next-checks/`. The
+[verification record](artifacts/stress-test/next-checks/verification.json) includes
+source hashes and checks for matched support, finite predictions, recomputed
+errors, preserved original embeddings, and aggregate-target agreement. The full
+suite passes **62 tests**, including ten new tests of label boundaries, additive
+recovery, temporal support, natural holdouts, and reversible formatting.
 
-Score access materially changes the conclusion: at m=1 the expanded selector's
-MAE is 0.067434 with other developers' full reference scores and 0.128981 with
-cache-only labels. The fixed score-only shrinkage control beats the cache-only
-perspective method at that budget. At larger budgets, blending the perspective
-prediction with the own-sample score helps. The data therefore support separate
-claims for each information regime, with strong score-only and constant-kernel
-controls included.
+Reproduce from the repository root after the original cache is present (the
+extended preparation downloads additional pinned runs; embedding requires Metal):
 
-![Query efficiency across information regimes](artifacts/stress-test/query_pilot.png)
-
-The [complete summary](artifacts/stress-test/query_summary.csv) includes MSE and
-seed variation. [Per-task errors](artifacts/stress-test/query_task_errors.csv),
-[per-benchmark errors](artifacts/stress-test/query_benchmark_errors.csv),
-[leave-one-benchmark-out summaries](artifacts/stress-test/query_leave_benchmark_out.csv),
-and [prediction coverage](artifacts/stress-test/query_coverage.csv) accompany it.
-Individual predictions, selections, overlap/budget records, dataset provenance,
-and code hashes are in [query-16seed](artifacts/stress-test/query-16seed/config.json).
-The initial three-seed pilot and score-only preview are retained as intermediate
-evidence; the tables in this section use the full 16-seed run.
-
-Raw geometry diagnostics across the 16-seed run show **zero negative-distance or
-negative-eigenvalue mass beyond tolerance** for all model-normalized RBF candidates.
-The pairwise ratio has up to **28.92% negative centered-Gram eigenvalue mass**
-at small bandwidths, even when almost all squared distances are nonnegative.
-Clipping negative distances alone therefore misses the substantive defect.
-The maximum negative-distance fraction is only 0.202%; it must not be used as a
-proxy for Euclidean validity. Wide-bandwidth ratio candidates happen to be PSD
-in these runs. See [raw diagnostics](artifacts/stress-test/query_geometry.csv).
-
-![Geometry before clipping or projection](artifacts/stress-test/geometry_diagnostics.png)
-
-The original [paired developer/benchmark resampling ranges](artifacts/stress-test/query_paired_cluster_intervals.csv)
-average masking repetitions first, then resample the 13 developers and five
-benchmarks 1,000 times. The audit below independently reproduced all 24 ranges,
-increased the resampling count, and separated this exploratory sensitivity from
-uncertainty due to random masks. These are **not calibrated population confidence
-intervals** for new developers or benchmarks. No equivalence claim follows from
-an interval containing zero.
-
-### Confidence-interval audit and robustness checks
-
-**The original arithmetic is correct; a broad 95% coverage claim is not
-established.** An independent implementation reproduces all 24 saved point
-estimates and endpoints to 1.01e-16. It explicitly checks matching method/seed/cell
-support and verifies the weighted statistic against literal duplication of entire
-clusters. See [the audit code](scripts/experiments/audit_stress_uncertainty.py) and
-[original-interval reproduction](artifacts/stress-test/uncertainty-audit/original_interval_reproduction.csv).
-
-There are three different uncertainty questions:
-
-| Quantity | What varies | What it can support |
-| --- | --- | --- |
-| Paper's ±1 SEM error bars | Random experiment seeds on the chosen data; some sweeps also redraw a cohort | Estimated precision of the mean over that random protocol; these are not 95% intervals |
-| New paired whole-run intervals | Complete experiment runs, preserving shared masks and fitting/selection within each run | Approximate inference over new random runs of the fixed protocol and datastore |
-| Developer/benchmark resampling ranges | Weights on saved errors from 13 developer groups and five benchmarks | Sensitivity to evaluation composition with predictions frozen; population coverage is unverified |
-
-The supplied PDF explicitly labels its error bars **±1 SEM** (p. 15, lines 769–770;
-EEE figures on [p. 17](artifacts/stress-test/paper-17.png)), consistent with the historical
-[query-efficiency](scripts/figures/query_efficiency.py) and
-[completion](scripts/figures/completion.py) figure code. Under a usual approximate
-t analysis with 16 independent runs, a pointwise 95% mean interval is
-$\bar\Delta\pm t_{15,0.975}s_\Delta/\sqrt{16}$, with multiplier about **2.131**, not
-one. For a method comparison, $s_\Delta$ is the SD of **paired run differences**;
-overlap of separate methods' error bars is not the corresponding paired test.
-
-For the new run-level intervals, each seed first supplies a task-macro paired MAE
-difference. The 16 complete runs supply the sampling units. The audit reports
-Student-t intervals, a 100,000-draw whole-run percentile bootstrap, and Bonferroni
-t intervals for the **44 explicitly listed contrasts**: 24 query and 20 completion
-comparisons. Bonferroni does not require independent contrasts, but its coverage
-still depends on valid individual intervals. Normality/large-sample approximation
-is not guaranteed with 16 runs, and the correction does not cover unlisted or
-post-hoc research choices. At n=10 completion, the randomized run includes the
-ten-model cohort draw. Elsewhere the cohort is fixed. These intervals condition on
-the same capped response pool, frozen encoder, full-score targets, and benchmark
-set; they exclude uncertainty from fresh generations or new benchmark items.
-
-**Replacement reporting formulas.** For methods $a$ and $b$, let
-$\mathcal E_{st}$ be their identical evaluation models for task $t$ in run $s$,
-and $\mathcal T_s$ the tasks with nonempty evaluation sets. Keep the paper's order
-of aggregation: models within task, tasks within run, then runs. Define
-
-```math
-\begin{aligned}
-\ell_{sit}^{(a)}&=|\widehat y_{sit}^{(a)}-y_{it}^{\mathrm{full}}|,\\
-\Delta_s
-&=\frac1{|\mathcal T_s|}\sum_{t\in\mathcal T_s}
-\frac1{|\mathcal E_{st}|}\sum_{i\in\mathcal E_{st}}
-\left(\ell_{sit}^{(a)}-\ell_{sit}^{(b)}\right),\\
-\overline\Delta&=\frac1S\sum_{s=1}^{S}\Delta_s,\\
-s_\Delta^2&=\frac1{S-1}\sum_{s=1}^{S}(\Delta_s-\overline\Delta)^2,
-\qquad
-\mathrm{SE}(\overline\Delta)=\frac{s_\Delta}{\sqrt S}.
-\end{aligned}
+```bash
+.conda-eee/bin/python projects/pkps/scripts/data/prepare_eee_followups.py \
+  --source data/eee-extended-raw --out data/eee-extensions --all-models --download
+.conda-eee/bin/python projects/pkps/scripts/data/embed_stress_extensions.py \
+  natural --source data/eee-extensions
+.conda-eee/bin/python projects/pkps/scripts/data/embed_stress_extensions.py \
+  style --source data/eee-style
+.conda-eee/bin/python projects/pkps/scripts/experiments/stress_next_checks.py additive
+.conda-eee/bin/python projects/pkps/scripts/experiments/stress_next_checks.py \
+  sparse --source data/eee-extensions
+.conda-eee/bin/python projects/pkps/scripts/experiments/stress_style.py
+.conda-eee/bin/python projects/pkps/scripts/experiments/stress_selective.py
+MPLCONFIGDIR=/tmp/pkps-next-mpl .conda-eee/bin/python \
+  projects/pkps/scripts/experiments/report_stress_next_checks.py
+MPLCONFIGDIR=/tmp/pkps-next-mpl .conda-eee/bin/python -m pytest tests -q
 ```
-
-Negative differences favor method $a$. Here $S=16$, not the number of model/task
-cells. If $A_s,B_s$ are the two methods' run-level MAEs on those same cells,
-$s_\Delta^2=s_A^2+s_B^2-2s_{AB}$, where $s_{AB}$ is their sample covariance.
-This covariance is why separate method error bars cannot replace paired analysis.
-To analyze MSE, replace each absolute loss by squared loss; the MAE analysis does
-not establish the paper's squared-risk theorem.
-
-The approximate pointwise and Bonferroni-adjusted t intervals are
-
-```math
-\begin{aligned}
-I_{\mathrm{point}}(\alpha)
-&=\left[
-\overline\Delta-t_{S-1,\,1-\alpha/2}\frac{s_\Delta}{\sqrt S},\;
-\overline\Delta+t_{S-1,\,1-\alpha/2}\frac{s_\Delta}{\sqrt S}
-\right],\\
-I_{\mathrm{Bonf}}(\alpha,L)
-&=\left[
-\overline\Delta-t_{S-1,\,1-\alpha/(2L)}\frac{s_\Delta}{\sqrt S},\;
-\overline\Delta+t_{S-1,\,1-\alpha/(2L)}\frac{s_\Delta}{\sqrt S}
-\right],\\
-&\alpha=0.05,\qquad S=16,\qquad L=44.
-\end{aligned}
-```
-
-$t_{\nu,p}$ is the $p$ quantile of Student's t distribution with $\nu$ degrees of
-freedom. Its exact coverage requires independent normally distributed run
-differences; otherwise the displayed intervals are approximations. Bonferroni's
-family coverage follows only to the extent that the individual adjusted intervals
-have their stated coverage. A single method's $\overline A\pm s_A/\sqrt S$ is
-the paper's **one-SEM** display, not $I_{\mathrm{point}}(0.05)$.
-
-The paired whole-run percentile bootstrap uses one common resampling of runs for
-the contrast, retaining every dependent cell and every method within a run:
-
-```math
-\begin{aligned}
-(C_1^{(r)},\ldots,C_S^{(r)})
-&\sim\mathrm{Multinomial}(S;1/S,\ldots,1/S),\\
-\Delta_{\mathrm{run}}^{*(r)}
-&=\frac1S\sum_{s=1}^{S}C_s^{(r)}\Delta_s,\\
-I_{\mathrm{run\,boot}}(\alpha)
-&=\left[
-\widehat Q_{\alpha/2}(\{\Delta_{\mathrm{run}}^{*(r)}\}_{r=1}^{R}),\;
-\widehat Q_{1-\alpha/2}(\{\Delta_{\mathrm{run}}^{*(r)}\}_{r=1}^{R})
-\right],\qquad R=100{,}000.
-\end{aligned}
-```
-
-$\widehat Q_p$ is the empirical quantile. Resampling the 16 completed runs retains
-the variation in their fitted/tuned predictors; it does not resample the original
-datastore or generate new model responses. This percentile interval is pointwise
-and approximate, not an automatic multiplicity correction or finite-sample bound.
-
-**Explicit crossed-cluster sensitivity statistic.** For the complete 45-by-16
-query-efficiency grid only, average paired errors over seeds to obtain $d_{it}$.
-Let $g(i)$ identify one of $G=13$ developers and $b(t)$ one of $H=5$ benchmarks.
-Independently sample developer and benchmark multiplicities:
-
-```math
-\begin{aligned}
-d_{it}&=\frac1S\sum_{s=1}^{S}
-\left(\ell_{sit}^{(a)}-\ell_{sit}^{(b)}\right),\\
-(U_1^{(r)},\ldots,U_G^{(r)})
-&\sim\mathrm{Multinomial}(G;1/G,\ldots,1/G),\\
-(V_1^{(r)},\ldots,V_H^{(r)})
-&\sim\mathrm{Multinomial}(H;1/H,\ldots,1/H),\\
-\Delta_{\mathrm{cross}}^{*(r)}
-&=\frac{
-\displaystyle\sum_{i=1}^{45}\sum_{t=1}^{16}
-U_{g(i)}^{(r)}V_{b(t)}^{(r)}d_{it}}
-{\displaystyle
-\left(\sum_{i=1}^{45}U_{g(i)}^{(r)}\right)
-\left(\sum_{t=1}^{16}V_{b(t)}^{(r)}\right)},\\
-I_{\mathrm{sensitivity}}(\alpha)
-&=\left[
-\widehat Q_{\alpha/2}(\{\Delta_{\mathrm{cross}}^{*(r)}\}_{r=1}^{R}),\;
-\widehat Q_{1-\alpha/2}(\{\Delta_{\mathrm{cross}}^{*(r)}\}_{r=1}^{R})
-\right].
-\end{aligned}
-```
-
-Cluster sizes remain in the statistic: this estimates sensitivity of the
-**model-weighted, task-macro** result, rather than silently switching to equal
-developer or equal benchmark means. The factorized denominator relies on the
-complete query grid; do not reuse it for sparse completion cells. Its percentile
-endpoints have the descriptive interpretation stated above, not demonstrated
-95% population coverage. No formula change or increase in $R$ removes the
-five-benchmark or frozen-prediction limitations.
-
-For the expanded selector minus the constant kernel in full-reference query
-efficiency, negative differences favor the expanded selector:
-
-| m | Paired MAE difference | Whole-run 95% t interval | 100,000-draw crossed-cluster sensitivity range |
-| --- | ---: | ---: | ---: |
-| 1 | +0.000219 | [-0.000532, 0.000971] | [-0.000603, 0.001268] |
-| 4 | +0.000303 | [-0.000208, 0.000813] | [-0.000115, 0.000864] |
-| 8 | +0.000321 | [-0.000480, 0.001122] | [-0.000465, 0.001208] |
-
-All **12** constant/shuffled-control contrasts across both score-access regimes
-and all three query budgets contain zero under the run-level t, whole-run
-percentile, and multiplicity-adjusted intervals. The crossed developer/benchmark
-ranges also contain zero for those contrasts. The conclusion remains **no clear
-demonstrated gain from the richer query kernel**, rather than demonstrated
-equivalence. See [paired run intervals](artifacts/stress-test/uncertainty-audit/paired_run_intervals.csv)
-and [each run's paired differences](artifacts/stress-test/uncertainty-audit/paired_run_differences.csv).
-
-![Separate run uncertainty and cluster sensitivity](artifacts/stress-test/uncertainty-audit/uncertainty_comparison.png)
-
-The robustness checks distinguish numerical stability from statistical validity:
-
-- **Monte Carlo stability:** repeated crossed-cluster resampling with three
-  independent random seeds, at 1,000 and 100,000 draws. The largest endpoint spread
-  across RNG seeds is 8.18% of interval width with 1,000 draws and 0.96% with
-  100,000. More draws stabilize the calculation; they do not create more benchmarks.
-  [Endpoint stability](artifacts/stress-test/uncertainty-audit/bootstrap_endpoint_stability.csv)
-  and [all resampling variants](artifacts/stress-test/uncertainty-audit/cluster_sensitivity.csv)
-  are saved.
-- **Cluster choice:** benchmark-only resampling sometimes excludes zero where
-  developer-plus-benchmark resampling includes it, including the full-reference
-  m=4 shuffled comparison. Ignoring developer dependence can change the apparent
-  conclusion. Developer-only and crossed ranges give no clear gain over the
-  constant/shuffled controls here.
-- **Evaluation weights and influence:** the original statistic weights models
-  equally and tasks equally, not developers and benchmarks equally. The two
-  five-task collections each contribute 31.25% of the task-macro mean, while the
-  one-task collections contribute 6.25% each. Equal-developer weighting changes
-  the full-reference m=1 shuffled comparison from -0.000349 to +0.000206. Removing
-  one developer from evaluation can also change small effect signs. These
-  [alternative weighting](artifacts/stress-test/uncertainty-audit/weighting_sensitivity.csv)
-  and [omitted-cluster](artifacts/stress-test/uncertainty-audit/omit_cluster_sensitivity.csv)
-  checks use frozen predictions and are not refitted holdout experiments.
-- **Coverage stress test:** in 2,000 simulated datasets with independent Gaussian
-  benchmark effects shared across models/tasks, five benchmark clusters, and the
-  actual task counts, the nominal 95% crossed-bootstrap percentile range covers
-  the known zero population mean only **81.7%** of the time (simulation SEM 0.86
-  percentage points). Family resampling cancels in this benchmark-only-effect
-  example. This is a counterexample to universal calibration, **not an estimate of
-  EEE's actual coverage**. [Simulation design and result](artifacts/stress-test/uncertainty-audit/few_cluster_simulation.json)
-  are reproducible from the audit script.
-
-Completion comparisons also need narrower wording. At n=45, p=0.5, the expanded
-selector minus the additive model has MAE difference **+0.007523**, with the
-44-comparison-adjusted run-level interval **[0.004022, 0.011024]**, supporting an
-additive-model advantage for this fixed protocol. The ensemble-minus-LRMC
-difference is -0.003049 with pointwise interval [-0.005042, -0.001057], but the
-adjusted interval is **[-0.006797, 0.000699]**. Its apparent significance does not
-survive that correction. Neither statement establishes performance on new domains.
-
-For the manuscript, keep the run-level uncertainty explicitly conditional, label
-crossed resampling as sensitivity analysis, and specify the comparison family and
-aggregation weights. Claims about new developers/benchmarks require more
-independent benchmark groups and a held-out evaluation design. If population
-resampling is used, rerun the full allowed preprocessing, nested tuning, and
-prediction pipeline within it; refitting alone still does not solve the five-group
-problem. Select a practical equivalence margin before attempting an equivalence
-claim. Increasing the number of masks cannot resolve missing domain replication.
-
-Separately resampling crossed groups has a statistical basis under appropriate
-random-effects assumptions, but is not an exact finite-sample guarantee; see
-[Owen's pigeonhole bootstrap](https://arxiv.org/abs/0712.1111). The
-[Cameron–Miller guide](https://escholarship.org/uc/item/1jq5d0pq) discusses unreliable
-cluster inference with few groups. Overlapping training sets also induce
-dependence in cross-validation errors, as analyzed by
-[Bengio and Grandvalet](https://www.jmlr.org/papers/v5/grandvalet04a.html). The audit's
-frozen-error resampling does not model that fitting dependence.
-
-### Completed matrix-completion follow-up: 16 masking seeds
-
-All 64 combinations of cohort size, coverage, and seed completed, with 16 responses
-per observed cell. Values below are task-macro MAEs on hidden cells, averaged over
-seeds. Every method receives the same observed rows and sampled scores. At n=10,
-the seed also determines the ten-model cohort. Coverage is the requested Bernoulli
-probability; the saved manifests record actual coverage after enforcing at least
-one observation per model/task.
-
-| Method | n=10, p=0.2 | n=10, p=0.5 | n=45, p=0.2 | n=45, p=0.5 |
-| --- | ---: | ---: | ---: | ---: |
-| Task mean | 0.141346 | 0.127162 | 0.116281 | 0.112675 |
-| Additive score model | 0.129712 | 0.088740 | 0.086718 | 0.070014 |
-| Tuned LRMC | 0.132914 | 0.097753 | 0.091352 | 0.076957 |
-| Original ratio, historical clipping/SVD | 0.127209 | 0.086695 | 0.089006 | 0.077641 |
-| Original ratio, signed PSD projection | 0.127193 | 0.086322 | 0.088900 | 0.078041 |
-| Expanded model-normalized selector | 0.127235 | 0.086418 | 0.088687 | 0.077538 |
-| Constant query kernel / mean response | 0.127176 | 0.087086 | 0.088867 | 0.077526 |
-| Shared within-task shuffled RBF | 0.127259 | 0.086632 | 0.088853 | 0.078387 |
-| Nested PKPS/LRMC ensemble | 0.128429 | 0.090657 | 0.090190 | 0.073908 |
-
-At n=45 the additive score-only model outperforms the perspective and tuned LRMC
-methods at both coverage levels. At n=10 the perspective methods improve over
-LRMC, but are close to constant-kernel and additive controls. A claim of added
-value should therefore compare against these simpler controls, not only LRMC.
-The ensemble is not uniformly better than its components. The geometric repair
-again yields similar accuracy without establishing dominance. These measurements
-do not isolate the effect of fixing historical validation leakage, because the
-encoder and other protocol choices also differ from the paper.
-
-![Completion with matched validation information](artifacts/stress-test/completion_pilot.png)
-
-The [summary](artifacts/stress-test/completion_summary.csv) includes MSE and seed
-variation; [per-task](artifacts/stress-test/completion_task_errors.csv) and
-[per-benchmark](artifacts/stress-test/completion_benchmark_errors.csv) summaries and
-[coverage counts](artifacts/stress-test/completion_coverage.csv) are also saved.
-[Run configurations and code hashes](artifacts/stress-test/completion-16seed/config.json)
-identify the per-cell predictions, masks, selections, and geometry files in the
-same directory. Sparse folds sometimes have no outside-developer reference for a
-task; their explicit zero-residual/additive fallback is recorded in each geometry
-CSV rather than silently dropping those predictions. It is most relevant to the
-ten-model, 20%-coverage condition. Seed variation measures mask/cohort sensitivity,
-not uncertainty over new benchmark populations.
-
-### Completed cache-design stress probes
-
-In E5, median same-model cache shifts divided by the median distance between
-different models' balanced caches were:
-
-| Changed cache, 128 responses throughout | Constant query kernel | Task kernel | RBF at observed median scale |
-| --- | ---: | ---: | ---: |
-| Four tasks instead of sixteen | 0.610 | 3.306 | 0.902 |
-| Lowest-scoring items within each task | 0.407 | 0.695 | 0.667 |
-
-These are ten-model, one-seed measurements in the full model-normalized PSD
-geometry. The task-mix RBF shift is nearly as large as a typical between-model
-distance, and the task kernel is more sensitive still. Positive semidefiniteness
-therefore does not establish invariance to cache design. The item-difficulty probe
-also changes the responses sampled; it is not a causal isolation of difficulty
-from response style. See [per-model distances](artifacts/stress-test/cache-design/cache_design_distances.csv)
-and the [summary](artifacts/stress-test/cache-design/cache_design_summary.csv).
-
-![Cache design changes representation](artifacts/stress-test/cache-design/cache_design.png)
-
-In E6, the two masks each reveal 360 cells, exactly eight tasks and 128 responses
-per model. The poor-score-hiding mask chooses high-scoring tasks using an oracle,
-then repairs missing task coverage while preserving each model's budget. The
-learner never receives oracle scores. On the **same 177 hidden cells across 12
-tasks** in both conditions, task-macro MAE is:
-
-| Method | Uniform mask | Poor-score-hiding mask |
-| --- | ---: | ---: |
-| Model-normalized expanded selector | 0.098953 | 0.165307 |
-| Constant query kernel | 0.097550 | 0.166010 |
-| Additive score model | 0.082386 | 0.202234 |
-| Tuned LRMC | 0.087621 | 0.207627 |
-| Nested PKPS/LRMC blend | 0.085277 | 0.165307 |
-
-The selected cells' full-score mean rises from 0.8147 to 0.9225. This artificial
-selection mechanism mixes task difficulty and model-specific weaknesses; it is
-not an estimate of their separate effects. The deterioration on common evaluation
-cells nevertheless demonstrates that uniform missingness results alone do not
-justify robustness to selective caching. One seed and one oracle mechanism cannot
-quantify performance under naturally missing data. Preserve that qualification in
-any manuscript claim. See [all-hidden and common-hidden summaries](artifacts/stress-test/cache-design/missingness_summary.csv),
-[mask provenance](artifacts/stress-test/cache-design/missingness_masks.json), and
-[per-cell predictions](artifacts/stress-test/cache-design/missingness_predictions.csv.gz).
-
-![Equal-budget missingness stress test](artifacts/stress-test/cache-design/missingness.png)
 
 ## 6. Manuscript edits and completion criteria
 
@@ -1312,45 +814,22 @@ the paper. The controls here are proposed evidence for the revision. Retain that
 history and decide their manuscript placement explicitly after the experiments;
 this document does not silently revise the paper's existing organization.
 
-- [x] Implement/test PSD geometry, paired DKPS recovery, and constant-kernel equivalence in the new drivers.
-- [x] Handle empty model caches, zero query mass, degenerate rank, and numerical tolerance explicitly.
-- [x] Apply masks before learned preprocessing in the new follow-up pipeline.
-- [x] Separate reference-label regimes and reject forbidden full-score inputs.
-- [x] Nest bandwidth/ensemble selection inside outer splits; fix regression K=5 in advance.
-- [x] Verify whole-family full-score perturbations leave that family's predictions and selections unchanged.
-- [x] Verify masked response/score perturbations leave predictions unchanged; inspect inner completion row removal.
-- [x] Verify allowed reference information can affect predictions for other families.
-- [x] Enforce sampled query counts and report actual accidental overlap; never silently reuse within a cell.
-- [x] Test EmbeddingGemma-2 locally and pin dataset, encoder, environment, and cohort.
-- [ ] Port the reviewed protocol to package defaults and historical drivers, or deprecate those paths explicitly.
-- [ ] Add strict-disjoint/shared-query designs and verify their feasibility at each requested budget.
-- [x] Run the specified 16-seed E1–E3 comparisons and the implemented score-only/embedding E4 controls; preserve predictions and coverage.
-- [x] Run controlled E5 task-mix/difficulty and E6 poor-score-hiding probes at matched budgets.
-- [ ] Extend E4 with sparse-edge Rasch on supported binary tasks, and matched task-balanced response summaries under missing tasks.
-- [ ] Extend E5–E6 with response-style interventions, specialist/temporal/developer shift, and natural missingness evaluation before deployment claims.
+The completed experiments above supply evidence for these items. The checklist
+below tracks the full package/manuscript integration, including proofs and paths
+outside the separate follow-up drivers; it is not a list of unrun experiments.
+
+- [ ] Implement and test PSD geometry, paired DKPS recovery, and constant-kernel equivalence.
+- [ ] Define and handle empty caches, zero query mass, degenerate rank, and numerical tolerance.
+- [ ] Apply observation masks before learned preprocessing in both package and research paths.
+- [ ] Separate reference-label regimes and keep forbidden full scores outside prediction inputs.
+- [ ] Nest bandwidth, regression, and ensemble tuning inside the appropriate outer split.
+- [ ] Verify whole-family full-score perturbations leave that family's predictions unchanged.
+- [ ] Verify masked response/score perturbations leave predictions and selected parameters unchanged.
+- [ ] Include positive controls demonstrating allowed reference information can affect predictions.
+- [ ] Enforce reported budgets and overlap without silent reuse or budget shortfalls.
+- [ ] Test EmbeddingGemma-2 locally and freeze dataset, encoder, environment, cohort, and run manifests.
+- [ ] Run E1–E4 before making renewed geometric or query-similarity claims; report E5–E6 for deployment claims.
 - [ ] Regenerate affected tables/figures and reconcile the manuscript, package docs, and Overleaf source.
-
-The full test suite passes **52 tests** (three existing warnings). The follow-up
-correctness suite covers the mathematical counterexample, PSD for
-unequal disjoint caches, the constant and paired-delta identities, signed spectral
-rank, shared shuffling, nested budgets, whole-family forbidden-score perturbations,
-hidden-response perturbations, preservation of scored empty responses in
-full-depth targets, and equal-budget mask construction; see
-[test output](artifacts/stress-test/tests.txt). Passing those checks establishes
-the tested implementation properties, not the paper's revised statistical theorem.
-Eight uncertainty checks additionally verify paired cancellation of shared run
-noise, reject mismatched/duplicate/nonfinite evaluation cells, check literal
-cluster duplication with unequal cluster sizes, reject missing seed coverage,
-and check the multiplicity-adjusted interval's containment of the pointwise one.
-
-Final artifact checks confirm **933,120 query predictions and 219,060 completion
-predictions**, all finite, within [0,1], with no duplicate keys and identical
-evaluation cells across methods in every run. Every final summary contains 16
-seeds. The ordered text fingerprint, all 23,040 row-to-vector mappings, and the
-recorded implementation hashes were verified. All local links resolve and the
-saved figures were inspected visually. The [artifact inventory](artifacts/stress-test/artifact_inventory.json)
-records SHA256 hashes for the saved evidence; large source data, model weights,
-and the local conda environment are excluded from the PR material.
 
 ## Appendix: dependency-free reproductions
 

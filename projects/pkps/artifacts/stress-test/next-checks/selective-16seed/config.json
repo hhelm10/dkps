@@ -1,0 +1,32 @@
+{
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "observed_tasks_per_model": 8,
+  "responses_per_observed_task": 16,
+  "evaluation": "same hidden cells under both masks within each seed",
+  "limitation": "oracle score-dependent mask; not natural selection or deployment validation",
+  "implementation_sha256": {
+    "projects/pkps/scripts/experiments/stress_followups.py": "5c910c5096c1d19b5d49513e093fb64038741d46ba37bbacfbf9731afcd7f5c1",
+    "projects/pkps/scripts/experiments/stress_completion.py": "af903eb012c4e47839cafa7fdb5c755823d22a8b3343472d0e082178b5b74e3b",
+    "projects/pkps/scripts/pipeline/stress_geometry.py": "c718551c7c5d2cd2db59e73e47fa70ac1a8387647a99d05af1882a037e295362",
+    "dkps/preprocessing.py": "2fc81b3e61fe536c3f2b4cf5df76574785fef2796cdbc5a2a76953ad42c01a2a",
+    "dkps/baselines.py": "9ba4a54ab9bfc2d7530f4cca66819803c90961ad383960148a9ca0581a76fed9",
+    "/Users/avijit/Documents/dkps/projects/pkps/scripts/experiments/stress_selective.py": "3264a6012c57b76059e206526370506cdeffb7c5ae86ee2f6d6bd45e0d1ca9e4"
+  }
+}

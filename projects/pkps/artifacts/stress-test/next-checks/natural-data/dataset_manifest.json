@@ -1,0 +1,3084 @@
+{
+  "dataset": "evaleval/EEE_datastore",
+  "revision": "8b9632422dd2b3806431efd758c7cdc84044169f",
+  "source": "/Users/avijit/Documents/dkps/data/eee-extended-raw",
+  "manifest_sha256": "13ee64e2df92ad0bda4648a1ccf4874b436b8a67985d1240a078170d28063143",
+  "cap": 32,
+  "sampler": "sorted-query-id/per-model-task-sha256-seed-v1",
+  "n_models": 69,
+  "n_tasks": 16,
+  "n_rows": 30304,
+  "n_unique_queries": 7617,
+  "runs": [
+    {
+      "path": "data/gpqa-diamond/allenai/olmo-3-1-32b-think/144e212f-8061-4a2a-94f5-208548645cfc_samples.jsonl",
+      "model_id": "allenai/olmo-3-1-32b-think",
+      "suite": "gpqa-diamond",
+      "sha256": "caebdf04fe5d864519247429bd913541673da75ee1bfab83dd34894dd7f8dae1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/anthropic/claude-opus-4-6/f168b530-610b-4c82-8def-187df3f84b96_samples.jsonl",
+      "model_id": "anthropic/claude-opus-4-6",
+      "suite": "gpqa-diamond",
+      "sha256": "50df61d7515158d751b5444531cc0c132397d52354735472642ab02fcba56598",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/cohere/c4ai-command-a-03-2025/b27740dc-a017-4738-8dd0-c18973b61d9e_samples.jsonl",
+      "model_id": "cohere/c4ai-command-a-03-2025",
+      "suite": "gpqa-diamond",
+      "sha256": "43db0400f28b1838dbc9c2be4ecb5a54bf3ba5edc784abc2c39e7a6fb92a0659",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/cohere/c4ai-command-r-08-2024/9a17fcf2-ee22-4a4f-b992-0d07290a56fc_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-08-2024",
+      "suite": "gpqa-diamond",
+      "sha256": "ab518e356b3b50827f57c08e8dc0f231ae0710e6c196f3230628f9156589d908",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/cohere/c4ai-command-r-plus-08-2024/af03cc06-a493-48b7-a049-61d9b690c8f3_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-plus-08-2024",
+      "suite": "gpqa-diamond",
+      "sha256": "947394bad7e28d6ebf8081ce1205761106afac9cc48871873e91565471458d3a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/cohere/c4ai-command-r7b-12-2024/691d4ef0-94b0-47e2-a7c9-b85f1bdc625b_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r7b-12-2024",
+      "suite": "gpqa-diamond",
+      "sha256": "a0e2898c77892507fa4b8c2f035661e8cd5a42f66c22a065bf3f708bf78df4ea",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/cohere/command-a-reasoning-08-2025/1f8abcba-95f4-4f60-bdeb-32a35799a7a8_samples.jsonl",
+      "model_id": "cohere/command-a-reasoning-08-2025",
+      "suite": "gpqa-diamond",
+      "sha256": "c6f27a5eec7bc4a0c3456756ca8beb477a3634bd52d5ddaa21c2629542cb4beb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/cohere/tiny-aya-global/0b5bf7f7-df84-4ef0-a46e-b2de6eab325c_samples.jsonl",
+      "model_id": "cohere/tiny-aya-global",
+      "suite": "gpqa-diamond",
+      "sha256": "ca66f4c37b1efe351768c7d6995ede0bab8ab1e656ed119503121cabebc165a2",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/deepseek/deepseek-r1-0528/a1dd2ea2-f092-423e-bc53-04c2fba5948d_samples.jsonl",
+      "model_id": "deepseek/deepseek-r1-0528",
+      "suite": "gpqa-diamond",
+      "sha256": "884cf6ed726755e9b117bcc491f3f508df339e4b42f0519ff420eb4d028b38e7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/deepseek/deepseek-v3-1-terminus/f3b076c8-a51d-4c88-b86e-652f7c74f5b3_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-1-terminus",
+      "suite": "gpqa-diamond",
+      "sha256": "d68de4cee145f02c4665f1d97f340625488041474dd822e4e25c9ca9e81a374f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/deepseek/deepseek-v3-2/210bba66-df9b-4487-b4f3-2df003adf6b2_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2",
+      "suite": "gpqa-diamond",
+      "sha256": "0914326219fd2e869bc0a5bf3b9a6196d6b9a73292475f1b9094a2255aa58b8f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/deepseek/deepseek-v3-2-speciale/fdb5b746-fb7d-43d8-8573-f389b06fc7d6_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2-speciale",
+      "suite": "gpqa-diamond",
+      "sha256": "00fc7f1d0bb957f2ad894e4b4fecb55ce508e66d48a2e992dc2eee6b67432f00",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/deepseek/deepseek-v4-flash-fp8/204612b4-e12e-43e0-b450-1acdda709018_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-flash-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "a09c031d1a39d7db935193f63c07d4973849bceebf532dde1fe12314f41af477",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/deepseek/deepseek-v4-pro/8410ea2e-79ad-468f-872d-542d813803e8_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-pro",
+      "suite": "gpqa-diamond",
+      "sha256": "66bb9665ae265a434d09282a97eb8f6772141a32af9ab50eca9867db5d994ecb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemini-3-1-pro-preview/a5cc95ea-b47c-4de7-bf79-385a7799ce2c_samples.jsonl",
+      "model_id": "google/gemini-3-1-pro-preview",
+      "suite": "gpqa-diamond",
+      "sha256": "bf781e16276b6873ed741a29b1cabb65367782bc71d4f71cdaf6ac62a1a36ce1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-2-27b-it/d31ebd82-94b8-4d63-be48-0e511171e541_samples.jsonl",
+      "model_id": "google/gemma-2-27b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "fd2bc4eaebbbda19de49b6bc231988af2edc8c73ce12715ea9c3e77ef956d200",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-2-2b-it/da9c93a1-831c-4301-a3d7-5be0c52500b6_samples.jsonl",
+      "model_id": "google/gemma-2-2b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "d5585f9b5bfda37be11d2228806e0d5c7b6e9f53c6d43e7ed019832e123d3437",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-2-9b-it/fa6e9636-e164-4b2f-964d-70375f57b547_samples.jsonl",
+      "model_id": "google/gemma-2-9b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "acc1e0dd00a9754b4fd436d08f3ee4280a2e93364992535e584dfcf550537a49",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-3-12b-it/34c3c055-42ae-4e43-afbe-1b9eb7234c76_samples.jsonl",
+      "model_id": "google/gemma-3-12b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "fd1751c7cd73ecd7582d0645eb2f3a4b48b4603bd2de6afbb08c66d0ee25aab7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-3-1b-it/56cad6e2-2b5e-4782-b947-48e4e7e8c78b_samples.jsonl",
+      "model_id": "google/gemma-3-1b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "02b15b18efc81470f4e57a559ab007ddaf6d2fc0d9d254db7846c3371a0094e2",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-3-27b-it/bfd80231-262a-4ec1-b46b-294739ae65cc_samples.jsonl",
+      "model_id": "google/gemma-3-27b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "a80a1a97af5b9896e6749f6aabc6ad847a08415e34c751cf367232138ffa0610",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-3-4b-it/7137a16e-89a7-4188-bb8c-7571b42cfe53_samples.jsonl",
+      "model_id": "google/gemma-3-4b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "aa2454830fc13797aa1c0ade5e8e7d3267295e2fc942c291d2f77bb00c1f22a7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-4-26b-a4b-it/e545ce18-a1c3-4df0-ad9f-32996807fe88_samples.jsonl",
+      "model_id": "google/gemma-4-26b-a4b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "eb1547f8b000b43008bfd07464484b142033763ca627ccdab43398106ca56782",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-4-31b-it/1daa0e12-50aa-4bd9-84a5-a1b8e4afee2c_samples.jsonl",
+      "model_id": "google/gemma-4-31b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "9fe428b4e1390e2cbdb7237486d7554884ec0a2de2014e96721eb9c41a90ef19",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-4-e2b-it/27155471-5253-424f-8f80-19c3ed788765_samples.jsonl",
+      "model_id": "google/gemma-4-e2b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "d863d038655fbd0dba557f6be941fbcd974a9630b5d81457e2ee43c5ec133574",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/google/gemma-4-e4b-it/4493de12-a840-4946-8193-615ded5a17ec_samples.jsonl",
+      "model_id": "google/gemma-4-e4b-it",
+      "suite": "gpqa-diamond",
+      "sha256": "8738dc05e4fced63d52e3e56e40a2e74b2c7e36526fe34803598fd5dcd750d4c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/llm360/k2-v2-instruct/a1ceb877-0159-470e-8e0d-3a31c6d8d7a5_samples.jsonl",
+      "model_id": "llm360/k2-v2-instruct",
+      "suite": "gpqa-diamond",
+      "sha256": "3496d5edd16660a4073fbbd3766131068cf1394369b1fae6ab9221403a662af4",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/meta/llama-3-2-1b-instruct/aaad0db3-7c5b-4834-a1a2-d96624bdd003_samples.jsonl",
+      "model_id": "meta/llama-3-2-1b-instruct",
+      "suite": "gpqa-diamond",
+      "sha256": "2e945db104f46a120d517c032d9de0b1528f13789e58a8d0389269fe91686df3",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/meta/llama-3-3-70b-instruct/448b1084-4794-44f8-b895-d76737e71c5d_samples.jsonl",
+      "model_id": "meta/llama-3-3-70b-instruct",
+      "suite": "gpqa-diamond",
+      "sha256": "9d0781b066b91f23f02d0c689d41b8c4bf476f229405781f6f7237fbf5e19604",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/meta/llama-4-maverick-17b-128e-instruct-fp8/0d73e6c4-a2db-4da9-9dcd-69cff8ad8b77_samples.jsonl",
+      "model_id": "meta/llama-4-maverick-17b-128e-instruct-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "74941f8a7435ee78c12bc4348b349a6b087eb3a8224b3925e7930b64809dfdfa",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/meta/llama-4-scout-17b-16e-instruct/4eb49217-c927-406a-b3e2-121a5459c72d_samples.jsonl",
+      "model_id": "meta/llama-4-scout-17b-16e-instruct",
+      "suite": "gpqa-diamond",
+      "sha256": "435feb6e172ae0b84e6148a705f5c50731a9cfa11b908935576af579a87a0f6c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/meta/meta-llama-3-1-8b-instruct/0c4ebfd6-e4fd-4a81-9f8f-cf7a7b03ed92_samples.jsonl",
+      "model_id": "meta/meta-llama-3-1-8b-instruct",
+      "suite": "gpqa-diamond",
+      "sha256": "4983e07044d317438efae41052201919c62b23dcae7c2a235d1b04dfef17be2c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/minimax/minimax-m2-1/087b0dc6-3c87-4f40-8458-16f19de92200_samples.jsonl",
+      "model_id": "minimax/minimax-m2-1",
+      "suite": "gpqa-diamond",
+      "sha256": "1838468bbf0e60e409efb506abc1ff21508a7203a693b8469432749cb106054a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/minimax/minimax-m2-5/84428834-aaf9-476e-98a7-a7bed8825b83_samples.jsonl",
+      "model_id": "minimax/minimax-m2-5",
+      "suite": "gpqa-diamond",
+      "sha256": "c256066843d46d0251370b4484e1efdd30bab5b4b0544c856c2fc098db9377ee",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/mistral/mistral-large-3-675b-instruct-2512/ab27bc25-70da-4788-bdb0-aafac3ceeab4_samples.jsonl",
+      "model_id": "mistral/mistral-large-3-675b-instruct-2512",
+      "suite": "gpqa-diamond",
+      "sha256": "11ab9ffe48c7597021738d6394d94533d26bfc46ac4f12dd899159635a368c22",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/mistral/mistral-small-4-119b-2603/1fa9fde1-646c-487e-866a-0105adc7eb0a_samples.jsonl",
+      "model_id": "mistral/mistral-small-4-119b-2603",
+      "suite": "gpqa-diamond",
+      "sha256": "e09db2c032732d1095f9f83e6fc58267d1ad946452fbf6a996dbff1f25f94279",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/moonshot/kimi-k2-5/5c4b9bd9-14db-4c11-bf99-9661461459f6_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-5",
+      "suite": "gpqa-diamond",
+      "sha256": "1cc94040fc58cc0f6e6f1da0c87b7ffed94596f4b3e1a98cd160af39fd9df895",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/moonshot/kimi-k2-6/344a8f10-3d27-4efd-a06f-00f76e0afb63_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-6",
+      "suite": "gpqa-diamond",
+      "sha256": "53a1abe586643527e2829eb9823a3bf9badb886a341d5d92bb394417bc53b896",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/moonshot/kimi-k2-thinking/07be0261-ad71-4bf2-bccd-3a9792f4e8b4_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-thinking",
+      "suite": "gpqa-diamond",
+      "sha256": "523d4c0f8e93586618d2be80bfcc972b030897dd638f3a5af649e473f3a08d3a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/nvidia/nvidia-nemotron-3-super-120b-a12b-fp8/bd1fe04f-7d58-4045-be60-7150500d537f_samples.jsonl",
+      "model_id": "nvidia/nvidia-nemotron-3-super-120b-a12b-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "b5d32a1f95b89ea023b973e661d95b9a2906f497415cabe61d683db4bb9cf0cd",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/openai/gpt-5-5/0542bff5-1df3-4083-8bec-ee34d9854dcf_samples.jsonl",
+      "model_id": "openai/gpt-5-5",
+      "suite": "gpqa-diamond",
+      "sha256": "c092be176a94f580df13aaa023588fd1a7e7445064f758314c205d7117226775",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/openai/gpt-5-mini/852b21f5-8110-4888-8bd0-328b23aa3d2c_samples.jsonl",
+      "model_id": "openai/gpt-5-mini",
+      "suite": "gpqa-diamond",
+      "sha256": "28ce816098302412580a359dbb05343424770ec8ed2d766b25b02282a7cf2d7a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/openai/gpt-5-nano/c21cd201-5797-45e8-bf8a-4d9267853709_samples.jsonl",
+      "model_id": "openai/gpt-5-nano",
+      "suite": "gpqa-diamond",
+      "sha256": "78827097cafc3823da982e84f09a4280c75ad29fab7f3f5ad8b9b490b652263c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/openai/gpt-oss-120b/5d3e8832-c770-4796-957b-dfaefbd3bb2a_samples.jsonl",
+      "model_id": "openai/gpt-oss-120b",
+      "suite": "gpqa-diamond",
+      "sha256": "a3756271af862f89875f2f2e7222d45d20a817208ae0ad0aa1c383af5a698f59",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/openai/gpt-oss-20b/64b43d43-0383-4dff-81d8-db20d248cce2_samples.jsonl",
+      "model_id": "openai/gpt-oss-20b",
+      "suite": "gpqa-diamond",
+      "sha256": "ded20664c18707d95c2d87ac74b4b6d6abeb95fa7ea3516700fb2965a04c8b2e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-30b-a3b-thinking-2507/4b02c12c-3f7b-45c8-b746-c590860a7a36_samples.jsonl",
+      "model_id": "qwen/qwen3-30b-a3b-thinking-2507",
+      "suite": "gpqa-diamond",
+      "sha256": "de8f5d95c2a938e8af969d89b1680106dce6e32240de177085e413bccb676559",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-0-8b/39d5ecea-51bd-4fc3-9b0a-770baeb7ceec_samples.jsonl",
+      "model_id": "qwen/qwen3-5-0-8b",
+      "suite": "gpqa-diamond",
+      "sha256": "fc43504d7374f145b59c70079dd64d05f66fe221e3ed0e575fd03840eee1ce5e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-122b-a10b/5860f5bd-926e-4ece-bc87-a1af551a6280_samples.jsonl",
+      "model_id": "qwen/qwen3-5-122b-a10b",
+      "suite": "gpqa-diamond",
+      "sha256": "37cde12ced79326e9f9f833edcb1d42b9094e58aef3592f1481ec96ff277ddbe",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-27b/5ba4cf19-18b3-4d08-bad0-ef29422cb18a_samples.jsonl",
+      "model_id": "qwen/qwen3-5-27b",
+      "suite": "gpqa-diamond",
+      "sha256": "94a77512d56e3ae0ad6b9f2f1222e07aad24b184cd9e90194a102c89a2a4deaa",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-2b/9ab3daf6-462a-47bc-8061-1e2222bffa3d_samples.jsonl",
+      "model_id": "qwen/qwen3-5-2b",
+      "suite": "gpqa-diamond",
+      "sha256": "9aefb7c006441667bb4470324dcec206adaa8733f58b8a3e5d6fe8bb5482536a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-35b-a3b/e675e8b1-162d-4f07-9f01-baef2cb8e59c_samples.jsonl",
+      "model_id": "qwen/qwen3-5-35b-a3b",
+      "suite": "gpqa-diamond",
+      "sha256": "e97f267f36429a9c3f9214afa718c0e03182cf599afea3df0b01d1adeb181af9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-397b-a17b/f7b97f5b-18de-427b-af81-10c789cae20c_samples.jsonl",
+      "model_id": "qwen/qwen3-5-397b-a17b",
+      "suite": "gpqa-diamond",
+      "sha256": "c33c1ffad713a34e42d9fdb3d480721a7151a2f816fa125c420a16a3204d3876",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-4b/8d1bd201-3319-4565-b1c6-edb0435ef0a8_samples.jsonl",
+      "model_id": "qwen/qwen3-5-4b",
+      "suite": "gpqa-diamond",
+      "sha256": "26df8a8bb45342d94c82479958faa62e88a1f1929bbe985aa225fd49bd927584",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-5-9b/d18b0225-9281-4a24-92a8-99a91aa81f92_samples.jsonl",
+      "model_id": "qwen/qwen3-5-9b",
+      "suite": "gpqa-diamond",
+      "sha256": "f5e67de83f4ad7051b82d37e98250861fa03373c9a9649d5b198734559924beb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-6-35b-a3b/ee768800-721e-491e-bf10-0a0df91d9385_samples.jsonl",
+      "model_id": "qwen/qwen3-6-35b-a3b",
+      "suite": "gpqa-diamond",
+      "sha256": "75e5f6c4989d0a90b9811b0a736ca8f4bbdf2f55254abcb5f06093935566518b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-6-plus/8733aa41-f435-4452-a864-00fbe153d8c6_samples.jsonl",
+      "model_id": "qwen/qwen3-6-plus",
+      "suite": "gpqa-diamond",
+      "sha256": "5f92218ba95db2e9671abb6479667cd04f48f06729188c9e0ebdb024cce22826",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-next-80b-a3b-thinking/4054db1e-fdbb-4ee4-a890-c6503fade2fc_samples.jsonl",
+      "model_id": "qwen/qwen3-next-80b-a3b-thinking",
+      "suite": "gpqa-diamond",
+      "sha256": "5158253fd4ec0532705f6a23c9658a6156777c728ef4503b3e3d9f8e21b3ad87",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/qwen/qwen3-vl-235b-a22b-thinking-fp8/41ef095a-27fc-475e-8eb2-6ff7ab72334c_samples.jsonl",
+      "model_id": "qwen/qwen3-vl-235b-a22b-thinking-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "636a773dd3f73c9089247f9de5f173782c00355915e57a903e073d2f009490d6",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/stepfun/step-3-5-flash/a26d79c1-4b94-4d76-88ee-1346f882bf68_samples.jsonl",
+      "model_id": "stepfun/step-3-5-flash",
+      "suite": "gpqa-diamond",
+      "sha256": "729c21a7c92f670726338199e9c9504affd68fe494b1041f75e6490e789b93e0",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/xiaomi/mimo-v2-flash/3622b785-41c0-4a96-b867-5bde46851587_samples.jsonl",
+      "model_id": "xiaomi/mimo-v2-flash",
+      "suite": "gpqa-diamond",
+      "sha256": "3f616bf3ed94b0dee34df9954bc310c66ecf9694b6d7f690d7581dddb6af669d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/zai-org/glm-4-5-air/9c7740fd-9cad-445c-9681-eb576e2a110e_samples.jsonl",
+      "model_id": "zai-org/glm-4-5-air",
+      "suite": "gpqa-diamond",
+      "sha256": "266739408f6a99e159d0eb07e4c1d8ebc946003e85acd4b9492a1d6734fdeb1e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/zai-org/glm-4-6-fp8/7e18ad63-4a0a-4d9d-a4ec-40b683b42981_samples.jsonl",
+      "model_id": "zai-org/glm-4-6-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "0a37360543900fced9535654f076754445339a95b348006fd786efbcacb784ae",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/zai-org/glm-4-7-flash/d0f36aff-39bf-433a-9d8f-3d343da57f45_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-flash",
+      "suite": "gpqa-diamond",
+      "sha256": "6ef0a339f99a9174129b69801385aadc1257c981321a4b474620d9296c733920",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/zai-org/glm-4-7-fp8/97faabc6-a7ca-4cad-8d29-307103287d91_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "67a667c3b7a20a510db9d8bcec363dc722b2607a21777146cf4249e7d6a539ca",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/zai-org/glm-5-1-fp8/522348c0-d242-4517-b97c-4e55c4261882_samples.jsonl",
+      "model_id": "zai-org/glm-5-1-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "727db66a83ca989e6c32bc818a0010006c45b2ee59c70986e7bac78ba7b22253",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gpqa-diamond/zai-org/glm-5-fp8/8a87d622-4abb-48a7-8ac3-594e31a85525_samples.jsonl",
+      "model_id": "zai-org/glm-5-fp8",
+      "suite": "gpqa-diamond",
+      "sha256": "6d4aecee32dca20965a6676da3b9eb54e567abe47c1ff45703b45ae5d1f34c1d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 198,
+      "n_scored_rows": 198,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/allenai/olmo-3-1-32b-think/1b6ee986-5500-4a07-91a1-a8c78deef806_samples.jsonl",
+      "model_id": "allenai/olmo-3-1-32b-think",
+      "suite": "gsm-mc",
+      "sha256": "e3eb6e5a9333f496cb415fc734e76397deca5d5be0438839446297831d0f964d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/anthropic/claude-opus-4-6/d22a0f3d-b3dd-44e6-b5d4-d21fc9e73086_samples.jsonl",
+      "model_id": "anthropic/claude-opus-4-6",
+      "suite": "gsm-mc",
+      "sha256": "31622b56d07218b1c4f2fd04372c416056f1e856c06e622fff1a7dad557fde40",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/cohere/c4ai-command-a-03-2025/c1979cb4-74bf-4c49-864c-537a78368e1b_samples.jsonl",
+      "model_id": "cohere/c4ai-command-a-03-2025",
+      "suite": "gsm-mc",
+      "sha256": "3cbfc807271df8864df4063da910ae9a4e4d6866ffe47e6e8d0e3734a1dddff1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/cohere/c4ai-command-r-08-2024/6a8f8565-293c-473a-95f9-908daa8878a4_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-08-2024",
+      "suite": "gsm-mc",
+      "sha256": "e0d3962e1b55d03922e13bcc2edf98e7951b9bed9d07e4c592804d77583eca52",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/cohere/c4ai-command-r-plus-08-2024/d2d6b1aa-fc65-42ac-8f7a-5204c3ee788e_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-plus-08-2024",
+      "suite": "gsm-mc",
+      "sha256": "65e237448bdc712dca1f723ea515c0ce9853d6ed87c1320b1977f1220ca5b19f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/cohere/c4ai-command-r7b-12-2024/ff4a34b3-fa1c-47b4-9b7d-1df079541494_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r7b-12-2024",
+      "suite": "gsm-mc",
+      "sha256": "12435f99450264fff37a7baabfb3b1d4693f9a9575e013f4dd5d074c50ddd822",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/cohere/command-a-reasoning-08-2025/27f047a1-92c9-4ce7-9f91-573023c7e27e_samples.jsonl",
+      "model_id": "cohere/command-a-reasoning-08-2025",
+      "suite": "gsm-mc",
+      "sha256": "f0260cbec89255159ab9659dfab009091548e7b39875ee11f16dba972510592c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/cohere/tiny-aya-global/ced7b291-955d-486c-b6a1-a093cdd25568_samples.jsonl",
+      "model_id": "cohere/tiny-aya-global",
+      "suite": "gsm-mc",
+      "sha256": "66b01b576e0f2751c827f4bb42f68886fd163c7f4cfec22c3c5250702d5ea858",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/deepseek/deepseek-r1-0528/cea8c74c-4a2c-4b5c-8b49-1e208f62461e_samples.jsonl",
+      "model_id": "deepseek/deepseek-r1-0528",
+      "suite": "gsm-mc",
+      "sha256": "75fdd9290a62e21b3cd3b1c6ac4c534dbcb0cbfa6c655053ada65fba3005f194",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/deepseek/deepseek-v3-1-terminus/1561e20a-bcaf-4856-9b30-6863e9629c9f_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-1-terminus",
+      "suite": "gsm-mc",
+      "sha256": "2b85865ff16ea5846fe9472c73a29966e36f6847560eb31b3c2e0567e6d296eb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/deepseek/deepseek-v3-2/ed329fc7-cb2b-40fc-b8f9-a7adee44dfdb_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2",
+      "suite": "gsm-mc",
+      "sha256": "18ebd507f2c9f5ca30f8dff0171ebe7b8890d4e5da9777de2d1efc2b66ad2a93",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/deepseek/deepseek-v3-2-speciale/5e4771f5-83a4-4633-a43b-0839753ee46b_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2-speciale",
+      "suite": "gsm-mc",
+      "sha256": "630cd8c937fbafef0705891995246869acb472d590f0bcccce8f8d648f33a8a9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/deepseek/deepseek-v4-flash-fp8/90f7270b-a499-4faf-928d-45d9474be411_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-flash-fp8",
+      "suite": "gsm-mc",
+      "sha256": "95c075203d69c3ae622234f3e14cc6ec81a416eca3966312da199a0f4fedb64e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/deepseek/deepseek-v4-pro/76aa779a-6817-40ea-a018-d175f165d28f_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-pro",
+      "suite": "gsm-mc",
+      "sha256": "13394c3d4f5ba42fdacdc38b6fbdb5688e82feec15ef200de02c8da9e5eb3ece",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemini-3-1-pro-preview/8fadfa47-3943-44ab-b21b-658f163005de_samples.jsonl",
+      "model_id": "google/gemini-3-1-pro-preview",
+      "suite": "gsm-mc",
+      "sha256": "3f95914da907bd9da9b0b668138dd7589e5c20be000aaec104bed06ce9556e95",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-2-27b-it/a7adace7-cf9a-491c-ad22-fa5c9f4d720d_samples.jsonl",
+      "model_id": "google/gemma-2-27b-it",
+      "suite": "gsm-mc",
+      "sha256": "46f4872c059125e45dd547034fe38ee6d27daca78100b00878a1ccb2bdc3b919",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-2-2b-it/f17c77ed-7a81-4d77-8262-09b2113e752f_samples.jsonl",
+      "model_id": "google/gemma-2-2b-it",
+      "suite": "gsm-mc",
+      "sha256": "df6c808a6b8f55b17912596dd703d862cbccf0bc02f0c411a0b8b7c68402eccf",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-2-9b-it/a53ce555-6c6e-4227-aa11-43b27897467b_samples.jsonl",
+      "model_id": "google/gemma-2-9b-it",
+      "suite": "gsm-mc",
+      "sha256": "1b7c953ca30f555b1bc904df7e2cd9214c0e69c6e62a7df9b51d2a34a2287354",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-3-12b-it/c4594e10-ecbe-4487-b498-63b46e2eaba4_samples.jsonl",
+      "model_id": "google/gemma-3-12b-it",
+      "suite": "gsm-mc",
+      "sha256": "126910458a80dcd3cb421b0448c3b24a59469dc913e3192ce961b812176def07",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-3-1b-it/d9784e5c-21ce-4ef9-bdfc-7ea783af4191_samples.jsonl",
+      "model_id": "google/gemma-3-1b-it",
+      "suite": "gsm-mc",
+      "sha256": "dbe1f1d3feb1e98e28daac44f751fecbe5946696b8c929cf825614241ef9acb6",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-3-27b-it/cf1f7250-f440-4f5e-87b4-350e29505dde_samples.jsonl",
+      "model_id": "google/gemma-3-27b-it",
+      "suite": "gsm-mc",
+      "sha256": "60dba8aeab59f9ae70396f563043eed651832881c906259fc31be21d8d8f041a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-3-4b-it/ecde7172-21cd-4476-a493-93ea2dd29c7d_samples.jsonl",
+      "model_id": "google/gemma-3-4b-it",
+      "suite": "gsm-mc",
+      "sha256": "a689184fd0d51c637bf27c880c3fd0d2fcf47a03c337c3e12e8a40059d1f6a8b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-4-26b-a4b-it/a907b0f3-704f-4bd1-b0e5-b5fcd74c9759_samples.jsonl",
+      "model_id": "google/gemma-4-26b-a4b-it",
+      "suite": "gsm-mc",
+      "sha256": "a29e5c9d466700a65701ceec764fa6d3198041463088de5410f77fcfeb88b4f7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-4-31b-it/c68b6c69-bcaf-4904-986b-4aa12b6867d0_samples.jsonl",
+      "model_id": "google/gemma-4-31b-it",
+      "suite": "gsm-mc",
+      "sha256": "915b63b35e80a79286ec531801cb4e65804ed7e0d8b0bfc2d9b3a9fe5b4d910f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-4-e2b-it/feed3ca6-5696-4754-9e25-e10ee69c7356_samples.jsonl",
+      "model_id": "google/gemma-4-e2b-it",
+      "suite": "gsm-mc",
+      "sha256": "e45a99100291c38ef6e0fa5e4acbcfb297c9fc17e30fd1ac244b855bdd5ef627",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/google/gemma-4-e4b-it/5bbc56e9-e7fd-4d0d-ace6-bdae3c24e831_samples.jsonl",
+      "model_id": "google/gemma-4-e4b-it",
+      "suite": "gsm-mc",
+      "sha256": "28b5eb76ea253044f8025392464c74183a7092a9b480b1e3e353c56be7e86071",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/llm360/k2-v2-instruct/5e0117b3-8fda-4c88-be65-a5832ed42986_samples.jsonl",
+      "model_id": "llm360/k2-v2-instruct",
+      "suite": "gsm-mc",
+      "sha256": "10bc5e911fa5d3242c34ec7c8eaf5044e5d427a3db4af43cc447fd123f8326f5",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/meta/llama-2-70b-chat-hf/bdd114d8-d3f0-488c-b670-499779019b03_samples.jsonl",
+      "model_id": "meta/llama-2-70b-chat-hf",
+      "suite": "gsm-mc",
+      "sha256": "bed032f2571f69c7334db04d539a072fc4df320751ca3d8257995dd635b27207",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/meta/llama-3-2-1b-instruct/41a3a36f-2e59-4687-9903-7550c8f47b72_samples.jsonl",
+      "model_id": "meta/llama-3-2-1b-instruct",
+      "suite": "gsm-mc",
+      "sha256": "c429fc7cc62d0344db0375d4ca41f56bd9376f85aa2932a4e34ab4ce5b2f4664",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/meta/llama-3-2-3b-instruct/2ff64590-2704-4916-82ab-8f54e6a39960_samples.jsonl",
+      "model_id": "meta/llama-3-2-3b-instruct",
+      "suite": "gsm-mc",
+      "sha256": "c0dc67cfbeb32a3788cc83f5344080c284aac55c7fa37aaf22733d09dff4ffec",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/meta/llama-3-3-70b-instruct/6c38829f-d9b4-40a1-841e-1d58f83c0778_samples.jsonl",
+      "model_id": "meta/llama-3-3-70b-instruct",
+      "suite": "gsm-mc",
+      "sha256": "94f8eb3c342e016f76d17e37b07a07a5e9cb15b1bca22ad4f7061c60d9157c54",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/meta/llama-4-maverick-17b-128e-instruct-fp8/081167d2-dc5b-45c6-a44c-025e089f4a33_samples.jsonl",
+      "model_id": "meta/llama-4-maverick-17b-128e-instruct-fp8",
+      "suite": "gsm-mc",
+      "sha256": "9aa4eeb64b482a1dec86d7246a05b24b7727909ae05cd042662200a4da31f81a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/meta/llama-4-scout-17b-16e-instruct/4f1f72f8-3cbf-48cd-900e-bb8947998fc5_samples.jsonl",
+      "model_id": "meta/llama-4-scout-17b-16e-instruct",
+      "suite": "gsm-mc",
+      "sha256": "46afd8870daf1a154303ad4601a4765efd786baaf7441c0dec851ac47aabb4fe",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/meta/meta-llama-3-1-8b-instruct/5635021b-03a3-4edd-b3b4-a060b0160954_samples.jsonl",
+      "model_id": "meta/meta-llama-3-1-8b-instruct",
+      "suite": "gsm-mc",
+      "sha256": "6a3bb0f584aeebefe242d6a7a13f7a9fa7e5f167b7cbb1146da753926a29e3fa",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/minimax/minimax-m2-1/e0f2e5e3-f1ef-434c-b638-3e3e011f70c5_samples.jsonl",
+      "model_id": "minimax/minimax-m2-1",
+      "suite": "gsm-mc",
+      "sha256": "1e3babbb2c792ef6c9d2d288bd94421e7ae31d2d6c7c6005f177e1db939bec3b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/minimax/minimax-m2-5/090170e1-9014-4107-9e7c-f754f86b4517_samples.jsonl",
+      "model_id": "minimax/minimax-m2-5",
+      "suite": "gsm-mc",
+      "sha256": "ba4855773c3b5530b25ff47af2c34fa7967c73147d1ebeb00c2e88f40d5bc9d0",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/mistral/mistral-large-3-675b-instruct-2512/4ef60df8-21e0-41a2-8c57-93a16c332205_samples.jsonl",
+      "model_id": "mistral/mistral-large-3-675b-instruct-2512",
+      "suite": "gsm-mc",
+      "sha256": "84e7bf46bad96a1da01e39746373d6d3ce5c47767175e80331c2155fc6b1fba9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/mistral/mistral-small-4-119b-2603/8a412fa6-daf4-40e0-be55-bade0fa81f1f_samples.jsonl",
+      "model_id": "mistral/mistral-small-4-119b-2603",
+      "suite": "gsm-mc",
+      "sha256": "3ded50b256a5fb80e9a65216438cbb2efd79be851d5f493adf8efc3bab41f738",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/moonshot/kimi-k2-5/87620c17-5fa0-48bb-b073-3a728a988ac9_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-5",
+      "suite": "gsm-mc",
+      "sha256": "c9e35cf14e924875d589b3d3851aecdc1d778416c0ee88e28d9b8108afde21ef",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/moonshot/kimi-k2-6/abf08545-121a-4392-9a66-03cad29a3f83_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-6",
+      "suite": "gsm-mc",
+      "sha256": "db60c7308a9a27ff44e5936c1e3ae495a14adacf33d877e69e1170c385ef9ba6",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/moonshot/kimi-k2-thinking/791c47a0-8484-4c10-a9af-62223e69dcad_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-thinking",
+      "suite": "gsm-mc",
+      "sha256": "914a0270ee3fa4aaf9e9cd0998b773cc2459424c52cc596a0882da9e48a3121c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/nvidia/nvidia-nemotron-3-super-120b-a12b-fp8/5060fbf9-0ffb-4c21-9d22-def69091a44c_samples.jsonl",
+      "model_id": "nvidia/nvidia-nemotron-3-super-120b-a12b-fp8",
+      "suite": "gsm-mc",
+      "sha256": "94c5eba7e2e9b4b40960e8c8140a822288ca2c20690a913e0f4c6edd695fd6f7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/openai/gpt-5-5/dc71fc00-fcfc-4c09-ab21-60914caae6cc_samples.jsonl",
+      "model_id": "openai/gpt-5-5",
+      "suite": "gsm-mc",
+      "sha256": "8bf02cb44873fe0a295ac8c5ba1e0a479e36c00cbf095d8a2a03f33d9076df23",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/openai/gpt-5-mini/08ab71eb-e595-4bba-a805-0d283015215c_samples.jsonl",
+      "model_id": "openai/gpt-5-mini",
+      "suite": "gsm-mc",
+      "sha256": "6365391101a5e82a3f093cb6f8e639de3d6105900fcbeed4d41ffc8e1b7ecfee",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/openai/gpt-5-nano/03f63fbd-d2c2-47d8-87a8-29fce4db5f65_samples.jsonl",
+      "model_id": "openai/gpt-5-nano",
+      "suite": "gsm-mc",
+      "sha256": "c88a5516f9c4bbce2d670966cf15fa9eccc488f39b2b2ea57fce4da5de869e91",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/openai/gpt-oss-120b/1bcfbda1-6599-4885-b7ab-eaad9cd8986c_samples.jsonl",
+      "model_id": "openai/gpt-oss-120b",
+      "suite": "gsm-mc",
+      "sha256": "5dccc08f296906312c0ea0d353c07409070cb8239df73e44cf686d39b853df73",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/openai/gpt-oss-20b/5ccba25e-e3e3-4d22-8462-eceaf21f0e11_samples.jsonl",
+      "model_id": "openai/gpt-oss-20b",
+      "suite": "gsm-mc",
+      "sha256": "933c30b226e8ae28153480cc2cdc75764dce9d913905a72ecd3aeb4ff2f48002",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-30b-a3b-thinking-2507/06e108ac-63e3-4026-b807-a966f683c025_samples.jsonl",
+      "model_id": "qwen/qwen3-30b-a3b-thinking-2507",
+      "suite": "gsm-mc",
+      "sha256": "2c7135657e9723ca74309f6c7cf37cb582f43574765524815a51c755ccc86294",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-0-8b/63d7ce41-33f5-4c30-ab96-dd6b90557c0f_samples.jsonl",
+      "model_id": "qwen/qwen3-5-0-8b",
+      "suite": "gsm-mc",
+      "sha256": "0e1b4108f7a15619029b9fa37b350c8e634d39a3e53c6ece7a5ec78df443d89c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-122b-a10b/b85b6505-2c4c-4b2a-a3dd-da8439d54124_samples.jsonl",
+      "model_id": "qwen/qwen3-5-122b-a10b",
+      "suite": "gsm-mc",
+      "sha256": "ddafa5b82307d414a9313f6667c6af37c5e8d4bbaf37adcf368769ea8ea584a0",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-27b/64360daf-902a-4a6a-b657-5a1f9d679357_samples.jsonl",
+      "model_id": "qwen/qwen3-5-27b",
+      "suite": "gsm-mc",
+      "sha256": "fce3ed9c0b656e878ac72a974ba22ed9b0179055bdf703a18093e5bbbc5caf55",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-2b/aa1423e7-8687-4bf1-8a48-50106d039bc6_samples.jsonl",
+      "model_id": "qwen/qwen3-5-2b",
+      "suite": "gsm-mc",
+      "sha256": "310f953282ba7405c9203848473a3f6b048c81b9e6594d8e81536286ad1abc49",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-35b-a3b/3a5033f1-6794-4a9a-a5b0-f89c4630f847_samples.jsonl",
+      "model_id": "qwen/qwen3-5-35b-a3b",
+      "suite": "gsm-mc",
+      "sha256": "96ec125460083e18eb25e92231177a0eb7249c98ef06578cd1d80352ca7e2f04",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-397b-a17b/67444795-f5e8-4a5a-88a3-b167dd627b0a_samples.jsonl",
+      "model_id": "qwen/qwen3-5-397b-a17b",
+      "suite": "gsm-mc",
+      "sha256": "2626abacf8a58e13b1a05b6bfbebd76bde1c871bfbd19ee79c3b5d6e8520f8c9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-4b/c028f2e2-8712-4351-bb67-011e80d8c365_samples.jsonl",
+      "model_id": "qwen/qwen3-5-4b",
+      "suite": "gsm-mc",
+      "sha256": "0aa2ce5a122bdb5661bab320b9f5ae08936538c108a6b91d6baa854b1c9c6e6c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-5-9b/03f17876-6029-4575-985e-153185220e3f_samples.jsonl",
+      "model_id": "qwen/qwen3-5-9b",
+      "suite": "gsm-mc",
+      "sha256": "2e0adfd147d13ed5df99e69d30e02b08d76b3f7898d74c0bb4ddd2c526ea500d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-6-35b-a3b/2ddc46d3-1877-4ba1-8194-7c85b8e908c2_samples.jsonl",
+      "model_id": "qwen/qwen3-6-35b-a3b",
+      "suite": "gsm-mc",
+      "sha256": "bed7087964fc0d18d1daec0438693025234a9b30a157db2a7ec0fc23df1368e0",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-6-plus/fc93bad0-5cab-48a1-b15b-f356a1d7b560_samples.jsonl",
+      "model_id": "qwen/qwen3-6-plus",
+      "suite": "gsm-mc",
+      "sha256": "0d8c9ce600c1cc69539c601e502cd1493f6df7f2ba5311f7ef40a76a27129f21",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-next-80b-a3b-thinking/7b299b77-04b2-4ca0-976f-0e725848386b_samples.jsonl",
+      "model_id": "qwen/qwen3-next-80b-a3b-thinking",
+      "suite": "gsm-mc",
+      "sha256": "24cf83930a50845996495b63fd0d0afd9775e1aee43f85fb31fbf0e73889e70b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/qwen/qwen3-vl-235b-a22b-thinking-fp8/7bd53da3-93ea-4f28-9f55-8cffbc901208_samples.jsonl",
+      "model_id": "qwen/qwen3-vl-235b-a22b-thinking-fp8",
+      "suite": "gsm-mc",
+      "sha256": "f236166cd356f69fd0d689ebc4d28d7160684fa685f5b70217fe75b1450c2a59",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/stepfun/step-3-5-flash/a9de26ee-af50-462e-8ff6-2d4e23dd9f83_samples.jsonl",
+      "model_id": "stepfun/step-3-5-flash",
+      "suite": "gsm-mc",
+      "sha256": "588a6ef28c0569546f810ab93517e8d357c8f239d226ef242024330df91fc788",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/xiaomi/mimo-v2-flash/ce82606d-c7ca-4c27-9948-29272c43628f_samples.jsonl",
+      "model_id": "xiaomi/mimo-v2-flash",
+      "suite": "gsm-mc",
+      "sha256": "3c0f6d6c2edb49527279f19b3cc9cb6ee37665373909b642d8840158dff561cf",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/zai-org/glm-4-5-air/a0ef013b-fae3-49a2-a7e3-3ddc0bac8855_samples.jsonl",
+      "model_id": "zai-org/glm-4-5-air",
+      "suite": "gsm-mc",
+      "sha256": "b7075f1322c48ff1a7366fea4d1f252ed7a0240cf15609eaff0c9a216cb33d5b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/zai-org/glm-4-6-fp8/1d9de7a8-a098-41d9-9e12-89d3c87e675c_samples.jsonl",
+      "model_id": "zai-org/glm-4-6-fp8",
+      "suite": "gsm-mc",
+      "sha256": "1d6fb722085a88a9b38e01cd14264e69f2aca0b24c136a7f980e069e214914f1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/zai-org/glm-4-7-flash/3c9f1346-3fd5-4d0e-aeb2-4e292ad89c10_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-flash",
+      "suite": "gsm-mc",
+      "sha256": "5092cc3de2c9f8504a591fa02e384d582f43cb57e863b1bf1fbc8f3fc4039159",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/zai-org/glm-4-7-fp8/e91b6c5c-2a5b-4e4f-a3a4-2e05464038ae_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-fp8",
+      "suite": "gsm-mc",
+      "sha256": "15a3e4fcb8a6e095b9257ca2d213fd371e02d890bb9354f60b28736a68e5bdc3",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/zai-org/glm-5-1-fp8/54549f1f-1952-4dbf-b9c4-7f7216cfec90_samples.jsonl",
+      "model_id": "zai-org/glm-5-1-fp8",
+      "suite": "gsm-mc",
+      "sha256": "572c903b430e152f22587f3c1a5f4cdf226a1e4cc04330bf34ad74298b189918",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/gsm-mc/zai-org/glm-5-fp8/7ec2d271-e5f2-44b8-b71e-1c65d40973ea_samples.jsonl",
+      "model_id": "zai-org/glm-5-fp8",
+      "suite": "gsm-mc",
+      "sha256": "9b23ae21024e5716dd19fee94426aae986e9b8f151b398ce7021bf3e1fc562cd",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1319,
+      "n_scored_rows": 1319,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/allenai/olmo-3-1-32b-think/b0095633-cef2-4fbf-bda8-a7919746c282_samples.jsonl",
+      "model_id": "allenai/olmo-3-1-32b-think",
+      "suite": "judgebench",
+      "sha256": "df2833c2a0f4b33607f0328e69fda1c757ce95849aed2d76def550916f2b7811",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/cohere/c4ai-command-a-03-2025/aeafa8d1-7c28-49a1-816e-23ee32670f91_samples.jsonl",
+      "model_id": "cohere/c4ai-command-a-03-2025",
+      "suite": "judgebench",
+      "sha256": "3e40d1791c8d6da99599718a47ece6aa608d96d41e9bd9059cbdce172163e560",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/cohere/c4ai-command-r-08-2024/88f53551-5a23-437b-83d5-5ccc87691e3b_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-08-2024",
+      "suite": "judgebench",
+      "sha256": "28a12017e01dee35e4c9ef7e7ff8adee0b0461231ebf2ec3a13f09cd6b5ed78c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/cohere/c4ai-command-r-plus-08-2024/2367eff4-3e49-46d2-bce4-9fbd86dd9fde_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-plus-08-2024",
+      "suite": "judgebench",
+      "sha256": "53223fcd3286b458c99a9e76aa511863ca5dcdac6c29cee679654460d9edb9da",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/cohere/c4ai-command-r7b-12-2024/fe7fcc66-84c3-4284-af21-3a6851f8f928_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r7b-12-2024",
+      "suite": "judgebench",
+      "sha256": "14087151c791c1c74b84e39c9494f402b7fd73b5414f7c317a6ce49fe3b05f93",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/cohere/command-a-reasoning-08-2025/143ec7be-03d3-4f30-b5de-3a45488819f2_samples.jsonl",
+      "model_id": "cohere/command-a-reasoning-08-2025",
+      "suite": "judgebench",
+      "sha256": "8f850894afd31989dd9ccc2c1a9f35418beca84b9a15e5faa5558e09b429cf13",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/deepseek/deepseek-r1-0528/42d2e7fb-d641-4738-abbc-c4f171f1e674_samples.jsonl",
+      "model_id": "deepseek/deepseek-r1-0528",
+      "suite": "judgebench",
+      "sha256": "9c87eba31358d9cedb0dad88f062be32d069f0698c056afe273a58d9cb816611",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/deepseek/deepseek-v3-1-terminus/246f4c90-177b-40a5-9b27-f18c5bcb6244_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-1-terminus",
+      "suite": "judgebench",
+      "sha256": "0dae0143b8440a9e0b39e4de1d0f89bd9f0d1a9f194bf9ac6dc7ae1a45a63165",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/deepseek/deepseek-v3-2/8e16aa1f-55c2-4574-b8a4-b7a646493851_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2",
+      "suite": "judgebench",
+      "sha256": "76a655eedd5159a1da3c21d04ec5f56a580681d5f129fd9a4c8f88f5d3be9d64",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/deepseek/deepseek-v3-2-speciale/ec49ea30-280a-45e3-8843-3e4801241b51_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2-speciale",
+      "suite": "judgebench",
+      "sha256": "9fcf8d56c8be3ae94cacf32bb9b269b0ff4f62aea39dd7f2dca08e7d45a395d4",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/deepseek/deepseek-v4-flash-fp8/1e9de72c-5335-456c-947f-9deab4c0cfbe_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-flash-fp8",
+      "suite": "judgebench",
+      "sha256": "5f81a93069942d205987ae9af6a802395ae79a6c2d44d28aaf1afaf60db8b9a1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/deepseek/deepseek-v4-pro/9d77066d-304b-4d6a-883e-03a65f523cf3_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-pro",
+      "suite": "judgebench",
+      "sha256": "02b51c39d71b102fb18a7d45305a83ddbc962ef52dd87a4a0473604b6aa53aa6",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemini-3-1-pro-preview/0e52703c-bcfd-44fa-928d-ab230df0a7b8_samples.jsonl",
+      "model_id": "google/gemini-3-1-pro-preview",
+      "suite": "judgebench",
+      "sha256": "3e1040de75b7565fa4919bba32fffd0b026436ebf7180a5e04bedf259ed926be",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-2-27b-it/c88649b3-a382-4628-a17a-3ccf4a910ee6_samples.jsonl",
+      "model_id": "google/gemma-2-27b-it",
+      "suite": "judgebench",
+      "sha256": "f2fb291277f65467828456300c0428ab7b20f53ffffb5a71dafbec36178ac04d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-2-2b-it/f9ee20a1-c571-4eca-a741-debddf904c8b_samples.jsonl",
+      "model_id": "google/gemma-2-2b-it",
+      "suite": "judgebench",
+      "sha256": "6bed890ba3b5411eb1a05a30375ba1dd40b01819e0b65417a46e9463d7c47499",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-2-9b-it/c3e6d036-a7e7-41c3-8ff5-2c981c6a30a3_samples.jsonl",
+      "model_id": "google/gemma-2-9b-it",
+      "suite": "judgebench",
+      "sha256": "83677089bb0d3981f2da73c9a9866f6a8d1655871131d37f05f91518fdc24486",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-3-12b-it/f30a66df-2a04-4896-b3cb-caf29e172a95_samples.jsonl",
+      "model_id": "google/gemma-3-12b-it",
+      "suite": "judgebench",
+      "sha256": "70bed8360e24cd5fac9a77cff49b3e24dea21bd0ad57886901bec35f950d9350",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-3-27b-it/b46eb7c7-067e-40ff-9dad-fc638800b65b_samples.jsonl",
+      "model_id": "google/gemma-3-27b-it",
+      "suite": "judgebench",
+      "sha256": "ad7f73f91bb7243ecaf7dcab942bb8bd9f9d53411226d6d7f881e170d9a401fe",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-3-4b-it/09f9d10d-dcc4-49aa-8a6f-338ff72dd41c_samples.jsonl",
+      "model_id": "google/gemma-3-4b-it",
+      "suite": "judgebench",
+      "sha256": "c661add55352b23c4f889ea0b87081e2a6dea4740a831a2939f665f09d2e093d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-4-31b-it/1226af1b-9e7a-452a-9e03-3f54440b5d8d_samples.jsonl",
+      "model_id": "google/gemma-4-31b-it",
+      "suite": "judgebench",
+      "sha256": "2c90e4cce6e34352672915946a92f5d6a1fa1c2261604f4e8cefc3e067c397b1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-4-e2b-it/49793eb1-b580-4582-a733-d57f929bb71d_samples.jsonl",
+      "model_id": "google/gemma-4-e2b-it",
+      "suite": "judgebench",
+      "sha256": "5fcc0f9604e2995d9147e17b929204c8f54d9d9ae51e5a21a266f95f2d70dfd8",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/google/gemma-4-e4b-it/fa885a37-8bc1-4e14-8946-dd882fc5ad81_samples.jsonl",
+      "model_id": "google/gemma-4-e4b-it",
+      "suite": "judgebench",
+      "sha256": "419663df6dbf35fd120ab123a920e96468b13a3952a33ba987b5eed6766fc9fe",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/llm360/k2-v2-instruct/2b1ed611-a334-4e24-9582-16f99f0832ed_samples.jsonl",
+      "model_id": "llm360/k2-v2-instruct",
+      "suite": "judgebench",
+      "sha256": "069d345abb9b3616da3c499e210f4f648fb0685a1f8a39e28d72530c3926d4aa",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/meta/llama-4-maverick-17b-128e-instruct-fp8/1a56b181-fd87-47f7-a574-803328df9f9b_samples.jsonl",
+      "model_id": "meta/llama-4-maverick-17b-128e-instruct-fp8",
+      "suite": "judgebench",
+      "sha256": "556774a302bc15ba84a5a0a3891bc62d7db83abc82e1f85b0393a435857fb57f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/meta/meta-llama-3-1-8b-instruct/302ec42b-ff7c-47d0-8518-f194ca3f85a1_samples.jsonl",
+      "model_id": "meta/meta-llama-3-1-8b-instruct",
+      "suite": "judgebench",
+      "sha256": "cf4951c7b6331e366649a89b400d6ad690ad5b31c292dfae90c73911fd46adbc",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/minimax/minimax-m2-5/255cbc0c-4995-4764-b200-dd3f286803f2_samples.jsonl",
+      "model_id": "minimax/minimax-m2-5",
+      "suite": "judgebench",
+      "sha256": "115600a98d8dc306c4641183dafeef296b84ceba317b8764fec6535cae3b593e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/mistral/mistral-small-4-119b-2603/e5034bb7-6444-42ae-9f57-e159b13c84e9_samples.jsonl",
+      "model_id": "mistral/mistral-small-4-119b-2603",
+      "suite": "judgebench",
+      "sha256": "81818da1b9d38ddd8246bc9822da87593391913148bb5158f2d516d064e3ddc1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/moonshot/kimi-k2-5/7941bc4d-e120-47fe-abcf-a1eb413a1f1c_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-5",
+      "suite": "judgebench",
+      "sha256": "af5fa91a14d7547af99944153ca21bfe2db4da5a1b98107468051cf9651c7218",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/moonshot/kimi-k2-6/b21528d3-83ff-445f-9bb5-f03af7678357_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-6",
+      "suite": "judgebench",
+      "sha256": "fa7ecfa2d5e7399a91370ba39b4431ce9d4a02c14e2808658e37a4a5e4684a8a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/moonshot/kimi-k2-thinking/1d310f08-2803-46ef-a04a-05da4f82fef9_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-thinking",
+      "suite": "judgebench",
+      "sha256": "2053a142031541433ddda40938de94dc63c054eb93fa8fec92865b4fdb5dd7f9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/openai/gpt-5-5/49fcae1e-295b-4846-be0f-a34c6a9da169_samples.jsonl",
+      "model_id": "openai/gpt-5-5",
+      "suite": "judgebench",
+      "sha256": "3b29dc9f7a4390487de6658151c756ce0cfda121a35b1d6068ed997dc8930cc0",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/openai/gpt-5-mini/c576312a-551e-4806-a00a-53dd12646d57_samples.jsonl",
+      "model_id": "openai/gpt-5-mini",
+      "suite": "judgebench",
+      "sha256": "24cd057a169bda076ff90939677b6fd4df9938044fa157c7836f93b93b9c5169",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/openai/gpt-5-nano/dda575a6-3a94-4762-aa5a-c3ccd00f312f_samples.jsonl",
+      "model_id": "openai/gpt-5-nano",
+      "suite": "judgebench",
+      "sha256": "c911efe68065992d87604a67a64e506ac661c58909a30c4f123772fb53665cc4",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/openai/gpt-oss-120b/063f0ca6-23b8-4a90-933f-a738f31b6521_samples.jsonl",
+      "model_id": "openai/gpt-oss-120b",
+      "suite": "judgebench",
+      "sha256": "65157c39712f7d6287c28f267793a0ad722ff48d2fa0b60a740b7cdc454cbfbb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/openai/gpt-oss-20b/dc9fe4e6-b9d5-471a-8099-0ba8f36a2e8f_samples.jsonl",
+      "model_id": "openai/gpt-oss-20b",
+      "suite": "judgebench",
+      "sha256": "6a976cbc8fa3f791fabf319a54a6dab7b8245cc60f57f32756e2a879d2d753c2",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-30b-a3b-thinking-2507/cd84d6d6-e3a2-4a3f-a840-253a3018b7e8_samples.jsonl",
+      "model_id": "qwen/qwen3-30b-a3b-thinking-2507",
+      "suite": "judgebench",
+      "sha256": "215112dac826d36ecd1b350d431500b99dcc98916273599577550534ae1148cd",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-5-122b-a10b/9a1abbb8-a529-40a2-967a-d5cd05dcc687_samples.jsonl",
+      "model_id": "qwen/qwen3-5-122b-a10b",
+      "suite": "judgebench",
+      "sha256": "0e7c117c0f1e92bc55d53c94f7969bbf279771cd4f1df60e21a5ac9d01f3278a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-5-2b/c1faed69-cca2-43a4-a97a-2d4859161cf3_samples.jsonl",
+      "model_id": "qwen/qwen3-5-2b",
+      "suite": "judgebench",
+      "sha256": "b340389007ec41251cc7cc75ae005ff5d0df465233d0a5482aa80d9bcb77b8d3",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-5-35b-a3b/59b39a52-1686-4e0e-8594-650a3e807043_samples.jsonl",
+      "model_id": "qwen/qwen3-5-35b-a3b",
+      "suite": "judgebench",
+      "sha256": "c360ff3a91b50551bc4661793047ae76539dc85b987b753f400f588e39ec8c29",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-5-397b-a17b/976af6ee-deea-4c8a-b75f-47a5b28dbfb6_samples.jsonl",
+      "model_id": "qwen/qwen3-5-397b-a17b",
+      "suite": "judgebench",
+      "sha256": "b1c9afe4300b967c53547257b24e4b3d13d66dbe6996c22f11c021474dc2147e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-5-4b/57f3f4d0-e0a2-4491-968f-932917814fab_samples.jsonl",
+      "model_id": "qwen/qwen3-5-4b",
+      "suite": "judgebench",
+      "sha256": "a3e40af51f29f49d6bc73512c8a30bb8d0c7de4189d7b8647f910bc13351ec46",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-5-9b/3a4fd951-97ef-475b-8f57-36bb77355b30_samples.jsonl",
+      "model_id": "qwen/qwen3-5-9b",
+      "suite": "judgebench",
+      "sha256": "9c876c21524697e793f52ee7d850ed6be94509a6c2aac306dfd9f7e8891940fa",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-6-35b-a3b/94e12e91-c634-4570-9795-0e6d133cde0e_samples.jsonl",
+      "model_id": "qwen/qwen3-6-35b-a3b",
+      "suite": "judgebench",
+      "sha256": "6b7c32b78ab287a18aea31f312abf33cb396015ddd7da80c8951adf4068e6004",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-6-plus/f8f2541f-3300-4c1b-b8fd-f256f4e20f45_samples.jsonl",
+      "model_id": "qwen/qwen3-6-plus",
+      "suite": "judgebench",
+      "sha256": "778f43169f693e5899f4f3de5bd43648fb6729742ff0b40518ec94620d803641",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/qwen/qwen3-next-80b-a3b-thinking/72e6d60c-1e48-4808-bcdd-7108ace705a4_samples.jsonl",
+      "model_id": "qwen/qwen3-next-80b-a3b-thinking",
+      "suite": "judgebench",
+      "sha256": "8d822b603fc4d3a3a8ee66685c6dc93335a589979836acedbaebb2e333361c08",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/stepfun/step-3-5-flash/30066268-d354-4bfa-a55d-ff5e32cafd25_samples.jsonl",
+      "model_id": "stepfun/step-3-5-flash",
+      "suite": "judgebench",
+      "sha256": "a828262b9d39854a90fd1bfe24239b7a070859f9630913f43ec40811e2962156",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/xiaomi/mimo-v2-flash/3dd36b93-d6e1-40dd-ab27-4207e7f3f225_samples.jsonl",
+      "model_id": "xiaomi/mimo-v2-flash",
+      "suite": "judgebench",
+      "sha256": "eec29b5755f8e795c695b87fb194f837009fb07d5d3e84ae0dbe3de3ec0bf731",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/zai-org/glm-4-6-fp8/642559c0-f411-40cc-9fc9-52a90119d698_samples.jsonl",
+      "model_id": "zai-org/glm-4-6-fp8",
+      "suite": "judgebench",
+      "sha256": "01ec9515dd9b571854374a301a69366cd0b463834ab3dc1951177923a5bac5d7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/zai-org/glm-4-7-flash/2b6c9492-ea2c-4096-ab42-1d068fdac33b_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-flash",
+      "suite": "judgebench",
+      "sha256": "bb87eab168155140154a2f4535b7e59a95c3cc420c064835bd02195b1d1b55fc",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/zai-org/glm-4-7-fp8/990b981f-d4de-4943-89ec-87f33a6112fd_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-fp8",
+      "suite": "judgebench",
+      "sha256": "3a3c5e55a01f4c2e9675b6bacbff906c1ab07d7189c13a4b9eb2d0ae3304ed2f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/zai-org/glm-5-1-fp8/d2fe2474-1e2d-420c-924a-d41a56948f59_samples.jsonl",
+      "model_id": "zai-org/glm-5-1-fp8",
+      "suite": "judgebench",
+      "sha256": "2cfc6dc61951588aab35825c7bd9f482eda634cc5424eac32a83543128e0443f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/judgebench/zai-org/glm-5-fp8/4972c5d7-a6c3-4642-93e7-4df48d3d1882_samples.jsonl",
+      "model_id": "zai-org/glm-5-fp8",
+      "suite": "judgebench",
+      "sha256": "17344f6e45d2542097c86059a254a730f91f976c5930537465f0bf1c50c8d656",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 350,
+      "n_scored_rows": 350,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/allenai/olmo-3-1-32b-think/789d053e-96c6-4922-ab34-efaf16a4ec05_samples.jsonl",
+      "model_id": "allenai/olmo-3-1-32b-think",
+      "suite": "math-mc",
+      "sha256": "ca2506f500cac4669fde08fc741e6c786f40bbcaaa476566b3d38d760aa6970d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/anthropic/claude-opus-4-6/415ea0f8-b268-4204-862d-a667d5164936_samples.jsonl",
+      "model_id": "anthropic/claude-opus-4-6",
+      "suite": "math-mc",
+      "sha256": "19c24b3e41eda08175fbeaea4ddd54f2c294ff6a73eee2805de106cf46674f23",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/cohere/c4ai-command-a-03-2025/bea93d2f-41d1-46f9-a117-63dde7100d61_samples.jsonl",
+      "model_id": "cohere/c4ai-command-a-03-2025",
+      "suite": "math-mc",
+      "sha256": "1732039114b6b09f7509082290926770ed5286d61c32275d9f605f061bd19173",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/cohere/c4ai-command-r-08-2024/d058c650-c173-4e75-81ee-b3d6636632e7_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-08-2024",
+      "suite": "math-mc",
+      "sha256": "16686af8fb92808ddebbdacf3e41bb5cb8c22eb54c09cda10e177c237f7298e8",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/cohere/c4ai-command-r-plus-08-2024/fbcc45c4-4104-4332-9a9a-0ac022487bb9_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-plus-08-2024",
+      "suite": "math-mc",
+      "sha256": "5990b8787b79e2fdda70a2ca2d8407c0115785babd7623e73d9295a61dfb3538",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/cohere/c4ai-command-r7b-12-2024/3951169a-5415-4bc5-a0d5-ec2bfb308b75_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r7b-12-2024",
+      "suite": "math-mc",
+      "sha256": "ccd680239f1a8db91b8f19c54789333b8fcd8246bec2feb010fca1aa8739b4e3",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/cohere/command-a-reasoning-08-2025/441dbcfa-b890-465f-bbdf-3ea6af2c4559_samples.jsonl",
+      "model_id": "cohere/command-a-reasoning-08-2025",
+      "suite": "math-mc",
+      "sha256": "242708dc3022c55decc9cdf5560364e772d075e2f2f447ea4ab74450e7742fd2",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/cohere/tiny-aya-global/b9b0a9f6-b6b2-4f16-87ba-dd3b00ac3698_samples.jsonl",
+      "model_id": "cohere/tiny-aya-global",
+      "suite": "math-mc",
+      "sha256": "d44d1ce14e52ac9636e0d7d17d96060d648c29d04f9361ef7129aece00f9f80a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/deepseek/deepseek-r1-0528/db7f33d2-1b83-4641-b98a-6ab50934c441_samples.jsonl",
+      "model_id": "deepseek/deepseek-r1-0528",
+      "suite": "math-mc",
+      "sha256": "f849e766f8095562c102d7f29a110d238cd2df46c6ccb420c169ee157a7a2632",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/deepseek/deepseek-v3-1-terminus/66b2c598-597b-4c3d-9691-fbdd10d89e65_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-1-terminus",
+      "suite": "math-mc",
+      "sha256": "c9e3cee4ddc150c8a39476d64ed6758b570e5c4fa20dad2522a4ed52083515be",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/deepseek/deepseek-v3-2/b35a03d5-315a-4be6-9777-a4f2f97e3a8c_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2",
+      "suite": "math-mc",
+      "sha256": "a0c89b5bfb311604690abf4cb43e1ccac473ef6d89ba43134962906156612903",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/deepseek/deepseek-v3-2-speciale/0f30d041-62ac-45ec-9417-4774d9509003_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2-speciale",
+      "suite": "math-mc",
+      "sha256": "d9824b6a314f75950d00fcce2dff5feb88d99490f0bec53be24b5987b6243547",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/deepseek/deepseek-v4-flash-fp8/3b607e7e-7df3-4d6a-9a08-34dc9914f98a_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-flash-fp8",
+      "suite": "math-mc",
+      "sha256": "5f035af247c0b87cda3cefc6ad94ab51ebdf4e3f69a2685280f8ec43742757c7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/deepseek/deepseek-v4-pro/4e3a30e5-d0cb-4208-aeeb-88701a8b9988_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-pro",
+      "suite": "math-mc",
+      "sha256": "651a218be5826f3172eaf0659e1ee782a73620da0dc4f2b0c302b34af07b69e1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemini-3-1-pro-preview/f3ac7bc5-f9f0-47e8-b99e-d1cfd72bb0b8_samples.jsonl",
+      "model_id": "google/gemini-3-1-pro-preview",
+      "suite": "math-mc",
+      "sha256": "360e069b9f0f8f758ab5e49a23f851d63871f399d84102cca09092e1af76bfa0",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4912,
+      "n_scored_rows": 4914,
+      "rejected": 2
+    },
+    {
+      "path": "data/math-mc/google/gemma-2-27b-it/e1294511-b7e8-478d-80ab-8a4f1a1fbf30_samples.jsonl",
+      "model_id": "google/gemma-2-27b-it",
+      "suite": "math-mc",
+      "sha256": "67ce889f96e0c30f10e0602696c96faae69a956b2c08d4d32417583cf6403727",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-2-2b-it/747d93b5-60cd-4572-834c-a07ad86feeaf_samples.jsonl",
+      "model_id": "google/gemma-2-2b-it",
+      "suite": "math-mc",
+      "sha256": "b844f6ba1772d4021934024664a55a0a1c09ab398235668227e69f1e2f71da8d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-2-9b-it/63e723fa-3a22-4546-8e4e-7efcb566ad34_samples.jsonl",
+      "model_id": "google/gemma-2-9b-it",
+      "suite": "math-mc",
+      "sha256": "61ac414e8b09a61647275a321528253115fc9fdff9340078ae3478e274428910",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-3-12b-it/254a4268-103b-4c81-afae-a185ac8f04fe_samples.jsonl",
+      "model_id": "google/gemma-3-12b-it",
+      "suite": "math-mc",
+      "sha256": "149e01cd43ae68bd6084461cfb31d2f7a5c1c1f8e265fd68f16fecfac3f7396e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-3-1b-it/dcb22e0a-6ed1-4eab-b4eb-dbda254bf40b_samples.jsonl",
+      "model_id": "google/gemma-3-1b-it",
+      "suite": "math-mc",
+      "sha256": "daacc2ee6438de9b34b80258f7d76209729702dbbdd43f1d4812139672274691",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-3-27b-it/f2b0c433-50ac-4d4a-b726-9754801e4b71_samples.jsonl",
+      "model_id": "google/gemma-3-27b-it",
+      "suite": "math-mc",
+      "sha256": "a155d95103a9224c8dd75b3beef215977d4143c9c1c0606fab69baed9e20d783",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-3-4b-it/8d6e4dba-dd92-47b4-ba64-1e83e7d6fe57_samples.jsonl",
+      "model_id": "google/gemma-3-4b-it",
+      "suite": "math-mc",
+      "sha256": "0caa33ef01b66d4816d4e7bfee17945d9262eed110e0e010fd9a9f17dcba42bb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-4-26b-a4b-it/540af6d4-cb66-4d59-b757-964cc9cf5b49_samples.jsonl",
+      "model_id": "google/gemma-4-26b-a4b-it",
+      "suite": "math-mc",
+      "sha256": "05521dfaf99c593435a8edc51a1a1844aedde25db1e99b97695d5cb46c8b22dc",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-4-31b-it/15c594bc-f3fb-449e-acad-76f35ba9bd0a_samples.jsonl",
+      "model_id": "google/gemma-4-31b-it",
+      "suite": "math-mc",
+      "sha256": "ebe55a26fbef5cbdd431e9e0a6a60fe8ab19ac6f0e9dd382f7eec6287bee9fe0",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-4-e2b-it/5a0ab76c-a9a1-4568-ac3d-2e35a45a33e2_samples.jsonl",
+      "model_id": "google/gemma-4-e2b-it",
+      "suite": "math-mc",
+      "sha256": "4d66d6c50d882717dc5a2148893af37e334da0542ed89fc4e3d492ca45dc8697",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/google/gemma-4-e4b-it/693f9db9-be85-4c8a-b695-1aa9ff52b4c1_samples.jsonl",
+      "model_id": "google/gemma-4-e4b-it",
+      "suite": "math-mc",
+      "sha256": "9076ee1ba33e5d9add49f6e9e20caa55e3e4d49bf08871eeb2dc40dd0313541a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/llm360/k2-v2-instruct/7c663529-4adb-4e0a-94cf-4cd05046b86d_samples.jsonl",
+      "model_id": "llm360/k2-v2-instruct",
+      "suite": "math-mc",
+      "sha256": "f6c4b9b5e6eab9897b1fe87161f486f38b92aaf7b78b8ed8976aa14bd20e9825",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/meta/llama-2-70b-chat-hf/d228ca03-d2e2-4e0a-b41f-3af15491986b_samples.jsonl",
+      "model_id": "meta/llama-2-70b-chat-hf",
+      "suite": "math-mc",
+      "sha256": "8b09ade0d795fb7a4eec76a753462643b2be4c7027d81aac3df1f715f0f47dcf",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/meta/llama-3-2-1b-instruct/aa608ca7-033a-41e6-8e82-87e70f0f1809_samples.jsonl",
+      "model_id": "meta/llama-3-2-1b-instruct",
+      "suite": "math-mc",
+      "sha256": "0903e1b8b80f09a919ca0501f3a2c9bd8d52ba553d2ff29acb90441f18811c76",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/meta/llama-3-2-3b-instruct/4f075cbe-bbdc-4d30-8969-279084181c8c_samples.jsonl",
+      "model_id": "meta/llama-3-2-3b-instruct",
+      "suite": "math-mc",
+      "sha256": "3d0c45804c9bdc2c488564272073df8fa3528099f0d69c2c026575a220e680c7",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/meta/llama-3-3-70b-instruct/4c013808-828e-42cb-ba49-cb2808909e0e_samples.jsonl",
+      "model_id": "meta/llama-3-3-70b-instruct",
+      "suite": "math-mc",
+      "sha256": "30edf6e281ff4f6d61bc2a49c27e1368e183b948b38995089948840fc1f90eb9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/meta/llama-4-maverick-17b-128e-instruct-fp8/4026cfdb-1ce3-43a2-9362-418c9c7b97d6_samples.jsonl",
+      "model_id": "meta/llama-4-maverick-17b-128e-instruct-fp8",
+      "suite": "math-mc",
+      "sha256": "772bbb37967610f6dbdeef9f919b8393bde6a9b8f3c467b56a1c6b89a0733642",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/meta/llama-4-scout-17b-16e-instruct/c4675aa8-60b4-4427-b4b3-077a7fac042d_samples.jsonl",
+      "model_id": "meta/llama-4-scout-17b-16e-instruct",
+      "suite": "math-mc",
+      "sha256": "74f67e04d94f56f4e0385f4dfed7dfe307ce0671c38ffea1757d99a165d098c8",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/meta/meta-llama-3-1-8b-instruct/6670695a-976c-42c8-bcbd-f33faf965304_samples.jsonl",
+      "model_id": "meta/meta-llama-3-1-8b-instruct",
+      "suite": "math-mc",
+      "sha256": "56f9034efabb6f61446be4fbea9aac756c3cd8037e0625f8a83490ddcd1aacad",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/minimax/minimax-m2-1/e1d3bccc-4c63-4c0f-a22a-8b591a715992_samples.jsonl",
+      "model_id": "minimax/minimax-m2-1",
+      "suite": "math-mc",
+      "sha256": "4cde1825ca582af1cc1718a767c0e68378a1e82762032eab5920d9d677a24754",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/minimax/minimax-m2-5/17bbc464-f837-4995-84cf-9909057a3194_samples.jsonl",
+      "model_id": "minimax/minimax-m2-5",
+      "suite": "math-mc",
+      "sha256": "55855e7e36cfb3ec37c3c1e7e1dcd012a03e5550bb70af8ccd4daa64bebc1fe9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/mistral/mistral-large-3-675b-instruct-2512/1dcd0790-b6e2-4ab9-acbe-7ef4d0b96c54_samples.jsonl",
+      "model_id": "mistral/mistral-large-3-675b-instruct-2512",
+      "suite": "math-mc",
+      "sha256": "24d9e017ebb0c16acdb46a9c4eb83f50163a0ac512f4ebf9a621b58e1f767841",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/mistral/mistral-small-4-119b-2603/88bb7709-c48d-45a3-bc04-e25326b6ea10_samples.jsonl",
+      "model_id": "mistral/mistral-small-4-119b-2603",
+      "suite": "math-mc",
+      "sha256": "b9feeb31cd34aff7854c184c4fc00f12b674ccfb962309d6d657690b15fe3879",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/moonshot/kimi-k2-5/5ecccfb8-6774-4558-81b0-23ff92c09dfb_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-5",
+      "suite": "math-mc",
+      "sha256": "162afbc7620466373d782e6ff066a5d99e64ca9cf305c2270a9aef439e42eca9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/moonshot/kimi-k2-6/9188ec84-344e-4b3c-b11a-8ebc6688488b_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-6",
+      "suite": "math-mc",
+      "sha256": "2686616c7df5ab76bc6a6bccb06af4ced9b0022f6c959ff0d07db18da8a47abf",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/moonshot/kimi-k2-thinking/0dc9b9f4-a10e-4a48-9f53-84b2301bc6c5_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-thinking",
+      "suite": "math-mc",
+      "sha256": "5005ccbfdd417d38aabc515756fcf88711af0d031e8f61528e25176cb1ac1743",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/nvidia/nvidia-nemotron-3-nano-30b-a3b-fp8/e2ec44fb-1dac-4b8d-a4f9-466c47aec659_samples.jsonl",
+      "model_id": "nvidia/nvidia-nemotron-3-nano-30b-a3b-fp8",
+      "suite": "math-mc",
+      "sha256": "f1bf4b4af9f5d13a3310b0926079e23572030c8ec5f4f477c9a547dd1b9d7173",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/nvidia/nvidia-nemotron-3-super-120b-a12b-fp8/5f43be72-548a-435a-a51d-7c334d0e700b_samples.jsonl",
+      "model_id": "nvidia/nvidia-nemotron-3-super-120b-a12b-fp8",
+      "suite": "math-mc",
+      "sha256": "26f40456a10cda9be7ea8d37bbd58f2442f5b67d9027de7fd4d1a4f0f3adb804",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/openai/gpt-5-5/85aea181-8b18-41d5-867f-44d65449246f_samples.jsonl",
+      "model_id": "openai/gpt-5-5",
+      "suite": "math-mc",
+      "sha256": "e6f61a564384bb5556ed11670e239b23f24653f1f69c33ee8e7968b1bc875227",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/openai/gpt-5-mini/77f8ba88-4b7d-4f0d-abf2-4515fd2fbf90_samples.jsonl",
+      "model_id": "openai/gpt-5-mini",
+      "suite": "math-mc",
+      "sha256": "253c3b182ffeb3c24832fdaced2208645e8c2322c12143a23659e25ba3d36a24",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/openai/gpt-5-nano/edf7598b-13e1-4f70-9fcd-8572c1cf5678_samples.jsonl",
+      "model_id": "openai/gpt-5-nano",
+      "suite": "math-mc",
+      "sha256": "e85d6762703ca69948a55e18080b8fca03d5c6253b66420006ff3e96d26116ce",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4913,
+      "n_scored_rows": 4914,
+      "rejected": 1
+    },
+    {
+      "path": "data/math-mc/openai/gpt-oss-120b/853741ee-acac-43e0-a9e5-c5e94fd3f67a_samples.jsonl",
+      "model_id": "openai/gpt-oss-120b",
+      "suite": "math-mc",
+      "sha256": "822b03599011c27771b6764216fd0d22d6fba5b8539cb6bf1ce1475a71e35f5e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/openai/gpt-oss-20b/119eedb9-8c0a-4034-86a1-61f1c8b4cad5_samples.jsonl",
+      "model_id": "openai/gpt-oss-20b",
+      "suite": "math-mc",
+      "sha256": "bad2cb57e8b726c97d5dae02cefbb5a1660e4e928a7be5fe72e4a522739e753a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-30b-a3b-thinking-2507/de3c67ef-80a7-454b-bf79-ff14168c2259_samples.jsonl",
+      "model_id": "qwen/qwen3-30b-a3b-thinking-2507",
+      "suite": "math-mc",
+      "sha256": "7d47b30873cbe05d58fe98ad151921e88feb471cbaf0e6aff5821c012e873850",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-0-8b/4925026f-87b2-448f-8f06-b9fafcb38418_samples.jsonl",
+      "model_id": "qwen/qwen3-5-0-8b",
+      "suite": "math-mc",
+      "sha256": "5a9d90c0fe40e37b488ca0a659068220adababb423f54c7d80d1da260b84198c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-122b-a10b/8a4145a3-7ded-4ba1-a7f5-49295a84d600_samples.jsonl",
+      "model_id": "qwen/qwen3-5-122b-a10b",
+      "suite": "math-mc",
+      "sha256": "f1a9eeae34332877c33c878576c1e81251bdd6b3244f5cc3f30631e045b64f11",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-27b/76d25ce9-6907-47f4-90e6-f10d260cce90_samples.jsonl",
+      "model_id": "qwen/qwen3-5-27b",
+      "suite": "math-mc",
+      "sha256": "0af354d5e4c3780bdd2aa1d5330d4b8a205560c72cca642a5adb3495a3efeda9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-2b/906529b1-7a18-4fb4-8e28-8f6228adf6fe_samples.jsonl",
+      "model_id": "qwen/qwen3-5-2b",
+      "suite": "math-mc",
+      "sha256": "6f2477304b79357d688bfa2b9567c8cce11be52fb3b8fa510af055534ff49ab9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-35b-a3b/797fa473-88be-49c6-a056-1e59384916ea_samples.jsonl",
+      "model_id": "qwen/qwen3-5-35b-a3b",
+      "suite": "math-mc",
+      "sha256": "21613beffad68f6c4d7522a2824c62b874eac0f3a572e6b62b9084498ff93151",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-397b-a17b/3521bc2f-684b-4fc3-8f7f-edecf8d520b6_samples.jsonl",
+      "model_id": "qwen/qwen3-5-397b-a17b",
+      "suite": "math-mc",
+      "sha256": "32c0931080026de0494327ad9aa2d2099872b9d16b8fb083d1eaa058a9ae6ec2",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-4b/8b3334c2-56d4-4a11-b747-2473e3001f59_samples.jsonl",
+      "model_id": "qwen/qwen3-5-4b",
+      "suite": "math-mc",
+      "sha256": "b7243fd56a4c4cce5a7b3e22771122d23aa806653be8dfaabd9aa92db1223d3e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-5-9b/2ade549b-710f-4dce-846f-2f5642da0057_samples.jsonl",
+      "model_id": "qwen/qwen3-5-9b",
+      "suite": "math-mc",
+      "sha256": "7f39d46e83e5877255e12e1b31d97cce252847aa48ee79248e8e3366cc5eca49",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-6-35b-a3b/4cb24b25-e169-436c-a068-95c6f9f9408a_samples.jsonl",
+      "model_id": "qwen/qwen3-6-35b-a3b",
+      "suite": "math-mc",
+      "sha256": "e186dd6e18a3f9bdddb89a9e6d09dd72a45dc06a4b44cc66fd552fc1b2292b61",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-6-plus/d3f1c02f-d1e9-4cee-8210-40c98be3654d_samples.jsonl",
+      "model_id": "qwen/qwen3-6-plus",
+      "suite": "math-mc",
+      "sha256": "690e90aa3893bed233778afd3ed1261b42069e4f120b7371bba55df8b7f358ed",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-next-80b-a3b-thinking/2fa53db7-10d0-4da1-948b-8aadbb345bbc_samples.jsonl",
+      "model_id": "qwen/qwen3-next-80b-a3b-thinking",
+      "suite": "math-mc",
+      "sha256": "d2525639c97942f18728633a7096e9404200ce8352508d8f0a3f16b52b4d7fff",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/qwen/qwen3-vl-235b-a22b-thinking-fp8/2470100f-d5fd-454c-8934-8307815eb8e5_samples.jsonl",
+      "model_id": "qwen/qwen3-vl-235b-a22b-thinking-fp8",
+      "suite": "math-mc",
+      "sha256": "cbe3faaf052aeca08ed0b841de08eb6abe5405119c035fbcf846e89a1576a2d2",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/stepfun/step-3-5-flash/61ad4bc4-a3bb-4fee-b9e5-7cfda3ac1352_samples.jsonl",
+      "model_id": "stepfun/step-3-5-flash",
+      "suite": "math-mc",
+      "sha256": "5d8b29287a312990a86fce9bff726aef374f533b2a073cea1507e74ddefe7b9e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/xiaomi/mimo-v2-flash/4e123497-9f9d-40cb-a12c-1e4f3780eda4_samples.jsonl",
+      "model_id": "xiaomi/mimo-v2-flash",
+      "suite": "math-mc",
+      "sha256": "0a6cdc6fab467b629244b07922adbc07e71f90f0fdd21b0e2f0f5f60a5ffc256",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/zai-org/glm-4-5-air/a17390a2-51c7-4590-9429-bc0dbac06836_samples.jsonl",
+      "model_id": "zai-org/glm-4-5-air",
+      "suite": "math-mc",
+      "sha256": "6c79e6e52f7728fa2766ad1c615756a78b597c7d6c921c468e7a9a60eec1d42f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/zai-org/glm-4-6-fp8/168f1369-7e4a-44b1-921c-2279489e47fd_samples.jsonl",
+      "model_id": "zai-org/glm-4-6-fp8",
+      "suite": "math-mc",
+      "sha256": "948a4d4ec0ff9e6c170630ac07af0fe193f768222860aa6ce961e209efe68781",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/zai-org/glm-4-7-flash/38a52123-e9cf-4dc0-b851-debaadeb933d_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-flash",
+      "suite": "math-mc",
+      "sha256": "5b17f11417bd3097b25765aab092e48dcf5b75c535a4065af39cfa4165d005dd",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/zai-org/glm-4-7-fp8/33a2abe1-68a7-443f-a477-85ffca777c0f_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-fp8",
+      "suite": "math-mc",
+      "sha256": "f94e6b14f7c16f3ff47a19f4e16b3615d32fa113341dd67e0231da389d5b30eb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/zai-org/glm-5-1-fp8/ba09249d-8a2d-4d08-9c4a-58e6c02d781b_samples.jsonl",
+      "model_id": "zai-org/glm-5-1-fp8",
+      "suite": "math-mc",
+      "sha256": "055b212b2ed8e067d008b8f6a9372bc12521781f35a7faaf75a6ecacb2be548e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/math-mc/zai-org/glm-5-fp8/19186bba-9208-4378-8700-2c5581380e83_samples.jsonl",
+      "model_id": "zai-org/glm-5-fp8",
+      "suite": "math-mc",
+      "sha256": "88c7b3cf17bed7772082f778d31d4c6ad479937c0667bc37917bf8cead60e055",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 4914,
+      "n_scored_rows": 4914,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/cohere/c4ai-command-a-03-2025/833846c5-2e81-411b-ad63-5e23c60ffd4a_samples.jsonl",
+      "model_id": "cohere/c4ai-command-a-03-2025",
+      "suite": "reward-bench-2",
+      "sha256": "21600fb1a0ca942d3205b549d14a60cf39cd7ce98c0a3b0876cbfc70b275b0b3",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/cohere/c4ai-command-r-08-2024/9eda4630-f915-4395-aa60-e50115d45cf0_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-08-2024",
+      "suite": "reward-bench-2",
+      "sha256": "0adf98af8414ec3991bd330e93282052be69c1546aa9e1851c2e603ab8596e6c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/cohere/c4ai-command-r-plus-08-2024/fc7aa40d-60b1-45eb-887e-c4a12af17fba_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r-plus-08-2024",
+      "suite": "reward-bench-2",
+      "sha256": "79635b62c84a4b25e944c8bb4bf589f9b2efd263e747ec95edd91ef1f5336ee1",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/cohere/c4ai-command-r7b-12-2024/a8d719cc-d836-4f7e-b85c-21ea3b7cbb8e_samples.jsonl",
+      "model_id": "cohere/c4ai-command-r7b-12-2024",
+      "suite": "reward-bench-2",
+      "sha256": "79fa188314b4d03cb2d1cba2d94b2bab58cdaddd438f4f4d1e8823cb8b10e404",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/cohere/command-a-reasoning-08-2025/50d23bc8-e8eb-4747-8e81-9a9a011201d4_samples.jsonl",
+      "model_id": "cohere/command-a-reasoning-08-2025",
+      "suite": "reward-bench-2",
+      "sha256": "3eea84f3557fd92d910f06c540fcb1056486e2489ceb77c06f0cf823697462cb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/deepseek/deepseek-r1-0528/f8098c9d-d30e-4227-8d39-3e57146df15d_samples.jsonl",
+      "model_id": "deepseek/deepseek-r1-0528",
+      "suite": "reward-bench-2",
+      "sha256": "9f29510e978fceb79d608de49307dd7027e318e4356c0539261334626275cd63",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/deepseek/deepseek-v3-1-terminus/4ecd5f1a-e127-4372-a339-3a67c8b8d156_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-1-terminus",
+      "suite": "reward-bench-2",
+      "sha256": "baa5907f419efc0c78a6f97346186caa70511d557210d3c7bdc8636153c31458",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/deepseek/deepseek-v3-2/25a068ff-4c6f-45bc-9bc2-da1ed23bb323_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2",
+      "suite": "reward-bench-2",
+      "sha256": "2b0fe2ef34f958c949e884f7d75e2e02f450c6c0bc659ded58e98c36ce5b5421",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/deepseek/deepseek-v3-2-speciale/6491e5d8-0079-451d-822a-afca71d3bd59_samples.jsonl",
+      "model_id": "deepseek/deepseek-v3-2-speciale",
+      "suite": "reward-bench-2",
+      "sha256": "bf711d08494f5a810ff6f055af02de6c93b741311ab254e3a297820e878f4ccf",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/deepseek/deepseek-v4-flash-fp8/07c2c86f-1a62-4f86-9e00-d3f702b4fb13_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-flash-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "901892ead5e096e4949c357b12079428afa04074f9f4762c746d9ee10e4ea52d",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/deepseek/deepseek-v4-pro/7febc83a-a267-4a9e-8671-0bb4d71ad62d_samples.jsonl",
+      "model_id": "deepseek/deepseek-v4-pro",
+      "suite": "reward-bench-2",
+      "sha256": "513bf25e83771999d1582227c1d54d0ac4adc279e41afb1a5a7e7d53954c48f9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/google/gemini-3-1-pro-preview/3dc378a0-6f96-4082-aef0-7baf62638a69_samples.jsonl",
+      "model_id": "google/gemini-3-1-pro-preview",
+      "suite": "reward-bench-2",
+      "sha256": "2ac6054b62a63412a9cd0ef463340eb864f8c8ec6d016838d3b5750b6c918449",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/google/gemma-2-27b-it/86b5fa5d-5a9b-4d34-9dc1-a544bd683762_samples.jsonl",
+      "model_id": "google/gemma-2-27b-it",
+      "suite": "reward-bench-2",
+      "sha256": "21098dbfb5dc2b18b8dff1b5ffce287dc8c661e54c4150131e03627c328f69ca",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/google/gemma-2-9b-it/decce5e4-159f-4af6-8fc9-d2794ab99492_samples.jsonl",
+      "model_id": "google/gemma-2-9b-it",
+      "suite": "reward-bench-2",
+      "sha256": "80837e8e82430c7f473f0373a524f8621ec78828ee0421ea514b95c5d46313db",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/google/gemma-3-12b-it/051c5c53-97c1-4e34-ab7b-9bc9d2e6aff2_samples.jsonl",
+      "model_id": "google/gemma-3-12b-it",
+      "suite": "reward-bench-2",
+      "sha256": "d2d4c45c8ff23ac123047bb5d0ff6f14702ab66511a6fb04b5e448f9b615d735",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/google/gemma-3-27b-it/56d26de7-d23e-4101-b60a-965e711be895_samples.jsonl",
+      "model_id": "google/gemma-3-27b-it",
+      "suite": "reward-bench-2",
+      "sha256": "610cb02cf2a2d6475b233055cd644a6c747e207ddb54c3c3fcedf9abc508643b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/google/gemma-4-e2b-it/b154d6f0-30e9-4b36-a3cd-14fa2122f0ef_samples.jsonl",
+      "model_id": "google/gemma-4-e2b-it",
+      "suite": "reward-bench-2",
+      "sha256": "997c03a421cd4b29c0236a687c1534aefdc57d42f08ac7db97874882718180cc",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/google/gemma-4-e4b-it/1b8c084c-eaf3-4215-9692-5174b5af4587_samples.jsonl",
+      "model_id": "google/gemma-4-e4b-it",
+      "suite": "reward-bench-2",
+      "sha256": "ac0826c89cefa89e919a6cd7ae1c759b0b84fa32b041460255d8bcf885457550",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/llm360/k2-v2-instruct/5079cadf-226b-4a86-af26-cce49ed58134_samples.jsonl",
+      "model_id": "llm360/k2-v2-instruct",
+      "suite": "reward-bench-2",
+      "sha256": "87119368d4aae8b9023709fbcf82a4853cbaeac1cddf6ce8dd7155fdb2097ab5",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/meta/llama-3-3-70b-instruct/29ecd3d6-c19a-4b88-8065-15598ea7e955_samples.jsonl",
+      "model_id": "meta/llama-3-3-70b-instruct",
+      "suite": "reward-bench-2",
+      "sha256": "1472d75c3576643a841dc9746d3a5c7cc09eabc17ebfdbaf0071cc36cfc127c4",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/meta/llama-4-maverick-17b-128e-instruct-fp8/59679e3b-4c02-486e-a62b-5633067b5a3c_samples.jsonl",
+      "model_id": "meta/llama-4-maverick-17b-128e-instruct-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "7d2ac9e2ef82ec8e3d310f8a943b783e286d8d191d1b191f956569a13d725dae",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/meta/meta-llama-3-1-8b-instruct/94978678-e71a-4253-a044-db06cbbeee70_samples.jsonl",
+      "model_id": "meta/meta-llama-3-1-8b-instruct",
+      "suite": "reward-bench-2",
+      "sha256": "2e1d53d5891df2dce0e6e2628221b5099389169ac93f49fbb2d189c1c6037874",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/minimax/minimax-m2-1/050d81f1-b04c-41fe-b7c7-dc3909da6efe_samples.jsonl",
+      "model_id": "minimax/minimax-m2-1",
+      "suite": "reward-bench-2",
+      "sha256": "080def39276356c9ab53f9de5246e8fd3f74f93af3acdb8e45a8dc15cd036b57",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/minimax/minimax-m2-5/91b583f0-7e22-44e7-aa3b-884b13d383a0_samples.jsonl",
+      "model_id": "minimax/minimax-m2-5",
+      "suite": "reward-bench-2",
+      "sha256": "ec7ac652ce05685c28e4f944fed20a24635e240cbcbf66770dc32003440c6d46",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/mistral/mistral-large-3-675b-instruct-2512/841a250b-14f5-4e3d-938a-6a939e0a8efc_samples.jsonl",
+      "model_id": "mistral/mistral-large-3-675b-instruct-2512",
+      "suite": "reward-bench-2",
+      "sha256": "99b07bd7549ef45daa384bb91927af633aa9c7aff8d08b46d549bebbe5af8990",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/mistral/mistral-small-4-119b-2603/ad349c27-82cd-41f6-a34a-cb68b909a684_samples.jsonl",
+      "model_id": "mistral/mistral-small-4-119b-2603",
+      "suite": "reward-bench-2",
+      "sha256": "fc8a8ffb790ab9b6cf6e72bbb0287061ebeaf79c42746e74bd5cefdd1b57544f",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/moonshot/kimi-k2-5/e8f42e68-cc35-452c-ab4b-2f004e6b0ff7_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-5",
+      "suite": "reward-bench-2",
+      "sha256": "31b41ac9bac1873085ae8f0f4ac8d6e732e8a68ea4fb15f24850845a115a3d0a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/moonshot/kimi-k2-6/b4ae7360-defc-469f-9802-178bbaf83d35_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-6",
+      "suite": "reward-bench-2",
+      "sha256": "c202e319d31013af1f16f6f658bc0aaf2c46eb6654fc3de438c2b12ce7e1bccd",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/moonshot/kimi-k2-thinking/219c2b82-0cf8-4fd6-9274-87bfe35e3975_samples.jsonl",
+      "model_id": "moonshot/kimi-k2-thinking",
+      "suite": "reward-bench-2",
+      "sha256": "7bfb1d3a97d69117abc2b1b55d4bc30bb0c67934129039c9a15a8d11db5b7b0b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/nvidia/nvidia-nemotron-3-super-120b-a12b-fp8/43c9f3b5-9379-424f-94d3-c2243e08c395_samples.jsonl",
+      "model_id": "nvidia/nvidia-nemotron-3-super-120b-a12b-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "b2bb06ac82034d5eea74b81376b2ffe5fae01fa40635ff5e169ffefb2736b82b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/openai/gpt-5-5/4e0185ae-eba6-417a-870c-55cfaf5ad540_samples.jsonl",
+      "model_id": "openai/gpt-5-5",
+      "suite": "reward-bench-2",
+      "sha256": "33e5f7d7951779ddf652bce761b395e0762b707749fdff130de28306c039e5d9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/openai/gpt-5-mini/1200511e-9ec1-40c4-b998-6fabcbd69fc1_samples.jsonl",
+      "model_id": "openai/gpt-5-mini",
+      "suite": "reward-bench-2",
+      "sha256": "9f87ef847b2dbbc7231e2002df272736f844414eeefa56ae6cee114d50a5351b",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/openai/gpt-5-nano/396b98d7-6458-410b-950e-41cf7bfa47e8_samples.jsonl",
+      "model_id": "openai/gpt-5-nano",
+      "suite": "reward-bench-2",
+      "sha256": "b0556fd5175616d3dc786df50763c7d032ce38d02c4f52f7392d655e28eebbeb",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/openai/gpt-oss-120b/1f2b0ffd-b4ed-4adc-b81b-e5129b51d3d9_samples.jsonl",
+      "model_id": "openai/gpt-oss-120b",
+      "suite": "reward-bench-2",
+      "sha256": "a52353ba5d6446b7e65cabe37c06356e37ddc3c77de33e03e0b03283e43f1336",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/openai/gpt-oss-20b/60737c17-f19a-44c5-b084-ba6faab503b0_samples.jsonl",
+      "model_id": "openai/gpt-oss-20b",
+      "suite": "reward-bench-2",
+      "sha256": "4c644a902dc48ce3adb7ca548bb9bf5dc1904f9ce4c22deb34fc0d150e5968f9",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-30b-a3b-thinking-2507/d2f29705-af9f-4950-8ca5-b5184b138ea1_samples.jsonl",
+      "model_id": "qwen/qwen3-30b-a3b-thinking-2507",
+      "suite": "reward-bench-2",
+      "sha256": "a0af5ac6a8d0c61cf89680d02aba6a4d78e4bbe910d6a2b384646b55a4cb0e21",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-5-0-8b/63d6f50f-e87b-434c-aeaa-2dae1f0b9fd1_samples.jsonl",
+      "model_id": "qwen/qwen3-5-0-8b",
+      "suite": "reward-bench-2",
+      "sha256": "d4ed16b8b8ed9b929341b5c85f9524d90ea469b03a0f3680a8a9199f2267703a",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-5-122b-a10b/077d5f3f-fc1b-4498-ae31-7f937bcc885c_samples.jsonl",
+      "model_id": "qwen/qwen3-5-122b-a10b",
+      "suite": "reward-bench-2",
+      "sha256": "a735d0b2e16036350d2066e0337130c992b5b7e0f8c5e6c4d8d76d83e931d354",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-5-2b/c679bc0f-2c11-4930-8c96-89c342760b4f_samples.jsonl",
+      "model_id": "qwen/qwen3-5-2b",
+      "suite": "reward-bench-2",
+      "sha256": "0008d7157440f0490028d5e79651ac1a119129e7eb6138d7e74ba5f6eb4002b4",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-5-397b-a17b/8bd1e3f7-1117-49c4-be3c-b1b678fa7530_samples.jsonl",
+      "model_id": "qwen/qwen3-5-397b-a17b",
+      "suite": "reward-bench-2",
+      "sha256": "0138112b23f54aba3850b0a606c37b5acabfb097b672cee78a1a30e65f0b474e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-6-35b-a3b/01fe4dad-2d98-4636-abaa-9960fca4ed0d_samples.jsonl",
+      "model_id": "qwen/qwen3-6-35b-a3b",
+      "suite": "reward-bench-2",
+      "sha256": "befa23fe58d0f01ff4ee55f777026edd25432e5c2a987affa0b05e52c8dde454",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-6-plus/35589a6f-fac7-4267-bffd-df8e0cae1a18_samples.jsonl",
+      "model_id": "qwen/qwen3-6-plus",
+      "suite": "reward-bench-2",
+      "sha256": "13695a9df30f93fa933a80cafa1af4510e45ccb9e195c069090c0d93a45575a5",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-next-80b-a3b-thinking/43d81cf8-664e-4abf-9732-e6c7c89fc285_samples.jsonl",
+      "model_id": "qwen/qwen3-next-80b-a3b-thinking",
+      "suite": "reward-bench-2",
+      "sha256": "18a1fb2dc0a54cb4729c5c14b4e9c39cf7862a2be01d86f0883d9ab4998ae109",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/qwen/qwen3-vl-235b-a22b-thinking-fp8/7015aa9d-12d6-4101-9c3d-edae99d9b6ef_samples.jsonl",
+      "model_id": "qwen/qwen3-vl-235b-a22b-thinking-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "c81ea1bd28ca302272c21545d6c2559fc349a2089f2e5d45c62cca76bdd46277",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/stepfun/step-3-5-flash/b18844f8-5883-4e30-a2a7-4288a4db9051_samples.jsonl",
+      "model_id": "stepfun/step-3-5-flash",
+      "suite": "reward-bench-2",
+      "sha256": "071ac7f6a14d937c0e26497e2242ff1f8c31086c95f3fef11194d9f7c0188842",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/xiaomi/mimo-v2-flash/7d374dce-4c60-4e34-b524-e583ef781220_samples.jsonl",
+      "model_id": "xiaomi/mimo-v2-flash",
+      "suite": "reward-bench-2",
+      "sha256": "f0b0cc6bfa11f1a66798ea37ece85bbae4a16524ad5fe0b8638484e6ee255e6c",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/zai-org/glm-4-5-air/6b5c094a-04bc-459d-9661-568b9dc5067b_samples.jsonl",
+      "model_id": "zai-org/glm-4-5-air",
+      "suite": "reward-bench-2",
+      "sha256": "9b9ace98d08fb7699fe23e8d806fbee7515b721b4627fe9a9c67352c9d350d3e",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/zai-org/glm-4-6-fp8/d210adcd-db54-4345-a49b-9e66b07996fd_samples.jsonl",
+      "model_id": "zai-org/glm-4-6-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "98816f52b594d376928c7290fd996a43e227673ae299df6d132574235f757b56",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/zai-org/glm-4-7-flash/7cd51c7a-d69e-4e70-a16c-1f7fa185b655_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-flash",
+      "suite": "reward-bench-2",
+      "sha256": "0cf79c42b7ab34517c7bf689a13086a9d99b6ba26f194bf823a223d5efb5a946",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/zai-org/glm-4-7-fp8/87e0b00f-8076-43a1-aaf8-478aff6a4f4d_samples.jsonl",
+      "model_id": "zai-org/glm-4-7-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "eaff8f36b6527b3cd13b90196411ebffcf5b984bb8e015c04def2976db52df67",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/zai-org/glm-5-1-fp8/dbe3faee-1f22-4c87-9e70-4530b8c2260e_samples.jsonl",
+      "model_id": "zai-org/glm-5-1-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "488d63111a72f7f8b76f59e61d9c6c85f44ed91f533631e6508250c2bd6be133",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    },
+    {
+      "path": "data/reward-bench-2/zai-org/glm-5-fp8/fb922270-a5e0-4bfc-bc79-b300d3ce41a7_samples.jsonl",
+      "model_id": "zai-org/glm-5-fp8",
+      "suite": "reward-bench-2",
+      "sha256": "ccc873f1db0ee2a027b8e201d639870bb2e08f1871e315b558d931f668976402",
+      "added_at": "2026-06-27T19:36:12.321685+00:00",
+      "n_rows": 1763,
+      "n_scored_rows": 1763,
+      "rejected": 0
+    }
+  ]
+}

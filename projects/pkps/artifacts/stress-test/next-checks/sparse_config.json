@@ -1,0 +1,70 @@
+{
+  "mode": "sparse",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "source": "data/eee-extensions",
+  "query_additive_candidates": [
+    [
+      "raw",
+      0.0
+    ],
+    [
+      "raw",
+      0.25
+    ],
+    [
+      "raw",
+      0.5
+    ],
+    [
+      "raw",
+      0.75
+    ],
+    [
+      "raw",
+      1.0
+    ],
+    [
+      "logit-standardized",
+      0.0
+    ],
+    [
+      "logit-standardized",
+      0.25
+    ],
+    [
+      "logit-standardized",
+      0.5
+    ],
+    [
+      "logit-standardized",
+      0.75
+    ],
+    [
+      "logit-standardized",
+      1.0
+    ]
+  ],
+  "query_target_strength": "other 15 sample scores only",
+  "natural_holdout": "20% of known cells, preserving row/column support",
+  "temporal_holdout": "60% and 80% evaluation-time cutoffs; no future responses or scores",
+  "publication_times_verified": false,
+  "completion_queries_per_observed_cell": 16,
+  "source_sha256": "274a5c25ec9ce472d8e0afa86b3c5b0d48099fc989012f59a4a2a5de77bc62b5"
+}
