@@ -15,9 +15,14 @@ projects/vantablack/
   scripts/    one script per step or artifact, plus the pipeline/ package
               (paths are in pipeline/paths.py); run everything from scripts/
   artifacts/  generated figures and tables (PNG preview + PDF)
-  writing/    paper sources; notes/ holds decisions, pre-registration, methods,
+  writing/    paper sources: vantablack.tex (ICML 2026 template), sections/, figures/,
+              references.bib; notes/ holds decisions, pre-registration, methods,
               result write-ups and design notes
 ```
+
+Build the paper from `writing/`:
+`pdflatex vantablack && bibtex vantablack && pdflatex vantablack && pdflatex vantablack`.
+`scripts/colleague_sims/` is the colleague's original simulation code, kept for reference.
 
 `scripts/pipeline/`: `schema` canonical tables; `simulate` planted-ring simulator;
 `ingest_moltnet`; `embed` (pinned nomic v1.5); `space` context residuals, windows,

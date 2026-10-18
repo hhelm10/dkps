@@ -1,0 +1,86 @@
+\documentclass{article}
+
+% ICML 2026 style (placeholder until the ICML 2027 files are released).
+% The [accepted] option prints the author block; remove it for an anonymized submission.
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+\usepackage[accepted]{icml2026}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{remark}{Remark}
+
+% ---------- notation ----------
+\newcommand{\Q}{\mathcal{Q}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Sfam}{\mathcal{S}}
+\newcommand{\N}{[N]}
+\newcommand{\ind}{\mathbf{1}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\icmltitlerunning{Detecting Colluding Subnetworks in Multi-Agent Systems}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Detecting Colluding Subnetworks in Multi-Agent Systems}
+
+\begin{icmlauthorlist}
+\icmlauthor{The Multi-Agent Applied Research Collective}{marc}
+\end{icmlauthorlist}
+
+\icmlaffiliation{marc}{the-marc.com}
+
+\icmlcorrespondingauthor{The Multi-Agent Applied Research Collective}{contact@the-marc.com}
+
+\icmlkeywords{multi-agent systems, collusion detection, perspective space, scan statistics, black-box generative models}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/related}
+\input{sections/setting}
+\input{sections/method}
+\input{sections/simulations}
+\input{sections/realdata}
+\input{sections/discussion}
+
+\bibliography{references}
+\bibliographystyle{icml2026}
+
+\newpage
+\appendix
+\onecolumn
+\input{sections/appendix}
+
+\end{document}

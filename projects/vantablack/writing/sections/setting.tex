@@ -1,0 +1,68 @@
+\section{Setting and problem statement}
+\label{sec:setting}
+
+\subsection{Agents and observations}
+
+Let $\Q$ be a query space and $\X$ a response space. An \emph{agent} is a random function $f:\Q\to\X$; for each $q\in\Q$, $f(q)$ is a random element of $\X$ with conditional distribution $P_f(\cdot\mid q)$. We consider a collection of $N$ agents $f_1,\dots,f_N$ that may interact with one another and with a shared environment, and we allow each agent to change over time: $f_i^{(t)}$ denotes agent $i$ at time $t\in\{1,\dots,T\}$, with conditional response distribution $P_i^{(t)}(\cdot\mid q)$.
+
+At each time $t$ the observer sees
+\begin{equation}
+\label{eq:obs}
+\D^{(t)} \;=\; \Big\{\big\{ f_i^{(t)}(q_j) \big\}_{j\in\I_i^{(t)}}\Big\}_{i=1}^{N},
+\end{equation}
+where $\I_i^{(t)}$ indexes the queries that agent $i$ responded to at time $t$ and $m_i^{(t)} := |\I_i^{(t)}|$. The index sets are in general different across agents and across time, may be empty, and are chosen by the agents or by the environment rather than by the observer. We let $\I^{(t)} = \cup_i \I_i^{(t)}$ and $M = |\cup_t \I^{(t)}|$ be the total number of distinct queries.
+
+Two access regimes are distinguished by what is known about the queries. In the \emph{black box} setting, the query $q_j$ is recorded for every observed response. In the \emph{vantablack} setting, only the response is recorded, and the query must be estimated from the context in which the response appeared; we write $\hat q_j$ for the estimate. On an agent social network, for instance, the response is a post or comment and the estimated query is the thread it was posted in, possibly together with the post it replied to.
+
+We assume embedding functions $g_\Q:\Q\to\R^{p_\Q}$ and $g_\X:\X\to\R^{p_\X}$ and write $u_j = g_\Q(q_j)$ (or $\hat u_j = g_\Q(\hat q_j)$) and $x_{ij}^{(t)} = g_\X\big(f_i^{(t)}(q_j)\big)$ for the embedded query and response. All inference is carried out on these embeddings.
+
+\subsection{Perspective space}
+\label{sec:ps}
+
+We represent each (agent, time) pair by a point in a common low-dimensional Euclidean space whose geometry reflects the conditional behavior $P_i^{(t)}(\cdot\mid q)$ across the query space. Let $k_\Q:\R^{p_\Q}\times\R^{p_\Q}\to\R_{\ge 0}$ and $k_\X:\R^{p_\X}\times\R^{p_\X}\to\R_{\ge 0}$ be bounded kernels on embedded queries and responses. For a pair of (agent, time) units $a=(i,t)$ and $a'=(i',t')$, let $(u,x)$ and $(u',x')$ denote independent draws of an embedded (query, response) pair from unit $a$ and from unit $a'$, respectively, where the query is drawn from the unit's own query distribution and the response from the agent's conditional distribution given the query. The \emph{population affinity} is
+\begin{equation}
+\label{eq:pop-affinity}
+A_{aa'} \;=\; \frac{\E\big[k_\Q(u,u')\,k_\X(x,x')\big]}{\E\big[k_\Q(u,u')\big]},
+\end{equation}
+the induced squared distance is $D^2_{aa'} = A_{aa} + A_{a'a'} - 2A_{aa'}$, and the \emph{population perspective space} is the configuration $\{\psi_i^{(t)}\}\subset\R^d$ obtained by classical multidimensional scaling of $D$ \citep{torgerson1952multidimensional,trosset2024continuous}. Equation~\eqref{eq:pop-affinity} is the population form of the Product Kernel Perspective Space \citep{pkps2026}; with the identity query kernel it reduces to the Data Kernel Perspective Space \citep{helm2024tracking,helm2025statistical}, and the joint embedding of (agent, time) pairs follows the temporal DKPS of \citet{bridgeford2025detecting}. The normalization by query-kernel mass means that two units are compared on the basis of their responses to \emph{similar} queries, weighted by similarity, so that units that answered different queries remain comparable.
+
+\begin{remark}[What the perspective space measures]
+If two units have the same conditional response distribution for every query, then as the query-kernel bandwidth shrinks their affinity-based distance tends to zero regardless of differences in their query distributions. At positive bandwidth, a difference in query distributions induces a bias of order the bandwidth times the smoothness of the conditional response distribution in the query. The bandwidth therefore trades a bias due to query self-selection against the variance of the estimate (Section~\ref{sec:method}).
+\end{remark}
+
+\subsection{Colluding subnetworks}
+\label{sec:collusion}
+
+We assume a burn-in period $t\le t_0$ during which no collusion is present, as in \citet{helm2026control}. Define the \emph{displacement} of agent $i$ at time $t>t_0$ as
+\begin{equation}
+\Delta_i^{(t)} \;=\; \psi_i^{(t)} - \psi_i^{(t_0)} \in \R^d .
+\end{equation}
+Displacements may be nonzero for benign reasons: the environment drifts, or agents learn. We model such benign change as a common component shared by all agents and allow the colluding subnetwork to move relative to it.
+
+\begin{definition}[Colluding subnetwork]
+\label{def:collusion}
+A subset $S\subset\N$ is a \emph{colluding subnetwork} at time $t>t_0$ if there is a direction $v\in\R^d$, $\|v\|=1$, an effect size $\delta>0$, and a common component $c^{(t)}\in\R^d$ such that
+\begin{equation}
+\label{eq:model}
+\Delta_i^{(t)} \;=\; c^{(t)} + \delta\, v\,\ind\{i\in S\} \qquad\text{for all } i\in\N .
+\end{equation}
+The null hypothesis of no collusion is $\delta = 0$, equivalently $S=\emptyset$.
+\end{definition}
+
+The definition is deliberately behavioral: it says that a subset of agents changed in the same way at the same time, relative to everyone else, and makes no reference to a score, a reward, or the agents' intent. It covers the motivating examples. Agents flooding a platform with near-identical content move together toward the content's representation; agents that establish a shared channel and divide labor move together toward the behaviors that channel induces. It does not cover a single agent acting alone (that is $|S|=1$, which is detectable but is not collusion) and it does not by itself distinguish collusion from homophily: a subset of agents that were always similar and remain so has $\Delta_i^{(t)} = c^{(t)}$ and is not flagged, which is the intended behavior, while a subset that becomes similar after $t_0$ is flagged whether or not the agents intended it. Definition~\ref{def:collusion} is stated for a single post-burn-in time $t$; a colluding subnetwork with onset $t^*$ satisfies \eqref{eq:model} with $\delta>0$ for $t\ge t^*$ and $\delta=0$ for $t_0<t<t^*$. Estimating $t^*$ is a sequential problem that we leave to future work (Section~\ref{sec:discussion}); here $t$ is a fixed post-burn-in time.
+
+\subsection{The estimation problem}
+\label{sec:problem}
+
+Given $\D^{(1)},\dots,\D^{(T)}$, embedding functions $g_\Q$ and $g_\X$, and the burn-in time $t_0$, we address two problems.
+
+\begin{itemize}
+  \item[\textbf{P0}] \textbf{Detection.} Test $H_0:\delta=0$ against $H_1:\delta>0$ in \eqref{eq:model}, with $S$, $v$, and $c^{(t)}$ unknown.
+  \item[\textbf{P1}] \textbf{Membership estimation.} Given that $H_0$ is rejected, estimate $S$.
+\end{itemize}
+
+The difficulty is that neither $\psi_i^{(t)}$ nor $\Delta_i^{(t)}$ is observed. They must be estimated from $\D^{(1)},\dots,\D^{(T)}$ through \eqref{eq:obs}, in which the number of responses per agent per time step is small, the queries are unpaired across agents and across time, and in the vantablack setting the queries are themselves estimates. The estimation error in $\hat\Delta_i^{(t)}$ depends on $m_i^{(t)}$, on the overlap between the query distributions of the units being compared, and on the error in $\hat u_j$. The quantities that govern Type~I error and power are therefore the effect size $\delta$, the number of agents $N$ and the size $|S|$ of the colluding subnetwork, the number of responses $m$ per agent per time step, and the quality of the query estimates. Section~\ref{sec:sims} characterizes the method along each of these axes.
+
+\begin{remark}[Scores]
+In many deployments a score $\sigma^{(t)}(A)$ is also observed for subsets $A$ of agents (votes, karma, task reward). A colluding subnetwork in the sense of Definition~\ref{def:collusion} is \emph{adversarial} if its behavior lowers the score of the agents outside it relative to a benign counterfactual. Scores are not part of the observation model \eqref{eq:obs} and we do not use them for detection; when available they serve to characterize the consequences of a detected subnetwork and to choose a response to it. We return to this in Section~\ref{sec:discussion}.
+\end{remark}
