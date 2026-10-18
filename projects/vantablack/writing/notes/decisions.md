@@ -1,5 +1,32 @@
 # Open decisions (TODO "(decide)" items), with recommendations
 
+## Real-data analysis v2 (decided 2026-10-18, user)
+
+The real data now uses the simulation-validated T-step method (`pipeline/tstep.py`): split-half
+increments, factor removal, scan with the per-step agent-ID shuffle null, and the agent ranking.
+- **The old real-data results are retired.** That covers the pre/post shift, the rotation null, the
+  adversarial gate, the planted rings and `rank_eval`. Its notes and result files stay for the record,
+  but they leave the paper.
+- **All submolts.** Groups that coordinate in niche submolts (SEO, XNO) appear only there.
+- **Agents:** those with at least 1 action in every step, using all of the agent's actions in that
+  step (no subsampling to equal m).
+- **Crawl gaps:** MoltNet has no comments on Feb 1, almost none on Feb 10-12, and none after
+  Feb 17. Steps are therefore defined in *activity time*: boundaries at quantiles of platform-wide
+  action volume, so every step holds the same share of platform activity and a gap merges into the
+  steps around it. With calendar days over Jan 30 to Feb 18, only 2 agents are active in every step.
+  With activity time, 811 are (T = 8) or 495 (T = 10). Proposed as the general recommendation for
+  archives with content gaps.
+- **Per-step centering is part of the method** (simulations and real data). The first Moltbook run
+  showed a platform-wide drift: each step's mean increment over agents is 4-27% of a typical
+  increment. That drift gives every pair a small positive correlation, and the large-set bands
+  accumulate it. The factor rule misses it, because a common shift looks like a low-support
+  direction. Subtracting the mean is exact under the per-step shuffle null, which leaves step means
+  unchanged.
+- **Several groups by peeling:** test, estimate Ŝ, set its members aside, test the rest; stop at the
+  first p > 0.05. Each round tests "no group among the agents not yet set aside".
+- **Rejected variant:** PKPS conditioning on same-step responses only (`--cond step`). Heavy posters'
+  own responses then dominate their reference, which removes their own signal.
+
 Status 2026-10-16. Nothing here is decided. These are recommendations for
 the group, based on `scope_report.md` and the synthetic validation. The
 real-data pipeline has not been run and should not run until these are

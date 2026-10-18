@@ -83,11 +83,14 @@ def condition(X, qi, U, K, is_sys_agent, period=None):
 
 
 def condition_all(E_sys, ag_sys, t_sys, kind_sys, q_sys, E_ref, kind_ref, q_ref,
-                  Q_thread, Q_sub, t0, t_ref=None, k=64, bw=1.0, time='all', log=print):
+                  Q_thread, Q_sub, t0, t_ref=None, k=64, bw=1.0, time='all', log=print,
+                  period_sys=None, period_ref=None):
     """Condition the system rows on everyone's responses.
 
     kind_*: 'post' or 'comment' per row; q_*: index into Q_sub (posts) or
-    Q_thread (comments). Returns (R_sys, self_share per system row, info).
+    Q_thread (comments). time='step' conditions every row on the responses of its own
+    period (period_sys / period_ref, e.g. the time step), so a stimulus shared at one
+    time drops out. Returns (R_sys, self_share per system row, info).
     """
     R = np.empty_like(E_sys)
     share = np.zeros(len(E_sys), np.float32)
@@ -101,6 +104,8 @@ def condition_all(E_sys, ag_sys, t_sys, kind_sys, q_sys, E_ref, kind_ref, q_ref,
         per = None
         if time == 'period':
             per = np.concatenate([t_sys[ms] > t0, t_ref[mr] > t0]).astype(int)
+        elif time == 'step':
+            per = np.concatenate([period_sys[ms], period_ref[mr]]).astype(int)
         Rk, own = condition(X, qi, len(Q), K, who, per)
         R[ms] = Rk[:ms.sum()]
         share[ms] = own[:ms.sum()]

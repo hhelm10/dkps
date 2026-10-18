@@ -11,7 +11,8 @@ Design: writing/notes/sim_detection_design.md. Input is per-response data
                 disjoint halves of each step's responses, so consecutive increments
                 share no estimation noise (overlapping increments are negatively
                 autocorrelated, and independent autocorrelated series correlate
-                spuriously, which the shuffle null does not reproduce)
+                spuriously, which the shuffle null does not reproduce); then centered
+                per step (each step's mean increment over agents is subtracted)
   4. factors    remove shared directions above the Marchenko-Pastur noise edge
                 whose agent loadings are diffuse (participation-ratio rule)
   5. family     clusters, kNN-graph Louvain communities, and each agent's
@@ -70,12 +71,13 @@ def _unit_means(R, agent, step, N, T):
     return Y / np.maximum(np.bincount(agent * T + step, minlength=N * T), 1)[:, None]
 
 
-def positions(R, agent, step, N, T, d=None):
+def positions(R, agent, step, N, T, d=None, seed=0):
     """Per-(agent, step) positions in a joint linear embedding (PCA of the N*T unit means).
 
     Also returns positions from two disjoint halves of each unit's responses (alternate
-    responses), projected with the same basis, for split-half increments. d=None picks the
-    dimension by the first profile-likelihood elbow."""
+    responses; a unit with one response gives it to a random half), projected with the same
+    basis, for split-half increments, and the half sizes nA, nB. d=None picks the dimension by
+    the first profile-likelihood elbow."""
     Y = _unit_means(R, agent, step, N, T)
     mu = Y.mean(0)
     _, sv, Vt = np.linalg.svd(Y - mu, full_matrices=False)
@@ -83,27 +85,47 @@ def positions(R, agent, step, N, T, d=None):
         from graspologic.embed import select_dimension
         d = int(select_dimension(Y - mu, n_components=min(100, Y.shape[1] - 1), n_elbows=1)[0][0])
     V = Vt[:d].T
-    half = np.zeros(len(R), int)
-    order = np.lexsort((np.arange(len(R)), agent * T + step))
+    unit = agent * T + step
+    order = np.lexsort((np.arange(len(R)), unit))
     rank = np.empty(len(R), int); rank[order] = np.arange(len(R))
-    first = np.r_[0, np.flatnonzero(np.diff((agent * T + step)[order])) + 1]
+    first = np.r_[0, np.flatnonzero(np.diff(unit[order])) + 1]
     pos_in_unit = rank - first[np.searchsorted(first, rank, side='right') - 1]
-    half = pos_in_unit % 2
+    n_unit = np.bincount(unit, minlength=N * T)
+    flip = np.random.default_rng(seed).integers(0, 2, N * T)        # half of a single response
+    half = np.where(n_unit[unit] == 1, flip[unit], pos_in_unit % 2)
     proj = lambda Yh: ((Yh - mu) @ V).reshape(N, T, d)
     ZA = proj(_unit_means(R[half == 0], agent[half == 0], step[half == 0], N, T))
     ZB = proj(_unit_means(R[half == 1], agent[half == 1], step[half == 1], N, T))
-    return dict(Z=proj(Y), ZA=ZA, ZB=ZB, d=d,
+    nA = np.bincount(unit[half == 0], minlength=N * T).reshape(N, T)
+    nB = np.bincount(unit[half == 1], minlength=N * T).reshape(N, T)
+    return dict(Z=proj(Y), ZA=ZA, ZB=ZB, nA=nA, nB=nB, d=d,
                 explained=float((sv[:d] ** 2).sum() / (sv ** 2).sum()))
 
 
-def increments(pos, mode='split'):
+def increments(pos, mode='split', per_step=None, center=True):
     """'split': psi_A(t+1) - psi_B(t), consecutive increments share no estimation noise;
     'overlap': psi(t+1) - psi(t), negatively autocorrelated by estimation noise;
-    'nonoverlap': every other overlapping increment."""
+    'nonoverlap': every other overlapping increment.
+    Split increments with an empty half are missing and set to 0. per_step='unit' scales
+    every non-missing increment to unit length, so each (agent, step) counts equally however
+    much content is behind it (needed when the amount of content varies).
+    center: subtract each step's mean increment over the agents observed at that step, so a
+    platform-wide drift does not make every pair of agents co-move (the per-step shuffle null
+    leaves step means unchanged, so centering is exact under it)."""
     if mode == 'split':
-        return pos['ZA'][:, 1:] - pos['ZB'][:, :-1]
-    D = np.diff(pos['Z'], axis=1)
-    return D[:, ::2] if mode == 'nonoverlap' else D
+        D = pos['ZA'][:, 1:] - pos['ZB'][:, :-1]
+        ok = (pos['nA'][:, 1:] > 0) & (pos['nB'][:, :-1] > 0)
+        D = D * ok[:, :, None]
+    else:
+        D = np.diff(pos['Z'], axis=1)
+        D = D[:, ::2] if mode == 'nonoverlap' else D
+        ok = np.ones(D.shape[:2], bool)
+    if center:
+        mu = D.sum(0) / np.maximum(ok.sum(0), 1)[:, None]
+        D = (D - mu[None]) * ok[:, :, None]
+    if per_step == 'unit':
+        D = D / np.maximum(np.linalg.norm(D, axis=2, keepdims=True), 1e-12)
+    return D
 
 
 def remove_factors(D, min_support=1 / 3, kmax=None):
@@ -201,7 +223,7 @@ def refined(Uu, d_eff, sizes=(5, 10, 20, 40, 80), top=50, rounds=3):
 
 def family(D, seed=0, d_eff=None):
     F = D.reshape(len(D), -1)
-    el = np.ones(len(D), bool)
+    el = np.linalg.norm(F, axis=1) > 0          # an agent whose increments are all missing has no series
     Uu = _units(D)
     d_eff = d_eff or F.shape[1]
     return cands.dedupe(cands.clusters(F, el, seed=seed) + cands.comove(F, el, seed=seed)
@@ -324,21 +346,56 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None):
 
 
 def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers=1,
-        n_factors='auto', gpu_slot=None):
+        n_factors='auto', gpu_slot=None, per_step=None, center=True):
     """gpu_slot: optional lock/semaphore held while conditioning (the only GPU step),
     so many replicate processes can share one GPU."""
     import contextlib
     cfg = data['cfg']
-    N, T = cfg['N'], cfg['T']
     with (gpu_slot or contextlib.nullcontext()):
         R, sigma = condition(data['U_obs'], data['X'], k=k)
-    pos = positions(R, data['agent'], data['step'], N, T, d=d)
-    D = increments(pos, mode=mode)
+    res = run_residuals(R, data['agent'], data['step'], cfg['N'], cfg['T'], d=d, mode=mode,
+                        kind=kind, B=B, seed=seed, workers=workers, n_factors=n_factors,
+                        per_step=per_step, center=center, known_S=data['S'] if len(data['S']) else None)
+    res.update(sigma=sigma)
+    return res
+
+
+def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=199, seed=0,
+                  workers=1, n_factors='auto', per_step=None, center=True, known_S=None, peel=0):
+    """Steps 2-7 from conditioned responses R (one row per response; agent in [0, N), step in
+    [0, T)). Returns the scan result plus the factor count, dimensions, membership estimate
+    and the agent ranking score; peel > 0 adds up to that many peeled groups (peel_groups)."""
+    pos = positions(R, agent, step, N, T, d=d, seed=seed)
+    D = increments(pos, mode=mode, per_step=per_step, center=center)
     D, kf = remove_factors(D) if n_factors == 'auto' else remove_factors(D, kmax=int(n_factors))
     d_eff = D.shape[1] * D.shape[2] - kf
-    res = test(D, d_eff, B=B, kind=kind, seed=seed, workers=workers,
-               known_S=data['S'] if len(data['S']) else None)
+    res = test(D, d_eff, B=B, kind=kind, seed=seed, workers=workers, known_S=known_S)
     S_hat, b_hat, score = estimate(D, d_eff, res)
-    res.update(n_factors=kf, d_eff=d_eff, d=pos['d'], sigma=sigma, explained=pos['explained'],
-               S_hat=S_hat, band_hat=b_hat, rank_score=score)
+    res.update(n_factors=kf, d_eff=d_eff, d=pos['d'], explained=pos['explained'],
+               S_hat=S_hat, band_hat=b_hat, rank_score=score,
+               n_missing=int((np.linalg.norm(D, axis=2) == 0).sum()))
+    if peel:
+        res['groups'] = peel_groups(D, d_eff, first=res, max_groups=peel, B=B, kind=kind, seed=seed,
+                                    workers=workers)
     return res
+
+
+def peel_groups(D, d_eff, first=None, alpha=0.05, max_groups=10, B=199, kind='shuffle', seed=0, workers=1):
+    """Several groups by peeling: test, estimate S_hat, set its members aside, and test the
+    remaining agents again; stop at the first p > alpha, an empty S_hat, or fewer than 10
+    agents left. Each round is a level-alpha test of 'no colluding group among the agents
+    not yet set aside'. Returns one dict per round (indices into the full agent set)."""
+    keep = np.arange(len(D))
+    out = []
+    for g in range(max_groups):
+        res = first if g == 0 and first is not None else test(D[keep], d_eff, B=B, kind=kind,
+                                                              seed=seed + g, workers=workers)
+        S, b, score = (first['S_hat'], first['band_hat'], first['rank_score']) if g == 0 and first is not None \
+            else estimate(D[keep], d_eff, res)
+        out.append(dict(p=res['p'], p_band=np.asarray(res['p_band']), obs=np.asarray(res['obs']),
+                        band=b, members=keep[S], n_tested=len(keep),
+                        best=[None if x is None else keep[sorted(x)] for x in res['best']]))
+        if res['p'] > alpha or len(S) == 0 or len(keep) - len(S) < 10:
+            break
+        keep = np.delete(keep, S)
+    return out

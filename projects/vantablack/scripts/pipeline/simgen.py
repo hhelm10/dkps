@@ -40,6 +40,9 @@ class SimConfig:
     N: int = 2000
     T: int = 8
     m: int = 20
+    m_sd: float = 0.0       # 0: every agent gives m responses per step. >0: n(agent, step) =
+                            # 1 + Poisson(mu_n), mu_n = (m - 1) exp(m_sd z_n - m_sd^2 / 2), z_n ~ N(0, 1):
+                            # unequal, agent-specific activity with at least one response per step
     p: int = 100            # response embedding dimension
     dl: int = 10            # latent perspective dimension
     q: int = 50             # query space dimension
@@ -123,14 +126,20 @@ def generate(cfg: SimConfig):
         logit -= logit.max(1, keepdims=True)
         Pj = np.exp(logit); Pj /= Pj.sum(1, keepdims=True)
         cum = Pj.cumsum(1)
-    n_resp = N * T * m
-    agent = np.repeat(np.arange(N), T * m)
-    step = np.tile(np.repeat(np.arange(T), m), N)
+    if cfg.m_sd > 0:
+        mu = (m - 1) * np.exp(cfg.m_sd * rng.normal(size=N) - cfg.m_sd ** 2 / 2)
+        counts = 1 + rng.poisson(mu[:, None], size=(N, T))
+    else:
+        counts = np.full((N, T), m)
+    agent = np.repeat(np.arange(N), counts.sum(1))
+    step = np.concatenate([np.repeat(np.arange(T), counts[n]) for n in range(N)])
+    n_resp = len(agent)
     if cfg.pref > 0:
         uu = rng.random(n_resp)
         j = np.empty(n_resp, int)
+        j = np.searchsorted(cum[0], uu)   # placeholder, overwritten per agent
         for a in range(N):
-            sl = slice(a * T * m, (a + 1) * T * m)
+            sl = agent == a
             j[sl] = np.searchsorted(cum[a], uu[sl])
         j = np.minimum(j, cfg.J - 1)
     else:

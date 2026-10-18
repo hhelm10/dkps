@@ -1,8 +1,8 @@
-"""Figure: membership estimation simulations, 2x4 panels. Columns as in the detection
-figure (swarm size, amount of content, subnetwork size, time); rows are the precision
-|S_hat & S| / |S_hat| and recall |S_hat & S| / |S| of the estimate S_hat, one line per
-effect size rho > 0. All replicates count, rejected or not; precision is averaged over
-replicates with a non-empty S_hat (an empty estimate has recall 0).
+"""Figure: membership estimation simulations, 1x4 panels as in the detection figure
+(swarm size, amount of content, subnetwork size, time). y is the chance-corrected
+normalised mean reciprocal rank of the true members in the agent ranking (0 = random
+ranking, 1 = members at ranks 1..|S|; sim_detection.rank_metrics), one line per effect
+size rho > 0. All replicates count, rejected or not.
 
     python vantablack_figure_sim_estimation.py [--stage pilot]
 
@@ -26,14 +26,13 @@ import hv_style as hv  # noqa: E402
 from sim_detection import BASE, SWEEPS  # noqa: E402
 from vantablack_figure_sim_detection import PANELS  # noqa: E402
 
-ROWS = [('precision', 'precision'), ('recall', 'recall')]
-Q = 0.05   # Benjamini-Hochberg level of the membership step (pipeline/tstep.estimate)
+METRIC = 'nmrr_cc'
 
 
-def cell_means(df, sweep, col):
+def cell_means(df, sweep):
     d = df[(df.sweep == sweep) | (df.sweep == 'base')]
-    d = d.assign(x=d[sweep]).dropna(subset=[col])
-    g = d.groupby(['rho', 'x'])[col].agg(['mean', 'std', 'count']).reset_index()
+    d = d.assign(x=d[sweep]).dropna(subset=[METRIC])
+    g = d.groupby(['rho', 'x'])[METRIC].agg(['mean', 'std', 'count']).reset_index()
     g['se'] = g['std'].fillna(0) / np.sqrt(g['count'])
     return g
 
@@ -47,31 +46,26 @@ def main():
     hv.apply()
     rhos = sorted(df.rho.unique())
     cols = {r: hv.CMAP_BLUE(v) for r, v in zip(rhos, np.linspace(0.35, 1.0, len(rhos)))}
-    fig, axes = plt.subplots(2, 4, figsize=(19, 8.4), sharey=True, sharex='col')
-    for i, (col, ylabel) in enumerate(ROWS):
-        for j, (sweep, title, xlabel) in enumerate(PANELS):
-            ax = axes[i, j]
-            g = cell_means(df, sweep, col)
-            for rho in rhos:
-                h = g[g.rho == rho].sort_values('x')
-                ax.plot(h.x, h['mean'], marker='o', ms=5, color=cols[rho], lw=2.4, label=f'ρ = {rho:g}')
-                ax.fill_between(h.x, h['mean'] - h.se, h['mean'] + h.se, color=cols[rho], alpha=0.15, lw=0)
-            if col == 'precision':
-                ax.axhline(1 - Q, color=hv.REFLINE, ls=':', lw=1.2)
-            ax.axvline(BASE[sweep], color=hv.EDGE, lw=6, zorder=0)
-            ax.set_xscale('log')
-            ax.set_xticks(SWEEPS[sweep]); ax.set_xticklabels([str(v) for v in SWEEPS[sweep]])
-            ax.minorticks_off()
-            ax.set_ylim(-0.02, 1.02)
-            if i == 0:
-                ax.set_title(title, loc='left', fontsize=hv.SIZES['subtitle'])
-            else:
-                ax.set_xlabel(xlabel, fontsize=hv.SIZES['annot'])
-        axes[i, 0].set_ylabel(ylabel, fontsize=hv.SIZES['annot'])
-    h, l = axes[0, 0].get_legend_handles_labels()
-    fig.legend(h, l, loc='lower center', ncol=len(l), fontsize=hv.SIZES['annot'], bbox_to_anchor=(0.5, -0.04))
+    fig, axes = plt.subplots(1, 4, figsize=(19, 4.6), sharey=True)
+    for ax, (sweep, title, xlabel) in zip(axes, PANELS):
+        g = cell_means(df, sweep)
+        for rho in rhos:
+            h = g[g.rho == rho].sort_values('x')
+            ax.plot(h.x, h['mean'], marker='o', ms=5, color=cols[rho], lw=2.4, label=f'ρ = {rho:g}')
+            ax.fill_between(h.x, h['mean'] - h.se, h['mean'] + h.se, color=cols[rho], alpha=0.15, lw=0)
+        ax.axhline(0, color=hv.REFLINE, ls=':', lw=1.2)
+        ax.axvline(BASE[sweep], color=hv.EDGE, lw=6, zorder=0)
+        ax.set_xscale('log')
+        ax.set_xticks(SWEEPS[sweep]); ax.set_xticklabels([str(v) for v in SWEEPS[sweep]])
+        ax.minorticks_off()
+        ax.set_ylim(-0.05, 1.02)
+        ax.set_title(title, loc='left', fontsize=hv.SIZES['subtitle'])
+        ax.set_xlabel(xlabel, fontsize=hv.SIZES['annot'])
+    axes[0].set_ylabel('normalised MRR (chance-corrected)', fontsize=hv.SIZES['annot'])
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc='lower center', ncol=len(l), fontsize=hv.SIZES['annot'], bbox_to_anchor=(0.5, -0.07))
     reps = int(df.groupby(['sweep', 'value', 'rho']).size().median())
-    fig.text(0.995, 0.005, f'{a.stage}: ~{reps} replicates per point, ±1 SE; dotted = 1 − q; shaded bar = base value',
+    fig.text(0.995, 0.005, f'{a.stage}: ~{reps} replicates per point, ±1 SE; dotted = chance; shaded bar = base value',
              ha='right', va='bottom', fontsize=10, color=hv.INK_MUTE)
     fig.tight_layout()
     name = 'vantablack_figure_sim_estimation' + ('' if a.stage == 'full' else f'_{a.stage}')
