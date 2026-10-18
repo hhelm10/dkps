@@ -15,7 +15,7 @@ projects/vantablack/
   scripts/    one script per step or artifact, plus the pipeline/ package
               (paths are in pipeline/paths.py); run everything from scripts/
   artifacts/  generated figures and tables (PNG preview + PDF)
-  writing/    paper sources: vantablack.tex (ICML 2026 template), sections/, figures/,
+  writing/    paper sources: vantablack.tex (ICML 2026 template, single file), figures/,
               references.bib; notes/ holds decisions, pre-registration, methods,
               result write-ups and design notes
 ```
