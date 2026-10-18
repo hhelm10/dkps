@@ -1,4 +1,5 @@
 \documentclass{article}
+\makeatletter\def\input@path{{icml2026/}}\makeatother  % template files live in icml2026/
 
 % ICML 2026 style (placeholder until the ICML 2027 files are released).
 % The [accepted] option prints the author block; remove it for an anonymized submission.
@@ -347,7 +348,7 @@ The burn-in assumption is load-bearing: a subnetwork that was already colluding 
 The method requires nothing from the agents beyond their observed behavior, and nothing from the platform beyond a log of who did what in which context. That is a low bar, and it is the bar that the incidents in Section~\ref{sec:intro} were observed to clear only in retrospect. We view detection of colluding subnetworks as one component of a monitoring stack for open multi-agent systems, alongside agent- and group-level change detection and system-level control charts, and the perspective-space representation as what lets these components share a single estimated object.
 
 \bibliography{references}
-\bibliographystyle{icml2026}
+\bibliographystyle{icml2026/icml2026}
 
 \newpage
 \appendix
