@@ -114,6 +114,8 @@ def main():
     ap.add_argument('--cond', choices=['all', 'step'], default='all',
                     help="PKPS reference: all responses in the window, or only those of the same step")
     ap.add_argument('--peel', type=int, default=10, help='peel up to this many groups (0: one scan only)')
+    ap.add_argument('--two-signed', type=float, default=0.01,
+                    help='alpha of the two-signed factor rule (design note 1b); negative = off')
     ap.add_argument('--reuse', action='store_true',
                     help='reuse the saved conditioned responses of the same tag and rerun only the scan')
     a = ap.parse_args()
@@ -202,7 +204,8 @@ def scan(a, tag, R, agent, step, cohort, base, share):
     log('scan ...')
     t = time.time()
     res = tstep.run_residuals(R, agent, step, len(cohort), a.T, B=a.B, seed=a.seed,
-                              workers=a.workers, peel=a.peel)
+                              workers=a.workers, peel=a.peel,
+                              two_signed_alpha=a.two_signed if a.two_signed >= 0 else None)
     log(f'scan done in {time.time() - t:.0f}s: p = {res["p"]:.3f}, bands {np.round(res["p_band"], 3).tolist()}, '
         f'd = {res["d"]}, factors removed {res["n_factors"]}, missing increments {res["n_missing"]}')
 
@@ -224,7 +227,7 @@ def scan(a, tag, R, agent, step, cohort, base, share):
         S_hat=sorted(names[res['S_hat']].tolist()), band_hat=res['band_hat'],
         ranking_top50=[dict(agent=str(names[i]), score=float(res['rank_score'][i])) for i in order[:50]],
         d=res['d'], d_eff=res['d_eff'], n_factors=res['n_factors'], n_missing=res['n_missing'],
-        explained=res['explained'], centered=True, groups=groups)
+        explained=res['explained'], centered=True, two_signed_alpha=a.two_signed, groups=groups)
     os.makedirs(os.path.join(DERIVED, 'real_tstep'), exist_ok=True)
     with open(os.path.join(DERIVED, 'real_tstep', f'{tag}.pkl'), 'wb') as fh:
         pickle.dump(dict(summary=summary, res=res, cohort=cohort, self_share=share), fh)

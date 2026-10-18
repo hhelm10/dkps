@@ -31,6 +31,38 @@ central factor.
   where τ² = Var g_S, σ_e² is the agents' own movement and 2σ_x²/m_eff is the noise of estimating
   positions from m responses per step. Evidence accumulates over T − 1 increments.
 
+### 1b. Telling groups from factors (assumption (b), user 2026-10-18; draft, not implemented)
+
+The factor term and a collusion term are both low rank, so a sparse factor and a group are the same
+kind of object, and something must separate them. The assumption:
+
+- **(b) Collusion is one-signed.** In δ_n(t) = B_n f(t) + Σ_g γ a_gn g_g(t) + e_n(t), every group
+  loading vector a_g is non-negative: the members share the group process with the same sign.
+  Factor loadings B_n have no sign restriction.
+- Every shared low-rank term is then one of three kinds:
+  1. **Pervasive (any sign): a factor.** Its loadings cover a non-vanishing share of agents.
+     - The equal-loading drift is the special case that per-step centering removes exactly.
+     - The rest is removed by the existing rule: above the Marchenko–Pastur edge, with support ≥ N/3.
+  2. **Sparse and two-signed: a factor (new).** Two subsets that move in opposite directions along
+     one shared process are a factor, not two groups; that is the price of (b).
+  3. **Sparse and one-signed: a group.** This includes a niche factor with one-signed loadings, which
+     stays indistinguishable from collusion (cell N9, a stated limitation).
+- **Estimation (rule).** For each singular direction above the edge, in order, with loading vector
+  u (its overall sign is arbitrary):
+  - count clear loadings on each side, c₊ = #{u_n > 2·floor} and c₋ = #{u_n < −2·floor}, using
+    the same per-direction noise floor as the support rule;
+  - for a pure group direction, the minority side holds only noise exceedances, so
+    min(c₊, c₋) ~ Binomial(N, 0.0228);
+  - classify the direction as two-signed, and remove it, when min(c₊, c₋) exceeds that binomial's
+    1 − α quantile (α = 0.01);
+  - stop at the first direction that is neither pervasive nor two-signed.
+- **Known costs, to be measured.**
+  - A group whose members overlap a sparse factor's support can be removed together with it.
+  - Two genuine groups that anti-correlate are read as one factor.
+  - With several sparse factors of similar strength, the singular vectors mix within their
+    subspace. The rule then works on rotated loadings; that is fine as long as the subspace stays
+    two-signed.
+
 Open, and not part of the simulations: whether *static* similarity (clones that never change) is a
 second kind of subnetwork. Under this definition clones count only when they change together, for
 example through shared updates.
@@ -130,6 +162,7 @@ existing pipeline is the base case.
 | N7 | Autocorrelated own movement, e_n(t) AR(1) | Shuffle nulls (spurious correlation) |
 | N8 | High estimation noise relative to own movement (small m) | Per-step shuffle (MA(1) increments) |
 | N9 | Niche factor loaded by a small set of agents | Shown, not fixed: indistinguishable from collusion by design |
+| N10 | Sparse two-signed factors calibrated to Moltbook: r_s = 2, on 18% of agents, heavy-tailed loadings with random signs, at about 1.8× the MP edge | Rule 1b. Also crossed with a planted group (ρ ∈ {0.2, 0.3}), both disjoint from and overlapping the factor's support, to measure the power cost |
 
 Each cell is crossed with T ∈ {2, 8, 32} and N ∈ {500, 2000, 5000} (N at T = 8 only).
 

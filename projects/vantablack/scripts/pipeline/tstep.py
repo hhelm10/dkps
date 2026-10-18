@@ -128,7 +128,7 @@ def increments(pos, mode='split', per_step=None, center=True):
     return D
 
 
-def remove_factors(D, min_support=1 / 3, kmax=None):
+def remove_factors(D, min_support=1 / 3, kmax=None, two_signed_alpha=None):
     """Remove shared factors from the (N, L, d) increments; returns residuals and k.
 
     Candidates are singular directions of the N x (L d) matrix above the Marchenko-Pastur
@@ -138,7 +138,11 @@ def remove_factors(D, min_support=1 / 3, kmax=None):
     min_support * N. The noise floor of a loading is sqrt((edge / sv)^2 / N): a direction
     far above the edge is estimated precisely, one near it is mostly noise. A colluding
     group loads on its own members only (support |S| / N) and stops the count instead of
-    being removed; a factor too weak to be told apart from a group is kept."""
+    being removed; a factor too weak to be told apart from a group is kept.
+    two_signed_alpha: also remove sparse two-signed directions (writing/notes/sim_detection_design.md
+    section 1b: collusion is one-signed). For a group direction the minority side of the clear
+    loadings holds noise only, ~ Binomial(N, 0.0228); a direction whose minority count exceeds that
+    binomial's 1 - alpha quantile is a factor."""
     N, L, d = D.shape
     F = D.reshape(N, L * d)
     Uf, sv, Vt = np.linalg.svd(F, full_matrices=False)
@@ -161,8 +165,18 @@ def remove_factors(D, min_support=1 / 3, kmax=None):
         floor = np.sqrt(min(1.0, (edge / sv[j]) ** 2) / N)
         return ((np.abs(Uf[:, j]) > 2 * floor).sum() - 0.0455 * N) / N
 
+    if two_signed_alpha is not None:
+        from scipy.stats import binom
+        cmax = binom.ppf(1 - two_signed_alpha, N, 0.02275)
+
+    def two_signed(j):
+        if two_signed_alpha is None:
+            return False
+        floor = np.sqrt(min(1.0, (edge / sv[j]) ** 2) / N)
+        return min((Uf[:, j] > 2 * floor).sum(), (Uf[:, j] < -2 * floor).sum()) > cmax
+
     k = 0
-    while k < min(kmax, P // 2) and support(k) >= min_support:
+    while k < min(kmax, P // 2) and (support(k) >= min_support or two_signed(k)):
         k += 1
     if k:
         F = F - (F @ Vt[:k].T) @ Vt[:k]
@@ -361,13 +375,15 @@ def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers
 
 
 def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=199, seed=0,
-                  workers=1, n_factors='auto', per_step=None, center=True, known_S=None, peel=0):
+                  workers=1, n_factors='auto', per_step=None, center=True, known_S=None, peel=0,
+                  two_signed_alpha=None):
     """Steps 2-7 from conditioned responses R (one row per response; agent in [0, N), step in
     [0, T)). Returns the scan result plus the factor count, dimensions, membership estimate
     and the agent ranking score; peel > 0 adds up to that many peeled groups (peel_groups)."""
     pos = positions(R, agent, step, N, T, d=d, seed=seed)
     D = increments(pos, mode=mode, per_step=per_step, center=center)
-    D, kf = remove_factors(D) if n_factors == 'auto' else remove_factors(D, kmax=int(n_factors))
+    D, kf = remove_factors(D, two_signed_alpha=two_signed_alpha) if n_factors == 'auto' \
+        else remove_factors(D, kmax=int(n_factors))
     d_eff = D.shape[1] * D.shape[2] - kf
     res = test(D, d_eff, B=B, kind=kind, seed=seed, workers=workers, known_S=known_S)
     S_hat, b_hat, score = estimate(D, d_eff, res)
