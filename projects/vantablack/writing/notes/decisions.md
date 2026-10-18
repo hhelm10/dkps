@@ -1,0 +1,44 @@
+# Open decisions (TODO "(decide)" items), with recommendations
+
+Status 2026-10-16. Nothing here is decided. These are recommendations for
+the group, based on `scope_report.md` and the synthetic validation. The
+real-data pipeline has not been run and should not run until these are
+settled.
+
+## Data source (TODO section 1): settled by what exists
+
+- **Use archived data. Do not crawl.** The Moltbook Terms (2026-03-15) prohibit scraping and automated retrieval. MoltNet (iNLP-Lab, CC-BY-4.0) merges 10 public crawls into 1.04M posts, 3.16M comments and 150K agents for Jan 27 to Feb 28. It is downloaded, hashed and read-only under `data/raw/`. The CISPA crawl is public as TrustAIRLab/Moltbook (MIT), but it removes authors and comments, so it is a cross-check only. No email to CISPA is needed.
+- **No source has per-voter votes.** The live API does not expose them either. Scores are daily up/down snapshots, with a median of 2 per post. The interaction graph is therefore replies only, and the upvote-ring hypothesis cannot be tested directly (risk 8.1 realised).
+- **The operator map is effectively absent.** Only 35% of agents have an owner handle. Among those, only 7 operators run more than one agent, at most 2 each. Sybil detection has to be near-duplicate text plus timing (risk 8.2 realised). Handles are hashed at ingest and never written to disk.
+
+## 0.1 Target scope
+
+**Recommendation: run two scopes plus a control, in this order.**
+
+1. **Scope B, Zenity window.** This is `general`, Feb 8 to Feb 20, with t0 = Feb 12. The platform is past its launch surge here, and 421 agents have at least 10 actions on both sides of t0. The weak labels are low-volume accounts, which is the case the method is built for.
+2. **Scope A, Hackerclaw window.** This is `general`, Jan 29 to Feb 4, with t0 = Jan 31 11:00. The burn-in falls inside the launch surge, when daily posts went from 7k to 43k. Hackerclaw itself was created 17 minutes before it began flooding, so it has no burn-in. Treat this as a near-duplicate-family demonstration and state that limit up front.
+3. **Control.** Use a mid-size submolt with no known campaign over the same weeks. Candidates are `philosophy`, `ponderings` and `todayilearned`.
+
+## 0.2 What counts as the system
+
+**Recommendation: top-N by activity, with N = 300.** Full scopes are too large and long-tailed: scope B has 103K agents, most with one or two actions. Only agents with enough actions on both sides of t0 can be tested at all. In scope A, 339 agents have at least 10 actions both before and after t0, and in scope B 421 do. N = 300 keeps the scan fast; the synthetic N = 120 run with 199 draws takes under a minute. Agents outside the top-N stay in the data as context and as synthetic-control donors.
+
+## 0.3 Primary score σ
+
+**Recommendation: net votes on content, aggregated per agent from snapshot increments.** It is attributable to specific actions and available for every post and comment. Karma is available only as a sparse daily history in MoltNet, so it serves as a cross-check. Front-page rank is not recorded anywhere. Either way the score clock is daily, so Δ̂ is a daily-resolution quantity even though detection runs on a 4-hour grid.
+
+## 2.6 Burn-in t0
+
+**Recommendation: a calendar t0 per scope, as above, with a per-agent first-K fallback for agents created after t0.** Report how many system agents fall back. On Moltbook any agent active from day one has its behaviour absorbed into the baseline. Hackerclaw shows the opposite failure: an agent born adversarial has no baseline at all.
+
+## 3.3 Window
+
+**Recommendation: a time window of 24 hours on a 4-hour grid**, matching the synthetic setup. Run a 10-action window as the sensitivity arm. Action-count windows behave better for agents with bursty activity, but they mix time scales across agents.
+
+## Methodological changes the group should approve
+
+These are documented in `methods.md`.
+
+- **Primary test.** The scan uses a rotation null, not the time-permutation null. The time null rejected 14% of random 8-agent subsets when benign agents drift mildly. It is kept as a per-set diagnostic.
+- **Who is adversarial.** Content signals cannot separate a colluding ring from a merely cohesive group. The synthetic run flags both. The deciding quantity is the set's own score gain over its burn-in trend.
+- **Blind spot.** A pure vote ring with no change in content is invisible to the content statistic. Power was 0 at zero shift even though the interaction graph finds the ring. On Moltbook, with no voter records, nothing else can see such a ring either.
