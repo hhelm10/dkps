@@ -24,6 +24,28 @@ increments, factor removal, scan with the per-step agent-ID shuffle null, and th
   unchanged.
 - **Several groups by peeling:** test, estimate Ŝ, set its members aside, test the rest; stop at the
   first p > 0.05. Each round tests "no group among the agents not yet set aside".
+- **Static increments are missing (user, 2026-10-19).** A split increment whose raw length is below
+  ε times the median raw increment counts as missing, with ε = 0.01. An agent that does not move
+  cannot co-move, which matches the definition (static clones are not a subnetwork). Without this,
+  centering turns every zero increment into −μ_t, so all static agents correlate perfectly (z =
+  √d_eff, the ceiling). On the relaxed cohort (≥ 6 of 8 steps) they made up 62% of the top-500 pairs.
+  The raw lengths have an atom at zero, with a gap above it: 280 agent-steps are below 0.001 × median
+  and 288 below 0.01 × median, of 13,731. In the simulations every agent moves, so the filter never
+  applies there.
+- **Subnetworks are the persistent-pair components of each membership set (user, 2026-10-19).**
+  - Each Ŝ is split into the connected components of the links between its members.
+  - A link is a pair whose leave-one-step-out z (the minimum, over left-out steps, of
+    √(d_eff (L−1)/L) × the cosine without that step) exceeds the family-wise 95% threshold over
+    all cohort pairs. The threshold is the 95th percentile of the pair maximum under the per-step
+    shuffle, 99 draws; 4.08 on the Feb 9 window.
+  - Why leave-one-step-out: the newcomer sets co-move only in one step (median cosine 0.3 in
+    step 0, about 0 elsewhere), whereas farms co-move across steps.
+  - Why family-wise: at BH within each set, the many weak links chain each set into one
+    component.
+  - Alternatives tested and rejected:
+    - removing the set's mean or leading direction inside the set erases farms that *are* the set;
+    - plain pair z against the independence null links almost every pair, because Ŝ is selected
+      for co-movement.
 - **Rejected variant:** PKPS conditioning on same-step responses only (`--cond step`). Heavy posters'
   own responses then dominate their reference, which removes their own signal.
 

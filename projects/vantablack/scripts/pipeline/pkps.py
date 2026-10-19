@@ -50,7 +50,9 @@ def knn_kernel(Q, k=64, bw=1.0, device='cuda', chunk=8192):
 
 def _reference(K, X, qi, U):
     S = np.zeros((U, X.shape[1]), np.float32)
-    np.add.at(S, qi, X)
+    for i in range(0, len(X), 200_000):                                # sum per query
+        q = qi[i:i + 200_000]
+        S += sp.csr_matrix((np.ones(len(q), np.float32), (q, np.arange(len(q)))), shape=(U, len(q))) @ X[i:i + 200_000]
     n = np.bincount(qi, minlength=U).astype(np.float32)
     return K @ S, K @ n
 

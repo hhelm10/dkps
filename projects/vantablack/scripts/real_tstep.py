@@ -23,6 +23,7 @@ data/results/real_tstep_<tag>.json (summary: steps, cohort, p-values, best sets,
 agent ranking). Agent names are public Moltbook handles; no operator information is used.
 """
 import argparse
+import glob
 import json
 import os
 import pickle
@@ -86,8 +87,30 @@ def _lookup(name):
     return E, {a: i for i, a in enumerate(ids)}
 
 
-def gather(ids, texts, sources, cache_name):
-    """Embeddings for ids: from the existing stores when present, else embedded now."""
+STORE = os.path.join(DERIVED, 'emb_store')                       # embeddings made by earlier runs, by id
+
+
+def _store(kind):
+    """All chunks of the per-id store for kind ('actions', 'threads', 'submolts')."""
+    out = []
+    for f in sorted(glob.glob(os.path.join(STORE, f'{kind}_*_ids.json'))):
+        out.append((np.load(f[:-len('_ids.json')] + '.npy', mmap_mode='r'),
+                    {a: i for i, a in enumerate(json.load(open(f)))}))
+    return out
+
+
+def _add_to_store(kind, ids, E):
+    os.makedirs(STORE, exist_ok=True)
+    stem = os.path.join(STORE, f'{kind}_{time.strftime("%Y%m%d-%H%M%S")}_{len(ids)}')
+    np.save(stem + '.npy', np.asarray(E, np.float32))
+    with open(stem + '_ids.json', 'w') as fh:
+        json.dump(list(ids), fh)
+
+
+def gather(ids, texts, sources, cache_name, kind=None):
+    """Embeddings for ids: from the existing stores (and, with kind, the store of earlier runs)
+    when present, else embedded now and added to that store."""
+    sources = list(sources) + (_store(kind) if kind else [])
     out = np.zeros((len(ids), 768), np.float32)
     found = np.zeros(len(ids), bool)
     for E, pos in sources:
@@ -99,6 +122,8 @@ def gather(ids, texts, sources, cache_name):
     log(f'{cache_name}: {len(ids)} needed, {found.sum()} reused, {len(miss)} to embed')
     if len(miss):
         out[miss] = embed.embed([texts[i] for i in miss], cache_name=cache_name)
+        if kind:
+            _add_to_store(kind, [ids[i] for i in miss], out[miss])
     return out
 
 
@@ -116,19 +141,28 @@ def main():
     ap.add_argument('--peel', type=int, default=10, help='peel up to this many groups (0: one scan only)')
     ap.add_argument('--two-signed', type=float, default=0.01,
                     help='alpha of the two-signed factor rule (design note 1b); negative = off')
+    ap.add_argument('--min-steps', type=int, default=None,
+                    help='cohort: agents with at least one action in this many steps (default: all T)')
+    ap.add_argument('--min-move', type=float, default=0.01,
+                    help='increments shorter than this times the median raw increment are missing '
+                         '(static agent-steps; negative: off)')
+    ap.add_argument('--weight', choices=['reliability', 'none'], default='reliability',
+                    help='increment weighting (tstep.increments)')
     ap.add_argument('--reuse', action='store_true',
                     help='reuse the saved conditioned responses of the same tag and rerun only the scan')
     a = ap.parse_args()
-    tag = f'{a.start[5:]}_{a.end[5:]}_T{a.T}' + ('' if a.cond == 'all' else f'_cond{a.cond}')
+    a.min_steps = a.min_steps or a.T
+    tag = f'{a.start[5:]}_{a.end[5:]}_T{a.T}' + ('' if a.cond == 'all' else f'_cond{a.cond}') \
+        + ('' if a.min_steps == a.T else f'_ms{a.min_steps}')
 
     if a.reuse:
         return scan(a, tag, **reuse(tag))
     acts, posts = load_window(a.start, a.end)
     acts['step'], bounds = activity_steps(acts.t.values, a.T)
     per = acts.groupby(['agent', 'step']).size().unstack(fill_value=0)
-    cohort = sorted(per.index[(per >= 1).all(1)])
+    cohort = sorted(per.index[(per >= 1).sum(1) >= a.min_steps])
     log(f'{len(acts)} actions from {acts.agent.nunique()} agents; {a.T} activity-time steps; '
-        f'cohort (>= 1 action every step): {len(cohort)} agents')
+        f'cohort (>= 1 action in >= {a.min_steps} steps): {len(cohort)} agents')
     sysm = acts.agent.isin(cohort).values
     sys = acts[sysm].reset_index(drop=True)
     cnt = sys.groupby(['agent', 'step']).size()
@@ -137,7 +171,7 @@ def main():
 
     # ---- embeddings: cohort actions (all), reference actions (already embedded only)
     stores = [_lookup('actions'), _lookup('ref_actions')]
-    E_sys = gather(sys.action_id.tolist(), sys.text.tolist(), stores, f'real_tstep_sys_{tag}')
+    E_sys = gather(sys.action_id.tolist(), sys.text.tolist(), stores, f'real_tstep_sys_{tag}', kind='actions')
     have = set().union(*[set(p) for _, p in stores])
     ref = acts[~sysm & acts.action_id.isin(have)].reset_index(drop=True)
     E_ref = gather(ref.action_id.tolist(), [''] * len(ref), stores, f'real_tstep_ref_{tag}')
@@ -149,13 +183,14 @@ def main():
     p = posts.drop_duplicates('id').set_index('id').reindex(threads)
     th_text = (p.title.fillna('') + '\n\n' + p.content.fillna('').str[:2000]).tolist()
     Q_thread = gather(threads, th_text, [_lookup('contexts'), _lookup('threads_extra')],
-                      f'real_tstep_threads_{tag}')
+                      f'real_tstep_threads_{tag}', kind='threads')
     subs_used = sorted(set(sys.submolt[sys.kind == 'post'].dropna()) | set(ref.submolt[ref.kind == 'post'].dropna()))
     sm = pd.read_parquet(os.path.join(RAW, 'submolts.parquet'), columns=['name', 'display_name', 'description'])
     sm = sm.drop_duplicates('name').set_index('name').reindex(subs_used)
     sub_text = [f'{n if not isinstance(dn, str) or not dn else dn}\n\n{ds if isinstance(ds, str) else ""}'
                 for n, dn, ds in zip(subs_used, sm.display_name, sm.description)]
-    Q_sub = gather(subs_used, sub_text, [_lookup('submolts')], f'real_tstep_submolts_{tag}')
+    Q_sub = gather(subs_used, sub_text, [_lookup('submolts')], f'real_tstep_submolts_{tag}',
+                   kind='submolts')
 
     tpos = {x: i for i, x in enumerate(threads)}
     spos = {x: i for i, x in enumerate(subs_used)}
@@ -175,7 +210,9 @@ def main():
                                         t0=None, k=a.k, time=a.cond, log=log,
                                         period_sys=sys.step.values[oks], period_ref=ref.step.values[okr])
     os.makedirs(os.path.join(DERIVED, 'real_tstep'), exist_ok=True)
-    np.save(os.path.join(DERIVED, 'real_tstep', f'{tag}_R.npy'), R.astype(np.float16))
+    R = R.astype(np.float16)                      # stored at half precision; scan the stored values, so
+    np.save(os.path.join(DERIVED, 'real_tstep', f'{tag}_R.npy'), R)   # --reuse reproduces a fresh run
+    R = R.astype(np.float32)
     sys[oks].drop(columns=['text']).assign(agent_ix=ag[oks]).to_parquet(
         os.path.join(DERIVED, 'real_tstep', f'{tag}_rows.parquet'))
     base = dict(window=[a.start, a.end], T=a.T, k=a.k, cond=a.cond,
@@ -205,20 +242,27 @@ def scan(a, tag, R, agent, step, cohort, base, share):
     t = time.time()
     res = tstep.run_residuals(R, agent, step, len(cohort), a.T, B=a.B, seed=a.seed,
                               workers=a.workers, peel=a.peel,
-                              two_signed_alpha=a.two_signed if a.two_signed >= 0 else None)
+                              two_signed_alpha=a.two_signed if a.two_signed >= 0 else None,
+                              weight=None if a.weight == 'none' else a.weight,
+                              min_move=a.min_move if a.min_move >= 0 else None)
     log(f'scan done in {time.time() - t:.0f}s: p = {res["p"]:.3f}, bands {np.round(res["p_band"], 3).tolist()}, '
-        f'd = {res["d"]}, factors removed {res["n_factors"]}, missing increments {res["n_missing"]}')
+        f'd = {res["d"]}, factors removed {res["n_factors"]}, missing increments {res["n_missing"]} '
+        f'(static {res["n_static"]})')
 
     # ---- outputs
     names = np.array(cohort)
     order = np.argsort(-res['rank_score'])
     groups = [dict(p=g['p'], p_band=g['p_band'].tolist(), obs=g['obs'].tolist(), band=g['band'],
                    n_tested=g['n_tested'], size=len(g['members']), members=sorted(names[g['members']].tolist()),
+                   components=[sorted(names[c].tolist()) for c in g.get('components', [])],
                    best=[None if x is None else sorted(names[x].tolist()) for x in g['best']])
               for g in res.get('groups', [])]
     for i, g in enumerate(groups):
         log(f'group {i}: p = {g["p"]:.3f}, bands {np.round(g["p_band"], 3).tolist()}, '
-            f'{g["size"]} of {g["n_tested"]} agents; seed band {g["band"]}')
+            f'{g["size"]} of {g["n_tested"]} agents; seed band {g["band"]}; '
+            f'components {[len(c) for c in g["components"]]}')
+        for c in g['components']:
+            log('    ' + ', '.join(c))
     summary = dict(
         **base, B=a.B, seed=a.seed,
         p=res['p'], p_band=np.asarray(res['p_band']).tolist(), obs=np.asarray(res['obs']).tolist(),
@@ -227,7 +271,11 @@ def scan(a, tag, R, agent, step, cohort, base, share):
         S_hat=sorted(names[res['S_hat']].tolist()), band_hat=res['band_hat'],
         ranking_top50=[dict(agent=str(names[i]), score=float(res['rank_score'][i])) for i in order[:50]],
         d=res['d'], d_eff=res['d_eff'], n_factors=res['n_factors'], n_missing=res['n_missing'],
-        explained=res['explained'], centered=True, two_signed_alpha=a.two_signed, groups=groups)
+        explained=res['explained'], centered=True, two_signed_alpha=a.two_signed, weight=a.weight,
+        pair_thr=res.get('pair_thr'),
+        cohort_components=[sorted(names[c].tolist()) for c in res.get('cohort_components', [])],
+        reliability_fit=res.get('reliability_fit'), min_move=a.min_move, n_static=res.get('n_static'),
+        min_steps=a.min_steps, groups=groups)
     os.makedirs(os.path.join(DERIVED, 'real_tstep'), exist_ok=True)
     with open(os.path.join(DERIVED, 'real_tstep', f'{tag}.pkl'), 'wb') as fh:
         pickle.dump(dict(summary=summary, res=res, cohort=cohort, self_share=share), fh)

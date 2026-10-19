@@ -76,3 +76,58 @@ factor rule at α = 0.01 removing 7 directions; peeling), then `real_investigate
 - The membership estimate over-includes: 3-13 extra agents per group, a few of them plausible
   campaign co-participants. In the paper, report the ranking and the cores.
 - One group is an artifact of a sparse step.
+
+# Relaxed cohort (≥ 6 of 8 steps, 2725 agents), static increments missing (2026-10-19)
+
+Run: `real_tstep.py --reuse --min-steps 6 --peel 40` (ε = 0.01, which drops 288 static agent-steps;
+20 factors removed). Peeling stopped by itself at round 12 (p = 0.10). Numbers are in
+`data/results/real_investigate_01-30_02-18_T8_ms6.json`. "Best" is the strongest set at the winning
+size band; "step" is where the within-group co-movement sits (share of the mean pair cosine).
+
+| Round | Best set | Reading | Step |
+|---|---|---|---|
+| 0 | 10: ClawGatherer, DataVoyager, TokenHarvester, ClawCraftsman, ClawMiner, CodeArtisan, InfoMapper, QuantumSailor, TestAccount, QwenPoweredClaw5 | One minting farm: "CLAW Mint {mbc-20}" at a 65-minute cadence, about 60 posts each, hourly r 0.83 | 0 |
+| 1 | xmolt02–06 + 5 others | xmolt02–06 are clones: "Steady minting from HK", 31.7-minute cadence. The other 5 are not linked | 0 |
+| 3 | 9: DigitalMacroLabAssistant, OC_Assistant_Ypf, hiymc, MintingAssistant, pyyypf, ClawdWorkspace, … | New minting farm: "CLAW Mint" at an identical 31.0-minute cadence | 2 |
+| 5 | yjsolx + yjsolxx | Clone pair: "$claw mint", 31.0 min, hourly r 0.98 | 1 |
+| 8 | MusonAgent + SecondAgent | Clone pair: "MBC# … mint", 35.3 min, hourly r 0.88 | spread |
+| 10 | FloClaw1/2/3/5/6, Floflo, floflo1 + 3 | The FloClaw family, now 7 accounts (was 3): "$CLAW PROTOCOL" flood, 22 shared threads per pair | spread |
+| 12 (p = 0.10) | ClawdBotSecond/Third/Fourth + ClawdAnalyzer | The ClawdBot family, 4 accounts: 32.0-minute cadence, hourly r 0.97. Not significant | spread |
+| 2, 4, 7 | heterogeneous | Newly claimed agents ("Hello Moltbook", "just claimed", "Day One"): a shared lifecycle move out of introduction posts, not collusion | 0 or 1 |
+| 6, 9 | pairs | Unrelated agents. The signal is entirely in the last step (crawl tail), as with the earlier artifact | 6 |
+| 11 (p = 0.05) | heterogeneous | No link | 1 |
+
+- **Concentration in one step does not separate farms from artifacts.** Real farms 0, 1, 3 and 5
+  also have 54-77% of their co-movement in one step: a joint template switch. So a persistence
+  requirement would lose them. The artifacts are newcomer onboarding (step 0/1) and the sparse crawl
+  tail (step 6).
+- Rounds 2, 4 and 7 are a sparse one-signed shared process (onboarding). Under assumption (b) that is
+  indistinguishable from a group (cell N9). Agent age is the shared cause.
+
+# Feb 9 window, relaxed cohort, subnetworks as persistent-pair components (2026-10-19)
+
+Run: `real_tstep.py --end 2026-02-09 --min-steps 6 --peel 40`. The window ends where comment
+coverage collapses (Feb 9 00:00 UTC). 2574 agents, d = 10, 26 factors, 20 peeling rounds,
+pair threshold 4.08. Results are in `data/results/real_tstep_01-30_02-09_T8_ms6.json`.
+
+- **Persistent-pair components within the membership sets:**
+
+  | Round | Set size | Components |
+  |---|---|---|
+  | 0 | 70 | QwenPoweredClaw7/8 + Aimax, Kara_Protocol, TutuAI (5); 277/MochiNews/NeonPincer2026/moge-max (4); QwenPoweredClaw9/11/12 (3); FloClaw1+FloClaw5; FloClaw2+floflo1; BisonBrave+Clawd_Utilitarian |
+  | 1 | 47 | MusonAgent + SecondAgent |
+  | 2 | 28 | xmolt02–06 (5); 2 pairs |
+  | 3 | 12 | the 31-minute CLAW farm: ClawdWorkspace, DigitalMacroLabAssistant, MintingAssistant, OC_Assistant_Ypf, hiymc, pyyypf |
+  | 5 | 5 | HK farm: HK_CLAW_Minter, MacClawdMinter, gxtmolt, m4molb |
+  | 6 | 9 | Mizuki farm: MizukiAI, Mizukih, Mizukix, Xennah, Zoshita, Tazania |
+  | 7 | 19 | ClawdBotSecond/Third/Fourth + ClawdAnalyzer |
+
+  Rounds 8 and 10 have pairs only. The newcomer sets (rounds 4, 9 and 11–19) have no components.
+- **Cohort-wide components** (all pairs, not restricted to a set):
+  - xmolt02–06, the HK farm and QwenPoweredClaw4/7/8 join into one component of 15. Both
+    xmolt and the HK farm post "Steady minting from HK", so they may share an operator.
+  - QwenPoweredClaw9–12 + AtlasMolty form one component.
+- **Not recovered:**
+  - The ClawGatherer farm has no accounts in this cohort; it posts after Feb 9.
+  - Only pairs and a trio of the 14 FloClaw accounts link: their co-movement is weaker
+    (median cosine 0.61) than the clones' (0.95-0.98).

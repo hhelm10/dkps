@@ -52,7 +52,10 @@ def main():
 
     # the scan's residual increments, rebuilt exactly as real_tstep.py builds them
     pos = tstep.positions(R, rows.agent_ix.values, rows.step.values, N, T, seed=summ['seed'])
-    D = tstep.increments(pos)
+    w = summ.get('weight')
+    mm = summ.get('min_move')
+    D = tstep.increments(pos, weight=None if w in (None, 'none') else w,
+                         min_move=mm if mm is not None and mm >= 0 else None)
     alpha = summ.get('two_signed_alpha')
     D, kf = tstep.remove_factors(D, two_signed_alpha=alpha if alpha is not None and alpha >= 0 else None)
     d_eff = D.shape[1] * D.shape[2] - kf

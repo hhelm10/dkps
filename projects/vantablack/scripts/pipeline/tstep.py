@@ -27,6 +27,11 @@ Design: writing/notes/sim_detection_design.md. Input is per-response data
   6. null       per-step agent-ID shuffle of the residual increments (new
                 permutation at every step), candidate family rebuilt on every
                 draw; p = min_b n_bands * p_b
+  8. components each S_hat split into the connected components of its persistent pairs:
+                pairs whose leave-one-step-out z (min over left-out steps) exceeds the
+                family-wise 1 - alpha threshold over all pairs, from the same shuffle null.
+                A shared one-step event (onboarding, a crawl edge) cannot link a pair,
+                and the threshold is strict enough that weak links do not chain
 Comparator nulls: 'block' (shuffle per block of steps), 'rotate' (per-agent
 Haar rotation of the whole trajectory), 'cshift' (per-agent circular shift).
 """
@@ -66,9 +71,15 @@ def condition(U, X, k=64, bw=1.0, chunk=None):
     return out
 
 
-def _unit_means(R, agent, step, N, T):
-    Y = np.zeros((N * T, R.shape[1])); np.add.at(Y, agent * T + step, R)
-    return Y / np.maximum(np.bincount(agent * T + step, minlength=N * T), 1)[:, None]
+def _unit_means(R, agent, step, N, T, chunk=200_000):
+    from scipy import sparse
+    unit = agent * T + step
+    Y = np.zeros((N * T, R.shape[1]))
+    for i in range(0, len(R), chunk):                                  # sum per unit, in float64
+        u = unit[i:i + chunk]
+        A = sparse.csr_matrix((np.ones(len(u)), (u, np.arange(len(u)))), shape=(N * T, len(u)))
+        Y += A @ R[i:i + chunk].astype(np.float64)
+    return Y / np.maximum(np.bincount(unit, minlength=N * T), 1)[:, None]
 
 
 def positions(R, agent, step, N, T, d=None, seed=0):
@@ -79,11 +90,12 @@ def positions(R, agent, step, N, T, d=None, seed=0):
     basis, for split-half increments, and the half sizes nA, nB. d=None picks the dimension by
     the first profile-likelihood elbow."""
     Y = _unit_means(R, agent, step, N, T)
-    mu = Y.mean(0)
-    _, sv, Vt = np.linalg.svd(Y - mu, full_matrices=False)
+    occ = np.bincount(agent * T + step, minlength=N * T) > 0          # units with no responses stay out of the basis
+    mu = Y[occ].mean(0)
+    _, sv, Vt = np.linalg.svd(Y[occ] - mu, full_matrices=False)
     if d is None:
         from graspologic.embed import select_dimension
-        d = int(select_dimension(Y - mu, n_components=min(100, Y.shape[1] - 1), n_elbows=1)[0][0])
+        d = int(select_dimension(Y[occ] - mu, n_components=min(100, Y.shape[1] - 1), n_elbows=1)[0][0])
     V = Vt[:d].T
     unit = agent * T + step
     order = np.lexsort((np.arange(len(R)), unit))
@@ -102,7 +114,7 @@ def positions(R, agent, step, N, T, d=None, seed=0):
                 explained=float((sv[:d] ** 2).sum() / (sv ** 2).sum()))
 
 
-def increments(pos, mode='split', per_step=None, center=True):
+def increments(pos, mode='split', per_step=None, center=True, weight=None, min_move=None):
     """'split': psi_A(t+1) - psi_B(t), consecutive increments share no estimation noise;
     'overlap': psi(t+1) - psi(t), negatively autocorrelated by estimation noise;
     'nonoverlap': every other overlapping increment.
@@ -111,11 +123,31 @@ def increments(pos, mode='split', per_step=None, center=True):
     much content is behind it (needed when the amount of content varies).
     center: subtract each step's mean increment over the agents observed at that step, so a
     platform-wide drift does not make every pair of agents co-move (the per-step shuffle null
-    leaves step means unchanged, so centering is exact under it)."""
+    leaves step means unchanged, so centering is exact under it).
+    weight='reliability': scale each split increment by the share of its variance that is
+    movement rather than estimation noise. With h = 1/nA(t+1) + 1/nB(t), E||delta||^2 = a + b h
+    (a: movement, b: per-response noise), fitted by least squares over the observed increments;
+    w = sqrt(a / (a + b h)). Increments resting on one or two responses then count little. The
+    weight belongs to the (agent, step) cell and moves with it under the per-step shuffle.
+    min_move: split increments whose raw length is below min_move times the median raw length
+    are treated as missing. An agent that does not move cannot co-move, and after centering a
+    zero increment would become -mu_t, identical for every static agent."""
     if mode == 'split':
         D = pos['ZA'][:, 1:] - pos['ZB'][:, :-1]
         ok = (pos['nA'][:, 1:] > 0) & (pos['nB'][:, :-1] > 0)
+        if min_move is not None:
+            r = np.linalg.norm(D, axis=2)
+            ok &= r >= min_move * np.median(r[ok])
+            pos['n_static'] = int(((pos['nA'][:, 1:] > 0) & (pos['nB'][:, :-1] > 0) & ~ok).sum())
         D = D * ok[:, :, None]
+        if weight == 'reliability':
+            h = 1 / np.maximum(pos['nA'][:, 1:], 1) + 1 / np.maximum(pos['nB'][:, :-1], 1)
+            mu0 = D.sum(0) / np.maximum(ok.sum(0), 1)[:, None]
+            y = (((D - mu0[None]) ** 2).sum(2))[ok]
+            a_, b_ = np.linalg.lstsq(np.c_[np.ones(ok.sum()), h[ok]], y, rcond=None)[0]
+            a_, b_ = max(a_, 1e-12), max(b_, 0.0)
+            D = D * np.sqrt(a_ / (a_ + b_ * h))[:, :, None]
+            pos['reliability_fit'] = (float(a_), float(b_))
     else:
         D = np.diff(pos['Z'], axis=1)
         D = D[:, ::2] if mode == 'nonoverlap' else D
@@ -376,24 +408,76 @@ def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers
 
 def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=199, seed=0,
                   workers=1, n_factors='auto', per_step=None, center=True, known_S=None, peel=0,
-                  two_signed_alpha=None):
+                  two_signed_alpha=None, weight=None, min_move=None):
     """Steps 2-7 from conditioned responses R (one row per response; agent in [0, N), step in
     [0, T)). Returns the scan result plus the factor count, dimensions, membership estimate
     and the agent ranking score; peel > 0 adds up to that many peeled groups (peel_groups)."""
     pos = positions(R, agent, step, N, T, d=d, seed=seed)
-    D = increments(pos, mode=mode, per_step=per_step, center=center)
+    D = increments(pos, mode=mode, per_step=per_step, center=center, weight=weight, min_move=min_move)
     D, kf = remove_factors(D, two_signed_alpha=two_signed_alpha) if n_factors == 'auto' \
         else remove_factors(D, kmax=int(n_factors))
     d_eff = D.shape[1] * D.shape[2] - kf
     res = test(D, d_eff, B=B, kind=kind, seed=seed, workers=workers, known_S=known_S)
     S_hat, b_hat, score = estimate(D, d_eff, res)
     res.update(n_factors=kf, d_eff=d_eff, d=pos['d'], explained=pos['explained'],
-               S_hat=S_hat, band_hat=b_hat, rank_score=score,
+               S_hat=S_hat, band_hat=b_hat, rank_score=score, reliability_fit=pos.get('reliability_fit'), n_static=pos.get('n_static'),
                n_missing=int((np.linalg.norm(D, axis=2) == 0).sum()))
     if peel:
         res['groups'] = peel_groups(D, d_eff, first=res, max_groups=peel, B=B, kind=kind, seed=seed,
                                     workers=workers)
+        Z = loso_z(D, d_eff)
+        res['pair_thr'] = thr = pair_threshold(D, d_eff, seed=seed)
+        for g in res['groups']:
+            g['components'] = components(Z, g['members'], thr)
+        res['cohort_components'] = components(Z, np.arange(len(D)), thr)
     return res
+
+
+def loso_z(D, d_eff, rows=None):
+    """Leave-one-step-out pair z: for each pair, the minimum over left-out steps s of
+    sqrt(d_eff (L-1)/L) times the cosine of the two agents' increments without step s.
+    Large only for pairs that co-move at more than one step. Returns an (n, n) array for
+    D[rows] (all agents by default), diagonal -inf."""
+    X = D if rows is None else D[rows]
+    L = X.shape[1]
+    try:
+        import torch
+        dev = 'cuda' if torch.cuda.is_available() else 'cpu'
+        X = torch.as_tensor(np.ascontiguousarray(X), device=dev, dtype=torch.float32)
+        P = torch.einsum('itd,jtd->tij', X, X); nr = (X ** 2).sum(2)
+        sq, mn, inf = torch.sqrt, torch.minimum, float('inf')
+    except ImportError:
+        P = np.einsum('itd,jtd->tij', X, X); nr = (X ** 2).sum(2)
+        sq, mn, inf = np.sqrt, np.minimum, np.inf
+    Ps, ns = P.sum(0), nr.sum(1)
+    out = None
+    for t in range(L):
+        a = ns - nr[:, t]
+        z = np.sqrt(d_eff * (L - 1) / L) * (Ps - P[t]) / sq((a[:, None] * a[None]).clip(min=1e-24))
+        out = z if out is None else mn(out, z)
+    out = out.cpu().numpy() if hasattr(out, 'cpu') else out
+    np.fill_diagonal(out, -np.inf)
+    return out
+
+
+def pair_threshold(D, d_eff, B=99, alpha=0.05, seed=0):
+    """Family-wise threshold for loso_z over all pairs: the 1 - alpha quantile of its maximum
+    over pairs under the per-step agent-ID shuffle."""
+    rng = np.random.default_rng(seed)
+    N, L = D.shape[:2]
+    mx = [loso_z(np.stack([D[rng.permutation(N), t] for t in range(L)], 1), d_eff).max() for _ in range(B)]
+    return float(np.quantile(mx, 1 - alpha))
+
+
+def components(Z, members, thr):
+    """Connected components (size >= 2) of members under links Z > thr, largest first."""
+    from scipy.sparse.csgraph import connected_components
+    members = np.asarray(members)
+    if len(members) < 2:
+        return []
+    _, lab = connected_components(Z[np.ix_(members, members)] > thr, directed=False)
+    out = [members[lab == c] for c in np.unique(lab) if (lab == c).sum() > 1]
+    return sorted(out, key=len, reverse=True)
 
 
 def peel_groups(D, d_eff, first=None, alpha=0.05, max_groups=10, B=199, kind='shuffle', seed=0, workers=1):
