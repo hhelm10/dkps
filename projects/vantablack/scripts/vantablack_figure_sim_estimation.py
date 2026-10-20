@@ -1,8 +1,8 @@
-"""Figure: membership estimation simulations, 1x4 panels as in the detection figure
-(swarm size, amount of content, subnetwork size, time). y is the chance-corrected
-normalised mean reciprocal rank of the true members in the agent ranking (0 = random
-ranking, 1 = members at ranks 1..|S|; sim_detection.rank_metrics), one line per effect
-size rho > 0. All replicates count, rejected or not.
+"""Figure: membership estimation simulations, 2x4 panels, columns as in the detection figure
+(swarm size, amount of content, subnetwork size, time). Top row: precision of the estimated
+subnetwork S_hat (share of its members that are colluders); bottom row: recall (share of the
+colluders in S_hat). One line per effect size rho > 0. All replicates count, rejected or not
+(precision is undefined, and left out, when S_hat is empty).
 
     python vantablack_figure_sim_estimation.py [--stage pilot]
 
@@ -26,10 +26,10 @@ import hv_style as hv  # noqa: E402
 from sim_detection import BASE, SWEEPS  # noqa: E402
 from vantablack_figure_sim_detection import PANELS  # noqa: E402
 
-METRIC = 'nmrr_cc'
+ROWS = [('precision', 'precision of $\\hat S$'), ('recall', 'recall of $\\hat S$')]
 
 
-def cell_means(df, sweep):
+def cell_means(df, sweep, METRIC):
     d = df[(df.sweep == sweep) | (df.sweep == 'base')]
     d = d.assign(x=d[sweep]).dropna(subset=[METRIC])
     g = d.groupby(['rho', 'x'])[METRIC].agg(['mean', 'std', 'count']).reset_index()
@@ -46,26 +46,29 @@ def main():
     hv.apply()
     rhos = sorted(df.rho.unique())
     cols = {r: hv.CMAP_BLUE(v) for r, v in zip(rhos, np.linspace(0.35, 1.0, len(rhos)))}
-    fig, axes = plt.subplots(1, 4, figsize=(19, 4.6), sharey=True)
-    for ax, (sweep, title, xlabel) in zip(axes, PANELS):
-        g = cell_means(df, sweep)
-        for rho in rhos:
-            h = g[g.rho == rho].sort_values('x')
-            ax.plot(h.x, h['mean'], marker='o', ms=5, color=cols[rho], lw=2.4, label=f'ρ = {rho:g}')
-            ax.fill_between(h.x, h['mean'] - h.se, h['mean'] + h.se, color=cols[rho], alpha=0.15, lw=0)
-        ax.axhline(0, color=hv.REFLINE, ls=':', lw=1.2)
-        ax.axvline(BASE[sweep], color=hv.EDGE, lw=6, zorder=0)
-        ax.set_xscale('log')
-        ax.set_xticks(SWEEPS[sweep]); ax.set_xticklabels([str(v) for v in SWEEPS[sweep]])
-        ax.minorticks_off()
-        ax.set_ylim(-0.05, 1.02)
-        ax.set_title(title, loc='left', fontsize=hv.SIZES['subtitle'])
-        ax.set_xlabel(xlabel, fontsize=hv.SIZES['annot'])
-    axes[0].set_ylabel('normalised MRR (chance-corrected)', fontsize=hv.SIZES['annot'])
+    fig, axes = plt.subplots(2, 4, figsize=(19, 8.4), sharey=True)
+    for r, (metric, ylab) in enumerate(ROWS):
+        for ax, (sweep, title, xlabel) in zip(axes[r], PANELS):
+            g = cell_means(df, sweep, metric)
+            for rho in rhos:
+                h = g[g.rho == rho].sort_values('x')
+                ax.plot(h.x, h['mean'], marker='o', ms=5, color=cols[rho], lw=2.4, label=f'ρ = {rho:g}')
+                ax.fill_between(h.x, h['mean'] - h.se, h['mean'] + h.se, color=cols[rho], alpha=0.15, lw=0)
+            ax.axvline(BASE[sweep], color=hv.EDGE, lw=6, zorder=0)
+            ax.set_xscale('log')
+            ax.set_xticks(SWEEPS[sweep]); ax.set_xticklabels([str(v) for v in SWEEPS[sweep]])
+            ax.minorticks_off()
+            ax.set_ylim(-0.02, 1.02)
+            if r == 0:
+                ax.set_title(title, loc='left', fontsize=hv.SIZES['subtitle'])
+            else:
+                ax.set_xlabel(xlabel, fontsize=hv.SIZES['annot'])
+        axes[r, 0].set_ylabel(ylab, fontsize=hv.SIZES['annot'])
+    axes = axes[0]
     h, l = axes[0].get_legend_handles_labels()
     fig.legend(h, l, loc='lower center', ncol=len(l), fontsize=hv.SIZES['annot'], bbox_to_anchor=(0.5, -0.07))
     reps = int(df.groupby(['sweep', 'value', 'rho']).size().median())
-    fig.text(0.995, 0.005, f'{a.stage}: ~{reps} replicates per point, ±1 SE; dotted = chance; shaded bar = base value',
+    fig.text(0.995, 0.005, f'{a.stage}: ~{reps} replicates per point, ±1 SE; shaded bar = base value',
              ha='right', va='bottom', fontsize=10, color=hv.INK_MUTE)
     fig.tight_layout()
     name = 'vantablack_figure_sim_estimation' + ('' if a.stage == 'full' else f'_{a.stage}')

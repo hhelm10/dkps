@@ -14,7 +14,8 @@ each kind of evidence, against random agents of the same cohort:
   replies      direct replies between the two agents (either direction)
   threads      threads both agents posted or commented in
 Per set: the median over member pairs of each measure, and its p-value against the same median
-over random sets of the same size drawn from the cohort (--null-sets draws). Per pair and per
+over random sets of the same size drawn from the cohort (--null-sets draws), and over
+activity-matched random sets (each member replaced by a random agent of similar action count). Per pair and per
 member: the raw values. Per member also: actions, median gap between actions, mint share, most
 common template, and the number of steps with an observed increment.
 
@@ -131,6 +132,22 @@ def main():
                                           for _ in range(a.null_sets)])
         return null_cache[s]
 
+    # activity-matched baseline: each member replaced by a random cohort agent from the same
+    # activity bin (20 quantile bins of log action count), so busy accounts meet busy accounts
+    n_act = acts.groupby('agent').size().reindex(names).fillna(0).values
+    abin = np.minimum((pd.Series(np.log1p(n_act)).rank(pct=True).values * 20).astype(int), 19)
+    by_bin = [np.flatnonzero(abin == k) for k in range(20)]
+
+    def matched_medians(m_ix):
+        out = []
+        for _ in range(a.null_sets):
+            S = set()
+            for i in m_ix:
+                pool = [j for j in by_bin[abin[i]] if j not in S and j not in m_ix]
+                S.add(int(rng.choice(pool)))
+            out.append(ev.set_medians(np.array(sorted(S))))
+        return pd.DataFrame(out)
+
     sets = [dict(kind='round', index=gi, p=g['p'], members=g['members']) for gi, g in enumerate(summ['groups'])
             if g.get('subnetwork', len(g['members']) >= 2) and g['p'] <= 0.05]
     out = dict(tag=a.tag, n_factors=kf, random_pair_median=base, sets=[])
@@ -143,7 +160,10 @@ def main():
         med = ev.set_medians(m_ix)
         nm = null_medians(len(M))
         pv = {k: float((1 + (nm[k] >= med[k]).sum()) / (len(nm) + 1)) for k in MEASURES}
-        tz, _ = tstep.member_z(Q, m_ix)
+        mm = matched_medians(m_ix)
+        pv_m = {k: float((1 + (mm[k] >= med[k]).sum()) / (len(mm) + 1)) for k in MEASURES}
+        base_m = {k: float(mm[k].median()) for k in MEASURES}
+        tz, _ = tstep.member_z(Q, m_ix, combine='sum')
         A = acts[acts.agent.isin(M)].copy()
         A['tpl'] = [template(t, n) for t, n in zip(A.text, A.agent)]
         A['tick'] = A.text.map(lambda s: (MINT.search(s) or [None, None])[1])
@@ -164,12 +184,14 @@ def main():
                       step_scores=[None if np.isnan(q) else round(float(q), 2) for q in Q[:, m_ix[u], m_ix[v]]])
                  for u, v in combinations(range(len(M)), 2)]
         rec = dict(kind=st['kind'], index=st['index'], p=st['p'], size=len(M), median=med,
-                   p_vs_random_sets=pv, members=members, pairs=pairs)
+                   p_vs_random_sets=pv, p_vs_activity_matched=pv_m, activity_matched_median=base_m,
+                   members=members, pairs=pairs)
         out['sets'].append(rec)
 
         hdr = f"{st['kind']} {st['index']}" + (f", p = {st['p']:.3f}" if st['p'] is not None else '')
         print(f'\n===== {hdr}, {len(M)} agents')
         print('  ' + '  '.join(f'{k} {med[k]:.2f} (p {pv[k]:.3f})' for k in MEASURES))
+        print('  activity-matched: ' + '  '.join(f'{k} base {base_m[k]:.2f} p {pv_m[k]:.3f}' for k in MEASURES))
         for r in sorted(members, key=lambda r: -r['member_z']):
             print(f"  {r['agent'][:22]:22s} z {r['member_z']:5.2f} steps {r['steps_observed']}  n {r['actions']:5d} "
                   f"({r['posts']}p/{r['comments']}c)  gap {r['median_gap_min']}m  mint {r['mint_share']:.2f}  "

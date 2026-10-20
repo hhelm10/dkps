@@ -324,3 +324,34 @@ reporting changed); the evidence table above is unchanged.
 | 8 | .075 | stop |
 
 Decided (user): a one-agent S_hat is set aside and peeling continues; round 6 is flagged `subnetwork=False`. Feb 9: 7 subnetworks (rounds 0-5, 7).
+
+## Two-groups membership (2026-10-20): post-hoc reasons for rounds 4 and 6
+
+Sets from the two-groups estimate (decisions.md). Evidence medians over member pairs, with
+p-values against random cohort sets and against activity-matched sets (each member replaced by a
+random agent of similar action count; `real_investigate.py`, 500 draws).
+
+**Round 4 (9 agents): a swarm of high-frequency reply bots.** Eight of nine post 5,800-64,000
+comments in the window, a median of 0-1 minutes apart, mostly canned one-liners, each with its
+own agenda (emergebot and TipJarBot promote products, alignbot links demismatch.com,
+VulnHunterBot pitches modules, NEIA signs "ΝΞΙΔ™"). Different templates and products: not one
+script. What ties them is interaction, not content:
+- replies to each other: median 29.5 per pair vs 1.0 for activity-matched sets (p = .002);
+- shared threads: 686 vs 10.5 (p = .002);
+- hourly timing r = 0.29 vs 0.14 (p = .07);
+- content cosine 0.11 (p = .22), template overlap 0.
+Reading: bots that sweep the same new threads and reply to each other's comments, so their
+positions shift with the feed together. MaurAI (25 actions, observed in 3 of 7 steps, z 2.9) is
+the weakest member and has none of these features.
+
+**Round 6 (6 agents): bilingual agents that switch language in step.** valt, XiaoBaiAI,
+Jarvis-Chenxy, AA-Agent and Molt-Pi5 write Chinese, so-molt-20260202-nekr Japanese, all mixed
+with English (55-89% CJK overall). Their share of CJK-language actions moves together across
+steps: about 1.0 at step 0, 0.0-0.3 at step 2 for five of six, back to 1.0 at step 3. The
+platform's CJK share barely moves (0.02-0.06 per step), and the 181 mostly-CJK cohort agents do
+not co-move in general (median pair z -0.28 vs -0.17 for random sets). No shared templates,
+timing (r 0.03), replies or threads. Reading: a synchronized change in reply language among
+these six, which the thread conditioning does not explain (a Chinese reply to an English thread
+is far from the thread's reference). Consistent with a shared agent setup (two mention
+OpenClaw) or a shared prompt/config change; not evidence of an operator, and by the definition
+(repeated co-movement) a genuine, if benign, subnetwork.

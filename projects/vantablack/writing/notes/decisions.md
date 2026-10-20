@@ -151,3 +151,94 @@ These are documented in `methods.md`.
   z). Then, separately, the additional information (templates, posting times, replies, shared
   threads) and whether / how it helps find groups. The evidence-by-source table belongs to the
   second part. Note: "content cosine" (mean PKPS position) is PKPS-derived, not additional.
+- **Simulations are plain again (user, 2026-10-20).** With the rank statistic and S_hat the
+  method is simple, so the Moltbook-matched simulation features are removed: platform drift,
+  inactive agent-steps, templated (static) agents, sparse two-signed factors and the one-step
+  group jump (`simgen.py` back to its 2026-10-18 form; `sim_calibrate.py` deleted). The
+  simulations run `stat='rank'` with default steps (centering, pervasive-factor removal).
+  Reliability weights and the static filter are not used there: ranks of per-step cosines are
+  unchanged by a per-(agent, step) scale, and plain data have no static increments.
+  Supersedes "Simulations carry the features the new steps handle (2026-10-19)".
+- **(Superseded the same day, see "S_hat size chosen against the null".) S_hat is the scan's best set (user, 2026-10-20).** With the rank statistic, S_hat was the
+  agents passing Benjamini-Hochberg on their membership z, iterated. In the simulations (N = 500,
+  T = 8) that kept about 1.4 of 20 colluders at rho = 0.3 (precision 1.0, recall 0.07), although
+  the test rejected 80% of the time and the scan's best set held 13.6 of them (precision 0.77,
+  recall 0.68; |S| = 50: 0.88 / 0.57). One agent's evidence over 7 steps of 10-dimensional
+  increments is about z = 3 even against the true group, close to the BH cut over 500 agents
+  and to the largest non-member z; each iteration then scored against a smaller set. S_hat is
+  now the best set of the most significant band, the set the p-value is about; member z grades
+  members without filtering. Cost: its size is that of the candidate grid (5, 10, 20, 40, 80).
+  Rejected: the prefix with the largest set z (ordering by z selects high-scoring non-members:
+  83 agents for |S| = 20).
+- **Simulation N up to 500 for now (user, 2026-10-20):** N in {100, 200, 500}.
+- **Louvain co-movement candidates dropped from the rank scan (user, 2026-10-20).** In 12
+  simulated replicates (observed data plus 10 shuffle draws each) they were the best set of a
+  band in 4 of about 600 band-draws and never on observed data, while costing a quarter of each
+  draw. The family is now clusters, nearest-neighbour balls and their refinements.
+- **(Superseded the same day by the two-groups estimate.) S_hat size chosen against the null (user, 2026-10-20).** The scan's best set has the
+  candidate grid's sizes (5, 10, 20, 40, 80). On Feb 9 that padded every group to 10 members
+  (SuperDapp z 1.5, xiaobai1 z -0.4) and let the pair band split families (ClawdBot into two
+  pairs). Now:
+  1. S0 = the best set of the most significant band (the set the p-value is about);
+  2. order all agents by membership z against S0;
+  3. score every prefix k = 2..200 of that order with the set statistic, curve z(k);
+  4. standardize z(k) at each k by the same curve on the test's shuffle draws (each draw's best
+     set in the same band, ordered and scored the same way): s(k) = (z(k) - null mean(k)) /
+     null sd(k). Ordering by similarity makes z(k) rise with k even without a group;
+  5. S_hat = the prefix where s(k) is largest. Members are graded by member z against S_hat,
+     not filtered.
+  Simulations (N = 500, T = 8, 10 replicates; precision / recall): |S| = 20, rho = 0.3:
+  0.58 / 0.76 (scan's best set 0.77 / 0.68; best possible size on this ordering 0.79 / 0.70;
+  one replicate ran to 180 agents); rho = 0.5: 0.89 / 0.93; |S| = 50, rho = 0.3: 0.77 / 0.87
+  (0.88 / 0.57); rho = 0.5: 0.93 / 0.95 (0.99 / 0.40).
+  Rejected: subtracting only the null mean. It did as well in the simulations, but on Moltbook
+  three rounds ran to 106-177 agents (cores of 2-6 at z 4-6, tails of ordinary agents at z
+  2-3): real data carry weak diffuse co-movement the shuffle null lacks, so z(k) drifts above
+  the null mean at large k (by 6-12 at k = 120-200). The null sd grows with k and absorbs it.
+  Ordering by a robust z instead of member z's ranks changed nothing.
+- **Majority z computed in log space (bug fix, 2026-10-20).** The tail probability underflowed
+  below 1e-300, capping z at 37.05: a strong set's score stopped growing with its size, so every
+  size rule picked the first prefix that hit the cap (|S| = 50, rho = 0.5: 20-30 of 50 members).
+  Only very strong sets are affected; tests are unchanged in practice (observed z far above the
+  null either way).
+- **S_hat by a two-groups model (user: "a principled approach that gets both high precision and
+  high recall in simulation", 2026-10-20).** Supersedes BH membership, the scan's best set and
+  the null-calibrated size (all rejected above: low recall, grid sizes, runaway / split
+  families).
+  1. Seed: the best set of the most significant band.
+  2. Score each agent against the set: per step, the rank among agents of its mean pair score
+     with the members, as a normal score; summed over steps / sqrt(#steps) (Stouffer). The sum
+     uses every step; a step's score is bounded (about 2.9 at N = 500), so one step adds at most
+     about 1.1 at T = 8. Against the true group, the sum separates members better than the
+     majority (best possible precision / recall at |S| = 20, rho = 0.3: 0.88 / 0.86 vs 0.82 / 0.79).
+  3. Two-groups model (Efron 2004): scores ~ (1 - pi) N(mu0, s^2) + pi N(mu1, s^2), fitted by EM.
+     Empirical null (mu0, s estimated): members take the top ranks at each step and push the
+     others' scores down (non-member mean -0.13 at |S| = 20, -0.32 at |S| = 50); a fixed N(0, 1)
+     null underestimated pi and cost recall (0.69 -> 0.79). One shared variance, so membership
+     increases with the score (separate variances let the member component claim the far left
+     tail on Moltbook: members at z -4 and -6).
+  4. Members: posterior > 1/2 (the Bayes rule). Expected-F1 selection gave the same sets.
+  5. Repeat 2-4 against the new set until it stops changing.
+  Simulations (N = 500, T = 8, 10 replicates, precision / recall; best possible cutoff on the
+  true group's scores in brackets): |S| = 20, rho = 0.3: 0.79 / 0.80 (0.88 / 0.86); rho = 0.5:
+  0.96 / 0.98; |S| = 50, rho = 0.3: 0.88 / 0.90 (0.93 / 0.91); rho = 0.5: 0.99 / 1.00;
+  |S| = 10, rho = 0.5: 0.98 / 0.93 (separate-variance version).
+  Feb 9: FloClaw 10, Mizuki 9, ClawdBot 5, minting farm 5, commenters 9, XNO 7, a 6-agent set
+  around valt + XiaoBaiAI (to check), QwenPoweredClaw4/5/7/8 (p = .04); stop at p = .12.
+- **Global p by permutation min-p (user, 2026-10-20).** The scan's p was n_bands x the smallest
+  band p (Bonferroni over bands). The bands search overlapping sets and are strongly correlated,
+  so that was conservative: over 130 null replicates, P(p <= 0.10) = 0.07, P(p <= 0.5) = 0.35,
+  54 at p = 1, and no rejection; with B = 99 the smallest attainable p was 0.04-0.05. Now the
+  smallest band p is calibrated by its own distribution over the shuffle draws (Westfall and
+  Young 1993): each draw's band p-values against the other B draws and the observed, minimum
+  over bands; p = share of the B + 1 minima at most the observed one. Exact under the shuffle
+  null (correlated synthetic bands: P(p <= 0.05) = 0.044, P(p <= 0.5) = 0.485), no extra draws.
+  Feb 9: the same eight rounds and sets, p 0.010-0.040; stops at p = 0.11.
+- **Simulation pilot with the final method (2026-10-20).** N in {100, 200, 500} (user: N <= 500
+  for now), T in {3, 4, 8, 16, 32} (T = 2 has one increment, so repeated co-movement is
+  undefined), rho in {0, 0.2, 0.3, 0.5}, 20 replicates per cell, B = 99; 1,180 replicates
+  (`data/results/sim_detection_pilot.csv`). Type I error 7 / 220 = 0.032 (P(p <= 0.1) = 0.09,
+  P(p <= 0.5) = 0.46). Base cell (N = 500, m = 20, T = 8, |S| = 20): power 0.10 / 0.85 / 1.0 at
+  rho = 0.2 / 0.3 / 0.5; S_hat precision / recall 0.81 / 0.76 at rho = 0.3, 0.96 / 0.98 at 0.5.
+  Groups of 2 or 5 are not detected at rho <= 0.5. The estimation figure now shows precision and
+  recall of S_hat (it showed the ranking's normalized MRR).

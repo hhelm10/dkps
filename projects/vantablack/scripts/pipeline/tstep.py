@@ -15,7 +15,7 @@ Design: writing/notes/sim_detection_design.md. Input is per-response data
                 per step (each step's mean increment over agents is subtracted)
   4. factors    remove shared directions above the Marchenko-Pastur noise edge
                 whose agent loadings are diffuse (participation-ratio rule)
-  5. family     clusters, kNN-graph Louvain communities, and each agent's
+  5. family     clusters (stat='cosine': also kNN-graph Louvain communities), each agent's
                 nearest-neighbour balls of sizes 5/10/20/40/80 (up to N/4), and
                 local-search refinements of the 50 best balls per size;
                 pairs form their own size band, scanned exactly over all pairs
@@ -31,11 +31,16 @@ Design: writing/notes/sim_detection_design.md. Input is per-response data
                 increment series, z_C = C sqrt(d_eff s(s-1)/2), which weights each step
                 by the size of its increments.
                 Lambda_b = max score within size band b
-  7. estimate   S_hat: seeded by the best set of the most significant band; members are
-                the agents whose similarity to the set passes Benjamini-Hochberg at q
+  7. estimate   stat='rank': from the best set of the most significant band, each agent
+                is scored against the set (per-step rank of its mean pair score, summed over
+                steps); a two-groups model with an empirical null gives each agent's
+                posterior probability of membership; members: posterior > 1/2; repeated
+                until the set stops changing. stat='cosine': seeded by that set,
+                members are the agents whose similarity to it passes Benjamini-Hochberg
   6. null       per-step agent-ID shuffle of the residual increments (new
                 permutation at every step, among the agents observed at that step),
-                candidate family rebuilt on every draw; p = min_b n_bands * p_b. Under it a
+                candidate family rebuilt on every draw; p: the smallest band p-value,
+                calibrated by its distribution over the draws (permutation min-p). Under it a
                 step's pair ranks are only relabelled, so they are computed once
   8. components (optional, split=True; not part of the method since 2026-10-20) each S_hat
                 split into the connected components of its pairs whose score exceeds the
@@ -46,6 +51,7 @@ Comparator nulls: 'block' (shuffle per block of steps), 'rotate' (per-agent
 Haar rotation of the whole trajectory), 'cshift' (per-agent circular shift).
 """
 import multiprocessing as mp
+import warnings
 import numpy as np
 
 from . import candidates as cands
@@ -92,6 +98,28 @@ def _unit_means(R, agent, step, N, T, chunk=200_000):
     return Y / np.maximum(np.bincount(unit, minlength=N * T), 1)[:, None]
 
 
+def elbow(sv):
+    """First profile-likelihood elbow (Zhu and Ghodsi 2006) of values sorted in decreasing order:
+    the split into a leading and a trailing group, each normal with its own mean and a pooled
+    variance, of largest likelihood. Returns the size of the leading group (the same rule as
+    graspologic's select_dimension with n_elbows=1)."""
+    x = np.asarray(sv, float)
+    n = len(x)
+    if n < 2:
+        return n
+    i = np.arange(1, n + 1)                                             # size of the leading group
+    c1, c2 = np.cumsum(x), np.cumsum(x ** 2)
+    ss1 = c2 - c1 ** 2 / i
+    n2 = n - i
+    with np.errstate(invalid='ignore', divide='ignore'):
+        ss2 = np.where(n2 > 0, (c2[-1] - c2) - (c1[-1] - c1) ** 2 / np.maximum(n2, 1), 0.0)
+        var = (ss1 + ss2) / (n - 1 - (i < n))
+        ll = -n / 2 * np.log(2 * np.pi * var) - (ss1 + ss2) / (2 * var)
+    if n == 2:
+        ll[0] = -np.inf
+    return int(np.argmax(ll)) + 1
+
+
 def positions(R, agent, step, N, T, d=None, seed=0):
     """Per-(agent, step) positions in a joint linear embedding (PCA of the N*T unit means).
 
@@ -104,8 +132,7 @@ def positions(R, agent, step, N, T, d=None, seed=0):
     mu = Y[occ].mean(0)
     _, sv, Vt = np.linalg.svd(Y[occ] - mu, full_matrices=False)
     if d is None:
-        from graspologic.embed import select_dimension
-        d = int(select_dimension(Y[occ] - mu, n_components=min(100, Y.shape[1] - 1), n_elbows=1)[0][0])
+        d = elbow(sv[:min(100, Y.shape[1] - 1)])
     V = Vt[:d].T
     unit = agent * T + step
     order = np.lexsort((np.arange(len(R)), unit))
@@ -405,6 +432,25 @@ def _worker(args):
     return band_max(null_draw(D, kind, rng), d_eff, seed=seed)[0]
 
 
+def minp_global(obs, nulls, occ):
+    """Global p-value of the scan: the smallest band p-value, calibrated by its own distribution
+    under the null (permutation min-p, Westfall and Young 1993). Each shuffle draw's band
+    p-values are computed against the other draws and the observed data (all B + 1 values are
+    exchangeable under H0), its minimum over bands taken, and p is the share of the B + 1 minima
+    at most the observed one. Exact under the shuffle null, and it accounts for the correlation
+    between bands (a Bonferroni factor over bands is conservative: about 7% of null replicates
+    had p <= 0.10)."""
+    if not occ.any():
+        return 1.0
+    B = len(nulls)
+    X = np.vstack([obs[None, occ], nulls[:, occ]])                     # (B + 1, bands): observed first
+    X = np.where(np.isfinite(X), X, -np.inf)
+    # p of each value within its band among all B + 1: share of values >= it
+    ge = (X[None, :, :] >= X[:, None, :]).sum(1)                       # (B + 1, bands)
+    mp = (ge / (B + 1)).min(1)
+    return float((mp <= mp[0]).sum() / (B + 1))
+
+
 def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None, Q=None):
     """Scan test. Returns p (global), per-band observed maxima, null maxima, best sets,
     and, if known_S is given, the known-S reference p-value from the same null kind.
@@ -422,7 +468,7 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None, Q=Non
     _CTX.clear()
     occ = np.isfinite(obs)
     pb = np.where(occ, (1 + (nulls >= obs[None, :]).sum(0)) / (B + 1), 1.0)
-    p = float(min(1.0, occ.sum() * pb[occ].min())) if occ.any() else 1.0
+    p = minp_global(obs, nulls, occ)
     out = dict(p=p, p_band=pb, obs=obs, best=best, nulls=nulls)
     if known_S is not None and len(known_S) > 1 and Q is not None:
         z_obs = set_scores(Q, [known_S])[0]
@@ -561,7 +607,7 @@ def peel_groups(D, d_eff, first=None, alpha=0.05, max_groups=10, B=199, kind='sh
             res = test(D[keep], d_eff, B=B, kind=kind, seed=seed + g, workers=workers, Q=Q)
             S, b, score = estimate(D[keep], d_eff, res) if Q is None else estimate_rank(Q, res)
         if Q is not None and len(S) >= 2:
-            score = member_z(Q, S)[0]                                     # against the final S_hat
+            score = member_z(Q, S, combine='sum')[0]                      # against the final S_hat
         out.append(dict(p=res['p'], p_band=np.asarray(res['p_band']), obs=np.asarray(res['obs']),
                         band=b, members=keep[S], n_tested=len(keep), subnetwork=len(S) >= 2,
                         member_score=np.asarray(score)[S] if score is not None and len(S) else np.array([]),
@@ -603,21 +649,28 @@ def majority_z(V):
     M is the m-th largest value, the level exceeded in a majority of the steps (the median
     for odd k). Returns z = Phi^-1(1 - p) and p = P(at least m of k N(0, 1) draws >= M), the
     order-statistic tail, so z is comparable across k. z = -inf, p = 1 when k < 2."""
-    from scipy.special import comb, ndtr, ndtri
+    from scipy.special import gammaln, log_ndtr, ndtri_exp
     L = V.shape[0]
     ok = ~np.isnan(V)
     k = ok.sum(0)
     m = k // 2 + 1
     Vs = np.sort(np.where(ok, V, -np.inf), axis=0)                      # observed values last
     M = np.take_along_axis(Vs, np.clip(L - m, 0, L - 1)[None], 0)[0].astype(np.float64)
-    q = ndtr(-M)
-    p = np.zeros(M.shape)
+    lq, l1q = log_ndtr(-M), log_ndtr(M)                                 # log q, log(1 - q): no underflow
+    terms = []
     for j in range(1, L + 1):
         use = (j >= m) & (j <= k)
-        if use.any():
-            p += np.where(use, comb(k, j) * q ** j * (1 - q) ** np.maximum(k - j, 0), 0.0)
-    p = np.clip(p, 1e-300, 1.0)
-    z = -ndtri(p)
+        with np.errstate(invalid='ignore'):
+            t = (gammaln(k + 1) - gammaln(j + 1) - gammaln(np.maximum(k - j, 0) + 1)
+                 + j * lq + np.maximum(k - j, 0) * l1q)
+        terms.append(np.where(use, t, -np.inf))
+    T_ = np.stack(terms)
+    mx = T_.max(0)
+    with np.errstate(invalid='ignore', over='ignore', divide='ignore'):
+        logp = np.where(np.isfinite(mx), mx + np.log(np.exp(T_ - np.where(np.isfinite(mx), mx, 0)).sum(0)), 0.0)
+    logp = np.minimum(logp, 0.0)
+    z = -ndtri_exp(logp)
+    p = np.exp(logp)
     short = k < 2
     z[short], p[short] = -np.inf, 1.0
     return z, p
@@ -659,40 +712,39 @@ def set_scores(Q, sets, chunk=128):
 def balls_rank(Q, Zp, sizes=(5, 10, 20, 40, 80), top=50, rounds=3, chunk=64):
     """Nearest-neighbour balls by pair score, all scored at once from their nested prefixes,
     and local-search refinements of the `top` best balls per size (each set replaced by the s
-    agents with the largest summed pair score to it, until it stops changing).
-    Returns [(frozenset, label)] and the balls' scores."""
-    N = len(Zp)
+    agents with the largest summed pair score to it, until it stops changing; all `top` sets of
+    a size at once). Returns [(frozenset, label)] and the balls' scores."""
+    N, L = len(Zp), Q.shape[0]
     sizes = [s for s in sizes if s <= max(3, N // 4)]
     smax = max(sizes)
     nb = np.argpartition(-Zp, smax - 1, axis=1)[:, :smax - 1]
     nb = np.take_along_axis(nb, np.argsort(-np.take_along_axis(Zp, nb, axis=1), axis=1), axis=1)
     X = np.c_[np.arange(N), nb]                                         # self, then neighbours
-    Q0, O = np.nan_to_num(Q), (~np.isnan(Q)).astype(np.float32)
     r_, c_ = np.tril_indices(smax, -1)                                  # pairs ordered by the later member,
     o_ = np.argsort(r_, kind='stable'); r_, c_ = r_[o_], c_[o_]          # so prefix s holds the first s(s-1)/2
-    V = np.empty((len(sizes), Q.shape[0], N))
+    ks = np.array([s * (s - 1) // 2 for s in sizes])
+    Qf = Q.reshape(L, N * N)
+    V = np.empty((len(sizes), L, N))
     for a in range(0, N, chunk):
         c = X[a:a + chunk]
-        tot = Q0[:, c[:, r_], c[:, c_]]                                 # (L, n, smax(smax-1)/2)
-        cnt = O[:, c[:, r_], c[:, c_]]
-        for bi, s in enumerate(sizes):
-            k = s * (s - 1) // 2
-            n = cnt[:, :, :k].sum(2)
-            with np.errstate(invalid='ignore', divide='ignore'):
-                V[bi, :, a:a + chunk] = np.where(n > 0, tot[:, :, :k].sum(2) / np.sqrt(n), np.nan)
+        g = np.take(Qf, (c[:, r_] * N + c[:, c_]).ravel(), axis=1).reshape(L, len(c), -1)
+        ok = ~np.isnan(g)
+        tot = np.where(ok, g, 0).cumsum(2, dtype=np.float64)[:, :, ks - 1]   # (L, n, sizes)
+        cnt = ok.cumsum(2)[:, :, ks - 1]
+        with np.errstate(invalid='ignore', divide='ignore'):
+            V[:, :, a:a + chunk] = np.where(cnt > 0, tot / np.sqrt(cnt), np.nan).transpose(2, 0, 1)
     sc = majority_z(V.transpose(1, 0, 2))[0]                           # (sizes, N)
     out = [(frozenset(X[i, :s].tolist()), f'ball({s})') for bi, s in enumerate(sizes) for i in range(N)]
-    G = np.where(np.isfinite(Zp), Zp, 0.0)
+    G = np.where(np.isfinite(Zp), Zp, 0.0)                              # symmetric
     ref = []
     for bi, s in enumerate(sizes):
-        for i in np.argsort(-sc[bi])[:top]:
-            S = X[i, :s]
-            for _ in range(rounds):
-                S_new = np.argpartition(-G[:, S].sum(1), s - 1)[:s]
-                if set(S_new) == set(S):
-                    break
-                S = S_new
-            ref.append((frozenset(S.tolist()), f'refined({s})'))
+        S = X[np.argsort(-sc[bi])[:top], :s]
+        for _ in range(rounds):
+            Sn = np.argpartition(-G[S].sum(1), s - 1, axis=1)[:, :s]
+            if (np.sort(Sn, 1) == np.sort(S, 1)).all():
+                break
+            S = Sn
+        ref += [(frozenset(x.tolist()), f'refined({s})') for x in S]
     return out, sc.ravel(), ref
 
 
@@ -714,7 +766,7 @@ def band_max_rank(D, Q, seed=0):
     F = _step_units(D)
     el = np.linalg.norm(F, axis=1) > 0
     bl, bsc, ref = balls_rank(Q, Zp)
-    rest = cands.dedupe(cands.clusters(F, el, seed=seed) + cands.comove(F, el, seed=seed) + ref)
+    rest = cands.dedupe(cands.clusters(F, el, seed=seed) + ref)
     fam = [S for S, _ in bl] + [S for S, _ in rest if len(S) >= BANDS[1]]
     z = np.r_[bsc, set_scores(Q, [S for S, _ in rest if len(S) >= BANDS[1]])] if rest else bsc
     sz = np.array([len(S) for S in fam])
@@ -742,12 +794,14 @@ def shuffle_rank(D, Q, rng):
     return Dn, Qn
 
 
-def member_z(Q, S):
+def member_z(Q, S, combine='majority'):
     """Each agent against the set S. Per step, the mean of its pair scores with the observed
     members other than itself, ranked among all agents observed at that step and turned into a
     normal score (the members of a group are correlated with each other, so the mean's spread
-    for an agent unrelated to S depends on S; its rank among agents does not). Majority z and
-    p over steps."""
+    for an agent unrelated to S depends on S; its rank among agents does not). Combined over
+    steps by the majority statistic (z and p), or combine='sum': Stouffer's sum / sqrt(#steps)
+    (z only; -inf with fewer than two steps). A step's normal score is at most
+    Phi^-1(1 - 1/(2n)), so one step cannot dominate the sum."""
     from scipy.special import ndtri
     sub = Q[:, :, np.asarray(S)]
     ok = ~np.isnan(sub)
@@ -759,32 +813,71 @@ def member_z(Q, S):
         if len(o):
             r = np.empty(len(o)); r[np.argsort(V[t, o], kind='stable')] = np.arange(len(o))
             V[t, o] = ndtri((r + 0.5) / len(o))
-    return majority_z(V)
+    if combine == 'majority':
+        return majority_z(V)
+    k = np.isfinite(V).sum(0)
+    z = np.nansum(V, 0) / np.sqrt(np.maximum(k, 1))
+    z[k < 2] = -np.inf
+    return z, None
 
 
-def estimate_rank(Q, res, q=0.05, rounds=5):
-    """estimate() for the rank statistic: membership by member_z, Benjamini-Hochberg at q."""
+def two_groups(z, iters=500):
+    """Two-groups model (Efron 2004, empirical null): z ~ (1 - pi) N(mu0, s^2) + pi N(mu1, s^2),
+    mu1 > mu0, fitted by EM. The null component is estimated, not fixed at N(0, 1): members take
+    the top ranks at every step, which pushes the other agents' scores down. The two components
+    share one variance, so the posterior probability of membership increases with z (with
+    separate variances a wider member component also claims the far left tail). Returns each
+    agent's posterior probability of membership (0 where z is not finite)."""
+    from scipy.stats import norm
+    z = np.asarray(z, float)
+    ok = np.isfinite(z)
+    x = z[ok]
+    w_out = np.zeros(len(z))
+    if len(x) < 10:
+        return w_out
+    mu0, sd = np.median(x), max(np.std(x), 1e-6)
+    pi, mu1 = 0.05, max(np.quantile(x, 0.98), mu0 + sd)
+    for _ in range(iters):
+        f1 = pi * norm.pdf(x, mu1, sd)
+        f0 = (1 - pi) * norm.pdf(x, mu0, sd)
+        w = f1 / np.maximum(f0 + f1, 1e-300)
+        pi_n = w.mean()
+        mu1_n = (w * x).sum() / max(w.sum(), 1e-12)
+        mu0 = ((1 - w) * x).sum() / max((1 - w).sum(), 1e-12)
+        mu1_n = max(mu1_n, mu0 + 1e-3)
+        sd = np.sqrt(max((w * (x - mu1_n) ** 2 + (1 - w) * (x - mu0) ** 2).mean(), 1e-6))
+        done = abs(pi_n - pi) < 1e-8 and abs(mu1_n - mu1) < 1e-8
+        pi, mu1 = pi_n, mu1_n
+        if done:
+            break
+    w_out[ok] = w
+    return w_out
+
+
+def estimate_rank(Q, res, rounds=10):
+    """estimate() for the rank statistic (decisions.md, 2026-10-20). Seeded by the best set of
+    the most significant band (the set the test's p-value is about). Each agent is scored
+    against the set (member_z, combine='sum': every step counts), a two-groups model is fitted
+    to the scores, and the members are the agents whose posterior probability of membership
+    exceeds 1/2 (the Bayes rule); repeated against the new set until it stops changing. Members
+    are graded by the same score."""
     obs, nulls, pb, best = res['obs'], res['nulls'], res['p_band'], res['best']
     occ = np.flatnonzero(np.isfinite(obs))
+    if not len(occ):                                                    # e.g. one step: nothing can co-move repeatedly
+        return np.array([], int), None, None
     with np.errstate(invalid='ignore'):
         zstd = (obs[occ] - nulls[:, occ].mean(0)) / np.maximum(nulls[:, occ].std(0), 1e-12)
     b = int(occ[np.lexsort((-np.nan_to_num(zstd, nan=-np.inf), pb[occ]))[0]])
-    N = Q.shape[1]
     S = np.array(sorted(best[b]))
-    score = None
+    if len(S) < 2:
+        return S, b, None
     for _ in range(rounds):
-        if len(S) < 2:
-            break
-        t, pv = member_z(Q, S)
-        if score is None:
-            score = t
-        o = np.argsort(pv)
-        ok = pv[o] <= q * np.arange(1, N + 1) / N
-        S_new = np.sort(o[:int(np.flatnonzero(ok).max()) + 1]) if ok.any() else np.array([], int)
-        if np.array_equal(S_new, S):
+        z = member_z(Q, S, combine='sum')[0]
+        S_new = np.flatnonzero(two_groups(z) > 0.5)
+        if len(S_new) < 2 or np.array_equal(S_new, S):
             break
         S = S_new
-    return S, b, score
+    return S, b, member_z(Q, S, combine='sum')[0]
 
 
 def _pair_max_worker(seed):

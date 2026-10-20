@@ -5,18 +5,17 @@
     python sim_detection.py --stage full  --reps 200 --B 199
 
 Panels (one variable swept, the others at their base = median of the sweep):
-  a) swarm size        N    in {100, 200, 500, 1000, 2000}       base 500
+  a) swarm size        N    in {100, 200, 500}                   base 500 (user: N <= 500 for now)
   b) amount of content m    in {5, 10, 20, 50, 100}               base 20  (responses per agent per step)
   c) subnetwork size   |S|  in {2, 5, 10, 20, 50, 100}            base 20  (user: "not too hard")
-  d) time              T    in {2, 4, 8, 16, 32}                  base 8
+  d) time              T    in {3, 4, 8, 16, 32}                  base 8  (T = 2 has one increment:
+                                                                          repeated co-movement is undefined)
 Effect size rho: correlation of colluders' own increments (pipeline/simgen.py).
 rho = 0 cells (Type I error) are run for panels a, b, d; |S| is undefined without a group.
 
-Every cell also carries platform drift, inactive agent-steps and templated (static) agents
-(MOLTBOOK, each fixed at its Moltbook median from sim_calibrate.py on the Feb 9 window), and the
-method runs as on the real data:
-centering, static increments missing, reliability weights, pervasive-factor removal, the rank
-statistic; the subnetwork is S_hat.
+The data are plain: every agent moves every step, with no drift, inactivity or templated agents.
+The method is the rank statistic (per-step pair ranks, majority across steps); the subnetwork is
+S_hat.
 
 Fully synthetic data (pipeline/simgen.py); test is pipeline/tstep.py with the
 per-step agent-ID shuffle null. One process per replicate; rows are appended to
@@ -36,20 +35,12 @@ for _v in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS'):
 from pipeline.paths import RESULTS
 
 BASE = dict(N=500, m=20, T=8, S_size=20)
-# Moltbook medians (data/results/sim_calibration_01-30_02-09_T8_ms6.json) of the features the
-# method's new steps handle (centering, static increments missing, missing increments):
-#   drift: per-step mean increment 4% of a typical increment
-#   inactive: 12% of agent-steps without responses
-#   static: 4% of agents templated, median 2 static increments (3 steps)
-# Not included: Moltbook's sparse two-signed factors (at that strength the scan rejects under H0;
-# a stated limitation) and the one-step group jump (it would change the meaning of rho).
-MOLTBOOK = dict(drift=0.035, inactive=0.12, static=0.04, static_len=3)
-METHOD = dict(weight='reliability', min_move=0.01, split=False, stat='rank')
+METHOD = dict(stat='rank')
 SWEEPS = {
-    'N': [100, 200, 500, 1000, 2000],
+    'N': [100, 200, 500],
     'm': [5, 10, 20, 50, 100],
     'S_size': [2, 5, 10, 20, 50, 100],
-    'T': [2, 4, 8, 16, 32],
+    'T': [3, 4, 8, 16, 32],
 }
 FIELDS = ['stage', 'sweep', 'value', 'N', 'm', 'T', 'S_size', 'rho', 'rep', 'seed', 'B', 'p', 'reject',
           'p_known', 'reject_known', 'size_hat', 'band_hat', 'precision', 'recall', 'mrr', 'nmrr', 'nmrr_cc', 'rprec', 'p_at_5', 'p_at_10', 'p_at_20', 'n_factors', 'd', 'd_eff', 'n_static',
@@ -116,7 +107,7 @@ def run_job(args):
         cfg[sweep] = value
     seed = _seed(sweep, value, rho, rep)
     t = time.time()
-    data = generate(SimConfig(rho=rho, seed=seed, **cfg, **MOLTBOOK))
+    data = generate(SimConfig(rho=rho, seed=seed, **cfg))
     res = tstep.run(data, B=B, seed=seed % 100000, workers=1, gpu_slot=_GPU, **METHOD)
     S = set(data['S'].tolist())
     Sh = set(res['S_hat'].tolist())
