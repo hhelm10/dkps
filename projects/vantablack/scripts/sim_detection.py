@@ -12,6 +12,12 @@ Panels (one variable swept, the others at their base = median of the sweep):
 Effect size rho: correlation of colluders' own increments (pipeline/simgen.py).
 rho = 0 cells (Type I error) are run for panels a, b, d; |S| is undefined without a group.
 
+Every cell also carries platform drift, inactive agent-steps and templated (static) agents
+(MOLTBOOK, each fixed at its Moltbook median from sim_calibrate.py on the Feb 9 window), and the
+method runs as on the real data:
+centering, static increments missing, reliability weights, pervasive-factor removal, the rank
+statistic; the subnetwork is S_hat.
+
 Fully synthetic data (pipeline/simgen.py); test is pipeline/tstep.py with the
 per-step agent-ID shuffle null. One process per replicate; rows are appended to
 data/results/sim_detection_<stage>.csv and the run is resumable.
@@ -30,6 +36,15 @@ for _v in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS'):
 from pipeline.paths import RESULTS
 
 BASE = dict(N=500, m=20, T=8, S_size=20)
+# Moltbook medians (data/results/sim_calibration_01-30_02-09_T8_ms6.json) of the features the
+# method's new steps handle (centering, static increments missing, missing increments):
+#   drift: per-step mean increment 4% of a typical increment
+#   inactive: 12% of agent-steps without responses
+#   static: 4% of agents templated, median 2 static increments (3 steps)
+# Not included: Moltbook's sparse two-signed factors (at that strength the scan rejects under H0;
+# a stated limitation) and the one-step group jump (it would change the meaning of rho).
+MOLTBOOK = dict(drift=0.035, inactive=0.12, static=0.04, static_len=3)
+METHOD = dict(weight='reliability', min_move=0.01, split=False, stat='rank')
 SWEEPS = {
     'N': [100, 200, 500, 1000, 2000],
     'm': [5, 10, 20, 50, 100],
@@ -37,7 +52,8 @@ SWEEPS = {
     'T': [2, 4, 8, 16, 32],
 }
 FIELDS = ['stage', 'sweep', 'value', 'N', 'm', 'T', 'S_size', 'rho', 'rep', 'seed', 'B', 'p', 'reject',
-          'p_known', 'reject_known', 'size_hat', 'band_hat', 'precision', 'recall', 'mrr', 'nmrr', 'nmrr_cc', 'rprec', 'p_at_5', 'p_at_10', 'p_at_20', 'n_factors', 'd', 'd_eff', 'seconds']
+          'p_known', 'reject_known', 'size_hat', 'band_hat', 'precision', 'recall', 'mrr', 'nmrr', 'nmrr_cc', 'rprec', 'p_at_5', 'p_at_10', 'p_at_20', 'n_factors', 'd', 'd_eff', 'n_static',
+          'n_comp', 'comp_size', 'comp_precision', 'comp_recall', 'pair_thr', 'seconds']
 
 
 def jobs(stage, rhos, reps):
@@ -100,10 +116,13 @@ def run_job(args):
         cfg[sweep] = value
     seed = _seed(sweep, value, rho, rep)
     t = time.time()
-    data = generate(SimConfig(rho=rho, seed=seed, **cfg))
-    res = tstep.run(data, B=B, seed=seed % 100000, workers=1, gpu_slot=_GPU)
+    data = generate(SimConfig(rho=rho, seed=seed, **cfg, **MOLTBOOK))
+    res = tstep.run(data, B=B, seed=seed % 100000, workers=1, gpu_slot=_GPU, **METHOD)
     S = set(data['S'].tolist())
     Sh = set(res['S_hat'].tolist())
+    comps = [set(c.tolist()) for c in res.get('components', [])]
+    best = max(comps, key=lambda c: len(c & S), default=set())         # the component that holds most of S
+    nan = float('nan')
     prec = len(S & Sh) / len(Sh) if S and Sh else float('nan')
     rec = len(S & Sh) / len(S) if S else float('nan')
     rk = rank_metrics(res['rank_score'], data['S'])
@@ -111,7 +130,10 @@ def run_job(args):
     return dict(stage=stage, sweep=sweep, value=value, rho=rho, rep=rep, seed=seed, B=B, p=res['p'],
                 reject=int(res['p'] <= 0.05), p_known=pk,
                 reject_known=int(pk <= 0.05) if pk == pk else '', size_hat=len(Sh), band_hat=res['band_hat'], precision=prec, recall=rec, **rk,
-                n_factors=res['n_factors'], d=res['d'], d_eff=res['d_eff'],
+                n_factors=res['n_factors'], d=res['d'], d_eff=res['d_eff'], n_static=res['n_static'],
+                n_comp=len(comps), comp_size=len(best) if comps else 0,
+                comp_precision=len(best & S) / len(best) if S and best else nan,
+                comp_recall=len(best & S) / len(S) if S else nan, pair_thr=round(res.get('pair_thr', nan), 3),
                 seconds=round(time.time() - t, 1), **cfg)
 
 
@@ -121,7 +143,7 @@ def main():
     ap.add_argument('--rhos', type=float, nargs='+', default=None)
     ap.add_argument('--reps', type=int, default=None)
     ap.add_argument('--B', type=int, default=99)
-    ap.add_argument('--procs', type=int, default=16)
+    ap.add_argument('--procs', type=int, default=28)
     ap.add_argument('--gpu-slots', type=int, default=6, help='replicates allowed on the GPU at once')
     a = ap.parse_args()
     rhos = a.rhos or ([0, 0.05, 0.1, 0.2, 0.3, 0.5] if a.stage == 'calib' else [0, 0.1, 0.2, 0.3])

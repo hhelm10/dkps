@@ -13,6 +13,19 @@ Latent perspective of agent n at step t (t = 0..T-1), in R^dl:
   f_k(t), g(t) ~ N(0, I_dl), new each step (platform factors; the group process)
   e_n(t)      own movement, N(0, Sigma_e), optionally AR(1)
 
+Moltbook-matched nuisance and group features (sim_calibrate.py; each at its Moltbook median):
+  drift     c(t) ~ N(0, drift^2 I_dl), the same for every agent (a platform-wide shift)
+  sparse    K = round(sparse_per_dim (T-1) dl) sparse two-signed factors: agent n loads on factor
+            k with probability sparse_support, loading +-|N(0, 1)| with a random sign; the
+            factor's pattern f_k(t) ~ N(0, I_dl / (T-1)) over all steps, so the factors' total
+            per-step variance does not depend on T: delta_n(t) += sparse_sigma sum_k b_nk f_k(t)
+  event     at one step chosen at random, the colluders also make a shared jump
+            sigma_e sqrt(event rho) h, h ~ N(0, I_dl) (a joint template switch). It scales with
+            rho, so rho = 0 has none
+  inactive  each agent-step independently has no responses with this probability
+  static    a share of agents post one fixed (query, response) pair, repeated, over static_len
+            consecutive steps (templated content): their positions do not move there
+
 Effect size rho (user, 2026-10-18): the correlation between two colluders' own
 (factor-free) increments. Every agent moves the same amount per step (sigma_e),
 colluders included, so a colluding group differs only in that a share rho of
@@ -68,6 +81,15 @@ class SimConfig:
     aniso: float = 0.0      # eigenvalue decay exponent of own movement and response noise
     hetero: float = 0.0     # log-sd of agent-specific noise scale
     ar: float = 0.0         # AR(1) coefficient of own movement
+    # Moltbook-matched features (module docstring)
+    drift: float = 0.0
+    sparse_per_dim: float = 0.0
+    sparse_support: float = 0.0
+    sparse_sigma: float = 0.0
+    event: float = 0.0
+    inactive: float = 0.0
+    static: float = 0.0     # share of agents
+    static_len: int = 3
     seed: int = 0
 
 
@@ -102,6 +124,13 @@ def generate(cfg: SimConfig):
     f = rng.normal(size=(T, cfg.r, dl))
     g = rng.normal(size=(T, dl))
     fn = rng.normal(size=(T, dl))
+    K = int(round(cfg.sparse_per_dim * (T - 1) * dl))
+    if K:
+        Bs = (rng.random((N, K)) < cfg.sparse_support) * rng.choice([-1.0, 1.0], (N, K)) * np.abs(rng.normal(size=(N, K)))
+        fs = rng.normal(size=(T, K, dl)) / np.sqrt(max(T - 1, 1))
+    c = cfg.drift * rng.normal(size=(T, dl)) if cfg.drift else np.zeros((T, dl))
+    if cfg.event:
+        t_event, h = (rng.integers(1, T) if T > 1 else 0), rng.normal(size=dl)
     P = np.zeros((N, T, dl))
     e_prev = np.zeros((N, dl))
     for t in range(1, T):
@@ -115,6 +144,11 @@ def generate(cfg: SimConfig):
         if cfg.niche_size:
             d[niche] += cfg.niche_sigma * fn[t]
         d[inS] += cfg.sigma_e * np.sqrt(cfg.rho) * g[t] * noise_scale[inS, None]
+        if K:
+            d += cfg.sparse_sigma * Bs @ fs[t]
+        d += c[t]
+        if cfg.event and t == t_event:
+            d[inS] += cfg.sigma_e * np.sqrt(cfg.event * cfg.rho) * h * noise_scale[inS, None]
         P[:, t] = P[:, t - 1] + d
     Zlat = eta[:, None, :] + P                                 # (N, T, dl)
 
@@ -131,6 +165,16 @@ def generate(cfg: SimConfig):
         counts = 1 + rng.poisson(mu[:, None], size=(N, T))
     else:
         counts = np.full((N, T), m)
+    if cfg.inactive:
+        counts[rng.random((N, T)) < cfg.inactive] = 0
+    static = np.zeros((N, T), bool)                            # agent-steps of templated content
+    if cfg.static:
+        ns = int(round(cfg.static * N))
+        st_ag = rng.choice(np.setdiff1d(np.arange(N), S), ns, replace=False)
+        ln = min(cfg.static_len, T)
+        st0 = rng.integers(0, T - ln + 1, ns)
+        for a_, t0_ in zip(st_ag, st0):
+            static[a_, t0_:t0_ + ln] = True
     agent = np.repeat(np.arange(N), counts.sum(1))
     step = np.concatenate([np.repeat(np.arange(T), counts[n]) for n in range(N)])
     n_resp = len(agent)
@@ -158,8 +202,16 @@ def generate(cfg: SimConfig):
         X[sl] = (z @ M0.T + cfg.s_mod * mod + ut[sl] @ W
                  + cfg.sigma_x * noise_scale[agent[sl], None] * eps)
 
+    if static.any():
+        rows = np.flatnonzero(static[agent, step])
+        first = {}
+        for i in rows:                                         # the agent's first templated response
+            first.setdefault(agent[i], i)
+        src = np.array([first[agent[i]] for i in rows])
+        U_obs[rows], X[rows] = U_obs[src], X[src]
+
     return dict(agent=agent, step=step, U_obs=U_obs.astype(np.float32), X=X, S=S, niche=niche,
-                P=P, cfg=asdict(cfg))
+                P=P, static=static, cfg=asdict(cfg))
 
 
 def query_diagnostics(U, agent, n_sample=20000, k=64, seed=0):

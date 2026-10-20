@@ -16,7 +16,8 @@ Design (writing/notes/decisions.md, "Real-data analysis v2"):
             --cond step uses only the responses of the same step (removes stimuli that are
             shared at one time, e.g. topic waves)
   test      pipeline/tstep.run_residuals: split-half increments, factor removal, scan with
-            the per-step agent-ID shuffle null, membership estimate and agent ranking
+            the per-step agent-ID shuffle null, membership estimate and agent ranking, and
+            peeling; each round's S_hat is a subnetwork (no pair thresholding)
 
 Raw files are read only. Writes data/derived/real_tstep/<tag>.pkl (full result) and
 data/results/real_tstep_<tag>.json (summary: steps, cohort, p-values, best sets, top of the
@@ -139,8 +140,8 @@ def main():
     ap.add_argument('--cond', choices=['all', 'step'], default='all',
                     help="PKPS reference: all responses in the window, or only those of the same step")
     ap.add_argument('--peel', type=int, default=10, help='peel up to this many groups (0: one scan only)')
-    ap.add_argument('--two-signed', type=float, default=0.01,
-                    help='alpha of the two-signed factor rule (design note 1b); negative = off')
+    ap.add_argument('--two-signed', type=float, default=-1,
+                    help='alpha of the two-signed factor rule (design note 1b; dropped 2026-10-20); negative = off')
     ap.add_argument('--min-steps', type=int, default=None,
                     help='cohort: agents with at least one action in this many steps (default: all T)')
     ap.add_argument('--min-move', type=float, default=0.01,
@@ -253,16 +254,15 @@ def scan(a, tag, R, agent, step, cohort, base, share):
     names = np.array(cohort)
     order = np.argsort(-res['rank_score'])
     groups = [dict(p=g['p'], p_band=g['p_band'].tolist(), obs=g['obs'].tolist(), band=g['band'],
-                   n_tested=g['n_tested'], size=len(g['members']), members=sorted(names[g['members']].tolist()),
-                   components=[sorted(names[c].tolist()) for c in g.get('components', [])],
+                   n_tested=g['n_tested'], size=len(g['members']), subnetwork=bool(g['subnetwork']), members=sorted(names[g['members']].tolist()),
+                   member_z={str(names[m]): round(float(z), 3) for m, z in zip(g['members'], g['member_score'])},
                    best=[None if x is None else sorted(names[x].tolist()) for x in g['best']])
               for g in res.get('groups', [])]
     for i, g in enumerate(groups):
         log(f'group {i}: p = {g["p"]:.3f}, bands {np.round(g["p_band"], 3).tolist()}, '
-            f'{g["size"]} of {g["n_tested"]} agents; seed band {g["band"]}; '
-            f'components {[len(c) for c in g["components"]]}')
-        for c in g['components']:
-            log('    ' + ', '.join(c))
+            f'{g["size"]} of {g["n_tested"]} agents; seed band {g["band"]}'
+            + ('' if g['subnetwork'] else '; one agent, set aside (not a subnetwork)'))
+        log('    ' + ', '.join(f'{n} ({z:.1f})' for n, z in sorted(g['member_z'].items(), key=lambda x: -x[1])))
     summary = dict(
         **base, B=a.B, seed=a.seed,
         p=res['p'], p_band=np.asarray(res['p_band']).tolist(), obs=np.asarray(res['obs']).tolist(),
@@ -272,8 +272,6 @@ def scan(a, tag, R, agent, step, cohort, base, share):
         ranking_top50=[dict(agent=str(names[i]), score=float(res['rank_score'][i])) for i in order[:50]],
         d=res['d'], d_eff=res['d_eff'], n_factors=res['n_factors'], n_missing=res['n_missing'],
         explained=res['explained'], centered=True, two_signed_alpha=a.two_signed, weight=a.weight,
-        pair_thr=res.get('pair_thr'),
-        cohort_components=[sorted(names[c].tolist()) for c in res.get('cohort_components', [])],
         reliability_fit=res.get('reliability_fit'), min_move=a.min_move, n_static=res.get('n_static'),
         min_steps=a.min_steps, groups=groups)
     os.makedirs(os.path.join(DERIVED, 'real_tstep'), exist_ok=True)

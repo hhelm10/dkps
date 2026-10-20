@@ -1,15 +1,22 @@
 """Moltbook: member-level investigation of the groups found by real_tstep.py.
 
-    python real_investigate.py [--tag 01-30_02-18_T8] [--samples 4]
+    python real_investigate.py [--tag 01-30_02-09_T8_ms6] [--samples 4] [--null-sets 500]
 
-Per member: actions (posts / comments), top submolts, share of actions carrying an mbc-20
-mint payload (and its tickers), the most common text template (digits and the agent's own
-name masked), median gap between actions, account creation time, and the membership score
-t_i against the rest of the group (sqrt(d_eff) <u_i, v_-i>, ~ N(0, 1) for an agent
-independent of the group).
-Per pair of members: increment cosine (the evidence used by the scan), template overlap
-(Jaccard of masked texts), correlation of hourly action counts, shared threads, and replies.
-Per group: each step's contribution to the mean within-group increment cosine.
+For every peeling round's membership set (the subnetwork, S_hat), the strength of
+each kind of evidence, against random agents of the same cohort:
+  co-movement  the method's own statistic: the pair majority z of per-step rank scores
+               (tstep.pair_scores), and each member's majority z against the rest of the set
+               (tstep.member_z)
+  content      cosine of the two agents' mean positions over the window (what they write
+               about, after conditioning on the threads they answer), and template overlap
+               (Jaccard of the sets of texts with digits and the agent's own name masked)
+  timing       correlation of hourly action counts
+  replies      direct replies between the two agents (either direction)
+  threads      threads both agents posted or commented in
+Per set: the median over member pairs of each measure, and its p-value against the same median
+over random sets of the same size drawn from the cohort (--null-sets draws). Per pair and per
+member: the raw values. Per member also: actions, median gap between actions, mint share, most
+common template, and the number of steps with an observed increment.
 
 Writes data/results/real_investigate_<tag>.json. --samples prints that many texts per member
 (terminal only). No operator information is used.
@@ -18,6 +25,7 @@ import argparse
 import json
 import os
 import re
+from collections import Counter
 from itertools import combinations
 
 import numpy as np
@@ -29,6 +37,7 @@ from pipeline.paths import DERIVED, RESULTS
 from real_tstep import load_window
 
 MINT = re.compile(r'"p"\s*:\s*"mbc-20".*?"tick"\s*:\s*"([^"]+)"', re.S)
+MEASURES = ['comove_z', 'content_cos', 'template_jaccard', 'hourly_corr', 'replies', 'shared_threads']
 
 
 def template(text, name):
@@ -37,10 +46,55 @@ def template(text, name):
     return re.sub(r'\s+', ' ', t).strip()[:120]
 
 
+class Evidence:
+    """Pairwise evidence for any two cohort agents (indices into the cohort)."""
+
+    def __init__(self, Zp, pos, acts, names, cauth, cpar):
+        N = len(names)
+        self.Zp = Zp
+        Z = pos['Z']
+        cnt = (pos['nA'] + pos['nB'])[:, :, None]
+        m = (Z * (cnt > 0)).sum(1) / np.maximum((cnt > 0).sum(1), 1)    # mean position over observed steps
+        self.C = m / np.maximum(np.linalg.norm(m, axis=1, keepdims=True), 1e-12)
+        ix = pd.Series(np.arange(N), index=names)
+        a = acts[acts.agent.isin(ix.index)]
+        ai = ix[a.agent].values
+        self.tpl = [set() for _ in range(N)]
+        self.thr = [set() for _ in range(N)]
+        for i, tx, nm, th in zip(ai, a.text.values, a.agent.values, a.thread.values):
+            self.tpl[i].add(template(tx, nm)); self.thr[i].add(th)
+        h = (a.t.values - a.t.values.min()).astype(int)
+        H = np.zeros((N, h.max() + 1)); np.add.at(H, (ai, h), 1)
+        H -= H.mean(1, keepdims=True)
+        self.H = H / np.maximum(np.linalg.norm(H, axis=1, keepdims=True), 1e-12)
+        pauth = dict(zip(a.action_id[a.kind == 'post'], a.agent[a.kind == 'post']))
+        rep = Counter()
+        for i, k, aid, th, nm in zip(ai, a.kind.values, a.action_id.values, a.thread.values, a.agent.values):
+            if k != 'comment':
+                continue
+            par = cpar.get(aid)
+            to = cauth.get(par) if isinstance(par, str) and par else pauth.get(th)
+            if to is not None and to != nm and to in ix.index:
+                rep[frozenset((i, int(ix[to])))] += 1
+        self.rep = rep
+
+    def pair(self, i, j):
+        ti, tj = self.tpl[i], self.tpl[j]
+        return dict(comove_z=float(self.Zp[i, j]), content_cos=float(self.C[i] @ self.C[j]),
+                    template_jaccard=len(ti & tj) / max(len(ti | tj), 1),
+                    hourly_corr=float(self.H[i] @ self.H[j]), replies=self.rep.get(frozenset((i, j)), 0),
+                    shared_threads=len(self.thr[i] & self.thr[j]))
+
+    def set_medians(self, S):
+        P = [self.pair(i, j) for i, j in combinations(S, 2)]
+        return {k: float(np.median([p[k] for p in P])) for k in MEASURES}
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--tag', default='01-30_02-18_T8')
+    ap.add_argument('--tag', default='01-30_02-09_T8_ms6')
     ap.add_argument('--samples', type=int, default=0)
+    ap.add_argument('--null-sets', type=int, default=500)
     a = ap.parse_args()
     summ = json.load(open(os.path.join(RESULTS, f'real_tstep_{a.tag}.json')))
     d = os.path.join(DERIVED, 'real_tstep')
@@ -50,7 +104,7 @@ def main():
     N, T = len(names), summ['T']
     idx = {n: i for i, n in enumerate(names)}
 
-    # the scan's residual increments, rebuilt exactly as real_tstep.py builds them
+    # the scan's residual increments and rank scores, rebuilt exactly as real_tstep.py builds them
     pos = tstep.positions(R, rows.agent_ix.values, rows.step.values, N, T, seed=summ['seed'])
     w = summ.get('weight')
     mm = summ.get('min_move')
@@ -58,84 +112,78 @@ def main():
                          min_move=mm if mm is not None and mm >= 0 else None)
     alpha = summ.get('two_signed_alpha')
     D, kf = tstep.remove_factors(D, two_signed_alpha=alpha if alpha is not None and alpha >= 0 else None)
-    d_eff = D.shape[1] * D.shape[2] - kf
-    Uu = tstep._units(D)
+    Q = tstep.step_scores(D)
+    Zp = tstep.pair_scores(Q)
+    obs = np.linalg.norm(D, axis=2) > 0
 
     acts, _ = load_window(*summ['window'])
     com = pd.read_parquet(os.path.join(RAW, 'comments.parquet'), columns=['id', 'parent_id', 'author_name'])
     cauth = dict(zip(com.id, com.author_name)); cpar = dict(zip(com.id, com.parent_id)); com = None
-    pauth = dict(zip(acts[acts.kind == 'post'].action_id, acts[acts.kind == 'post'].agent))
-    created = pd.read_parquet(os.path.join(RAW, 'agents.parquet'), columns=['name', 'created_at']) \
-        .drop_duplicates('name').set_index('name').created_at
-    hours = np.arange(int(acts.t.min()), int(acts.t.max()) + 1)
+    ev = Evidence(Zp, pos, acts, names, cauth, cpar)
+    rng = np.random.default_rng(summ['seed'])
+    rand_pairs = [ev.pair(*rng.choice(N, 2, replace=False)) for _ in range(20000)]
+    base = {k: float(np.median([p[k] for p in rand_pairs])) for k in MEASURES}
+    null_cache = {}
 
-    out = dict(tag=a.tag, n_factors=kf, groups=[])
-    for gi, g in enumerate(summ['groups']):
-        M = g['members']
+    def null_medians(s):
+        if s not in null_cache:
+            null_cache[s] = pd.DataFrame([ev.set_medians(rng.choice(N, s, replace=False))
+                                          for _ in range(a.null_sets)])
+        return null_cache[s]
+
+    sets = [dict(kind='round', index=gi, p=g['p'], members=g['members']) for gi, g in enumerate(summ['groups'])
+            if g.get('subnetwork', len(g['members']) >= 2) and g['p'] <= 0.05]
+    out = dict(tag=a.tag, n_factors=kf, random_pair_median=base, sets=[])
+    print('random cohort pairs, median:', {k: round(v, 3) for k, v in base.items()})
+    for st in sets:
+        M = st['members']
         if len(M) < 2:
             continue
         m_ix = np.array([idx[x] for x in M])
-        tot = Uu[m_ix].sum(0)
+        med = ev.set_medians(m_ix)
+        nm = null_medians(len(M))
+        pv = {k: float((1 + (nm[k] >= med[k]).sum()) / (len(nm) + 1)) for k in MEASURES}
+        tz, _ = tstep.member_z(Q, m_ix)
         A = acts[acts.agent.isin(M)].copy()
         A['tpl'] = [template(t, n) for t, n in zip(A.text, A.agent)]
         A['tick'] = A.text.map(lambda s: (MINT.search(s) or [None, None])[1])
-        A['reply_to'] = [None if k == 'post' else
-                         (cauth.get(cpar.get(i)) if isinstance(cpar.get(i), str) and cpar.get(i) else pauth.get(th))
-                         for i, k, th in zip(A.action_id, A.kind, A.thread)]
         members = []
         for n, i in zip(M, m_ix):
             x = A[A.agent == n]
-            v = tot - Uu[i]
-            t_i = float(np.sqrt(d_eff) * Uu[i] @ v / max(np.linalg.norm(v), 1e-12))
             tpl = x.tpl.value_counts()
             members.append(dict(
-                agent=n, t_i=round(t_i, 2), actions=len(x), posts=int((x.kind == 'post').sum()),
-                comments=int((x.kind == 'comment').sum()),
+                agent=n, member_z=round(float(tz[i]), 2), steps_observed=int(obs[i].sum()),
+                actions=len(x), posts=int((x.kind == 'post').sum()), comments=int((x.kind == 'comment').sum()),
                 top_submolts={str(k): int(c) for k, c in x.submolt.value_counts().head(3).items()},
                 mint_share=round(float(x.tick.notna().mean()), 3),
-                ticks={str(k): int(c) for k, c in x.tick.value_counts().head(3).items()},
-                top_template=tpl.index[0][:90], top_template_share=round(float(tpl.iloc[0] / len(x)), 3),
-                median_gap_min=round(float(np.median(np.diff(np.sort(x.t.values))) * 60), 1) if len(x) > 1 else None,
-                created=str(created.get(n)) if isinstance(created.get(n), str) else None))
-        pairs = []
-        hc = {n: np.bincount((A.t[A.agent == n].astype(int) - hours[0]).values, minlength=len(hours)) for n in M}
-        for x, y in combinations(M, 2):
-            tx, ty = set(A.tpl[A.agent == x]), set(A.tpl[A.agent == y])
-            thx, thy = set(A.thread[(A.agent == x)]), set(A.thread[(A.agent == y)])
-            rep = int(((A.agent == x) & (A.reply_to == y)).sum() + ((A.agent == y) & (A.reply_to == x)).sum())
-            pairs.append(dict(a=x, b=y, inc_cos=round(float(Uu[idx[x]] @ Uu[idx[y]]), 3),
-                              inc_z=round(float(Uu[idx[x]] @ Uu[idx[y]] * np.sqrt(d_eff)), 2),
-                              template_jaccard=round(len(tx & ty) / max(len(tx | ty), 1), 3),
-                              hourly_corr=round(float(np.corrcoef(hc[x], hc[y])[0, 1]), 3),
-                              shared_threads=len(thx & thy), replies=rep))
-        L = D.shape[1]
-        step_c = []
-        for s in range(L):
-            Us = D[m_ix, s]; nrm = np.linalg.norm(D[m_ix], axis=(1, 2))[:, None]
-            G = (Us / nrm) @ (Us / nrm).T
-            step_c.append(round(float(G[np.triu_indices(len(M), 1)].mean()), 4))
-        grp = dict(index=gi, p=g['p'], size=len(M), seed_band=g['band'], members=members, pairs=pairs,
-                   step_contribution=step_c, mint_share=round(float(A.tick.notna().mean()), 3))
-        out['groups'].append(grp)
+                top_template=tpl.index[0][:90] if len(tpl) else '',
+                top_template_share=round(float(tpl.iloc[0] / len(x)), 3) if len(tpl) else 0.0,
+                median_gap_min=round(float(np.median(np.diff(np.sort(x.t.values))) * 60), 1) if len(x) > 1 else None))
+        pairs = [dict(a=M[u], b=M[v], **{k: (round(x, 3) if isinstance(x, float) else x)
+                                         for k, x in ev.pair(m_ix[u], m_ix[v]).items()},
+                      step_scores=[None if np.isnan(q) else round(float(q), 2) for q in Q[:, m_ix[u], m_ix[v]]])
+                 for u, v in combinations(range(len(M)), 2)]
+        rec = dict(kind=st['kind'], index=st['index'], p=st['p'], size=len(M), median=med,
+                   p_vs_random_sets=pv, members=members, pairs=pairs)
+        out['sets'].append(rec)
 
-        print(f'\n===== group {gi}: p = {g["p"]:.3f}, {len(M)} agents, seed band {g["band"]}, '
-              f'mint share {grp["mint_share"]}')
-        print('  step contributions to mean pair cosine:', step_c)
-        for m in sorted(members, key=lambda r: -r['t_i']):
-            print(f'  {m["agent"][:22]:22s} t {m["t_i"]:6.2f}  n {m["actions"]:5d} ({m["posts"]}p/{m["comments"]}c)  '
-                  f'mint {m["mint_share"]:.2f} {m["ticks"]}  gap {m["median_gap_min"]}m  created {str(m["created"])[:16]}  '
-                  f'subs {m["top_submolts"]}')
-            print(f'      template ({m["top_template_share"]:.2f}): {m["top_template"]!r}')
-        top = sorted(pairs, key=lambda r: -r['inc_z'])[:8]
-        for p in top:
-            print(f'  pair {p["a"][:18]:18s} {p["b"][:18]:18s} inc z {p["inc_z"]:5.2f}  tpl J {p["template_jaccard"]:.2f}  '
-                  f'hourly r {p["hourly_corr"]:.2f}  threads {p["shared_threads"]}  replies {p["replies"]}')
+        hdr = f"{st['kind']} {st['index']}" + (f", p = {st['p']:.3f}" if st['p'] is not None else '')
+        print(f'\n===== {hdr}, {len(M)} agents')
+        print('  ' + '  '.join(f'{k} {med[k]:.2f} (p {pv[k]:.3f})' for k in MEASURES))
+        for r in sorted(members, key=lambda r: -r['member_z']):
+            print(f"  {r['agent'][:22]:22s} z {r['member_z']:5.2f} steps {r['steps_observed']}  n {r['actions']:5d} "
+                  f"({r['posts']}p/{r['comments']}c)  gap {r['median_gap_min']}m  mint {r['mint_share']:.2f}  "
+                  f"tpl ({r['top_template_share']:.2f}) {r['top_template'][:60]!r}")
+        for p in sorted(pairs, key=lambda r: -r['comove_z'])[:8]:
+            print(f"  pair {p['a'][:16]:16s} {p['b'][:16]:16s} comove z {p['comove_z']:5.2f}  content {p['content_cos']:.2f}  "
+                  f"tpl J {p['template_jaccard']:.2f}  hourly r {p['hourly_corr']:.2f}  replies {p['replies']}  "
+                  f"threads {p['shared_threads']}")
         if a.samples:
             for n in M:
                 for t in A[A.agent == n].sample(min(a.samples, (A.agent == n).sum()), random_state=0).text:
                     print(f'     [{n}] {t[:200]!r}')
     with open(os.path.join(RESULTS, f'real_investigate_{a.tag}.json'), 'w') as fh:
-        json.dump(out, fh, indent=1)
+        json.dump(out, fh, indent=1, default=float)
     print(f'\nwrote data/results/real_investigate_{a.tag}.json')
 
 

@@ -19,19 +19,29 @@ Design: writing/notes/sim_detection_design.md. Input is per-response data
                 nearest-neighbour balls of sizes 5/10/20/40/80 (up to N/4), and
                 local-search refinements of the 50 best balls per size;
                 pairs form their own size band, scanned exactly over all pairs
-     statistic  per set S: mean pairwise cosine C(S) of agents' residual
-                increment series, z_C = C sqrt(d_eff s(s-1)/2); Lambda_b =
-                max z_C within size band b
+     statistic  stat='rank' (default; collusion is high correlation across many steps):
+                at each step, the cosine of two agents' increments is ranked among all
+                pairs of agents observed at that step and turned into a normal score.
+                A set's score at a step is the sum of its pairs' scores / sqrt(#pairs),
+                ~ N(0, 1) under H0. Across steps, the majority statistic: the value the
+                set exceeds in a majority of its observed steps (the median for an odd
+                number of steps), as a z-score from the binomial law of order statistics.
+                One step, however extreme, cannot make a set score high.
+                stat='cosine' (earlier): mean pairwise cosine C(S) of agents' whole
+                increment series, z_C = C sqrt(d_eff s(s-1)/2), which weights each step
+                by the size of its increments.
+                Lambda_b = max score within size band b
   7. estimate   S_hat: seeded by the best set of the most significant band; members are
                 the agents whose similarity to the set passes Benjamini-Hochberg at q
   6. null       per-step agent-ID shuffle of the residual increments (new
-                permutation at every step), candidate family rebuilt on every
-                draw; p = min_b n_bands * p_b
-  8. components each S_hat split into the connected components of its persistent pairs:
-                pairs whose leave-one-step-out z (min over left-out steps) exceeds the
+                permutation at every step, among the agents observed at that step),
+                candidate family rebuilt on every draw; p = min_b n_bands * p_b. Under it a
+                step's pair ranks are only relabelled, so they are computed once
+  8. components (optional, split=True; not part of the method since 2026-10-20) each S_hat
+                split into the connected components of its pairs whose score exceeds the
                 family-wise 1 - alpha threshold over all pairs, from the same shuffle null.
-                A shared one-step event (onboarding, a crawl edge) cannot link a pair,
-                and the threshold is strict enough that weak links do not chain
+                The subnetwork is S_hat itself: thresholding pairs discards the graded
+                evidence of sets whose pairs co-move only moderately but consistently
 Comparator nulls: 'block' (shuffle per block of steps), 'rotate' (per-agent
 Haar rotation of the whole trajectory), 'cshift' (per-agent circular shift).
 """
@@ -210,9 +220,12 @@ def remove_factors(D, min_support=1 / 3, kmax=None, two_signed_alpha=None):
     k = 0
     while k < min(kmax, P // 2) and (support(k) >= min_support or two_signed(k)):
         k += 1
+    out = D
     if k:
-        F = F - (F @ Vt[:k].T) @ Vt[:k]
-    return F.reshape(N, L, d), k
+        # missing increments (zero) stay missing: the projection would otherwise fill them with
+        # the agent's factor residue, which carries no movement but counts as a step
+        out = (F - (F @ Vt[:k].T) @ Vt[:k]).reshape(N, L, d) * (np.linalg.norm(D, axis=2) > 0)[:, :, None]
+    return out, k
 
 
 # ----------------------------------------------------------------------------- 5: statistic, family
@@ -251,11 +264,17 @@ def refined(Uu, d_eff, sizes=(5, 10, 20, 40, 80), top=50, rounds=3):
     G = Uu @ Uu.T
     np.fill_diagonal(G, 0.0)
     sizes = [s for s in sizes if s <= max(3, len(Uu) // 4)]
-    nb = np.argsort(-G, axis=1)
+    smax = max(sizes)
+    Gd = G.copy(); np.fill_diagonal(Gd, -np.inf)                      # self first, then neighbours
+    nb = np.argpartition(-Gd, smax - 1, axis=1)[:, :smax - 1]
+    nb = np.take_along_axis(nb, np.argsort(-np.take_along_axis(Gd, nb, axis=1), axis=1), axis=1)
     out = []
     for s in sizes:
-        cand = [np.r_[i, nb[i, :s - 1]] for i in range(len(Uu))]
-        z = np.array([zc(Uu, S, d_eff)[0] for S in cand])
+        cand = np.c_[np.arange(len(Uu)), nb[:, :s - 1]]
+        z = np.empty(len(Uu))
+        for a in range(0, len(Uu), 256):                              # z_C of every ball at once
+            u = Uu[cand[a:a + 256]].sum(1)
+            z[a:a + 256] = ((u * u).sum(1) - s) / (s * (s - 1)) * np.sqrt(d_eff * s * (s - 1) / 2)
         for i in np.argsort(-z)[:top]:
             S = cand[i]
             for _ in range(rounds):
@@ -285,13 +304,20 @@ def band_max(D, d_eff, seed=0):
     np.fill_diagonal(G, -np.inf)
     i, j = np.unravel_index(np.argmax(G), G.shape)
     out[0], best[0] = G[i, j] * np.sqrt(d_eff), frozenset([int(i), int(j)])
-    for S, _ in family(D, seed, d_eff):
-        b = int(np.searchsorted(BANDS, len(S), side='right') - 1)
-        if b < 1:
-            continue
-        z, _ = zc(Uu, sorted(S), d_eff)
-        if z > out[b]:
-            out[b], best[b] = z, S
+    fam = [S for S, _ in family(D, seed, d_eff) if len(S) >= BANDS[1]]
+    if fam:                                                          # z_C of every set at once
+        from scipy import sparse
+        sz = np.array([len(S) for S in fam])
+        A = sparse.csr_matrix((np.ones(sz.sum()), np.concatenate([sorted(S) for S in fam]),
+                               np.r_[0, np.cumsum(sz)]), shape=(len(fam), len(Uu)))
+        u = A @ Uu
+        z = ((u * u).sum(1) - sz) / (sz * (sz - 1)) * np.sqrt(d_eff * sz * (sz - 1) / 2)
+        band = np.searchsorted(BANDS, sz, side='right') - 1
+        for b in np.unique(band):
+            i = np.flatnonzero(band == b)
+            j = i[np.argmax(z[i])]
+            if z[j] > out[b]:
+                out[b], best[b] = z[j], fam[j]
     return out, best
 
 
@@ -339,11 +365,21 @@ def estimate(D, d_eff, res, q=0.05, rounds=5):
 # ----------------------------------------------------------------------------- 6: nulls
 def null_draw(D, kind, rng, block=2):
     N, L, d = D.shape
-    if kind == 'shuffle' or kind == 'block':
-        b = 1 if kind == 'shuffle' else block
+    if kind == 'shuffle':
+        # among the agents observed at the step: a missing increment stays missing, so each
+        # agent keeps its own pattern of missing steps (identical to a plain shuffle when none
+        # are missing). Shuffling missing increments in as well broke the pairing of the two
+        # increments an inactive step removes, and inflated the pair band under H0.
+        out = np.zeros_like(D)
+        obs = np.linalg.norm(D, axis=2) > 0
+        for a in range(L):
+            o = np.flatnonzero(obs[:, a])
+            out[o, a] = D[rng.permutation(o), a]
+        return out
+    if kind == 'block':
         out = np.empty_like(D)
-        for a in range(0, L, b):
-            out[:, a:a + b] = D[rng.permutation(N), a:a + b]
+        for a in range(0, L, block):
+            out[:, a:a + block] = D[rng.permutation(N), a:a + block]
         return out
     if kind == 'rotate':
         G = rng.normal(size=(N, d, d))
@@ -364,14 +400,19 @@ def _worker(args):
     seed, kind = args
     D, d_eff = _CTX['D'], _CTX['d_eff']
     rng = np.random.default_rng(seed)
+    if _CTX.get('Q') is not None:
+        return band_max_rank(*shuffle_rank(D, _CTX['Q'], rng), seed=seed)[0]
     return band_max(null_draw(D, kind, rng), d_eff, seed=seed)[0]
 
 
-def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None):
+def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None, Q=None):
     """Scan test. Returns p (global), per-band observed maxima, null maxima, best sets,
-    and, if known_S is given, the known-S reference p-value from the same null kind."""
-    obs, best = band_max(D, d_eff, seed=seed)
-    _CTX.update(D=D, d_eff=d_eff)
+    and, if known_S is given, the known-S reference p-value from the same null kind.
+    Q (step_scores(D)): use the rank statistic, under the per-step shuffle."""
+    if Q is not None and kind != 'shuffle':
+        raise ValueError('the rank statistic is tested under the per-step shuffle')
+    obs, best = band_max(D, d_eff, seed=seed) if Q is None else band_max_rank(D, Q, seed=seed)
+    _CTX.update(D=D, d_eff=d_eff, Q=Q)
     args = [(seed * 100003 + b, kind) for b in range(B)]
     if workers > 1:
         with mp.get_context('fork').Pool(workers) as pool:
@@ -383,7 +424,12 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None):
     pb = np.where(occ, (1 + (nulls >= obs[None, :]).sum(0)) / (B + 1), 1.0)
     p = float(min(1.0, occ.sum() * pb[occ].min())) if occ.any() else 1.0
     out = dict(p=p, p_band=pb, obs=obs, best=best, nulls=nulls)
-    if known_S is not None and len(known_S) > 1:
+    if known_S is not None and len(known_S) > 1 and Q is not None:
+        z_obs = set_scores(Q, [known_S])[0]
+        rng = np.random.default_rng(seed + 1)
+        zn = np.array([set_scores(shuffle_rank(D, Q, rng)[1], [known_S])[0] for _ in range(B)])
+        out.update(p_known=float((1 + (zn >= z_obs).sum()) / (B + 1)), C_known=float(z_obs))
+    elif known_S is not None and len(known_S) > 1:
         z_obs, C_obs = zc(_units(D), known_S, d_eff)
         rng = np.random.default_rng(seed + 1)
         zn = np.array([zc(_units(null_draw(D, kind, rng)), known_S, d_eff)[0] for _ in range(B)])
@@ -392,44 +438,60 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None):
 
 
 def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers=1,
-        n_factors='auto', gpu_slot=None, per_step=None, center=True):
-    """gpu_slot: optional lock/semaphore held while conditioning (the only GPU step),
-    so many replicate processes can share one GPU."""
+        n_factors='auto', gpu_slot=None, per_step=None, center=True, two_signed_alpha=None,
+        weight=None, min_move=None, split=False, stat='rank'):
+    """gpu_slot: optional lock/semaphore held while on the GPU (conditioning, and the pair
+    threshold when split=True), so many replicate processes can share one GPU."""
     import contextlib
     cfg = data['cfg']
     with (gpu_slot or contextlib.nullcontext()):
         R, sigma = condition(data['U_obs'], data['X'], k=k)
     res = run_residuals(R, data['agent'], data['step'], cfg['N'], cfg['T'], d=d, mode=mode,
                         kind=kind, B=B, seed=seed, workers=workers, n_factors=n_factors,
-                        per_step=per_step, center=center, known_S=data['S'] if len(data['S']) else None)
+                        per_step=per_step, center=center, known_S=data['S'] if len(data['S']) else None,
+                        two_signed_alpha=two_signed_alpha, weight=weight, min_move=min_move,
+                        split=split, gpu_slot=gpu_slot, stat=stat)
     res.update(sigma=sigma)
     return res
 
 
 def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=199, seed=0,
                   workers=1, n_factors='auto', per_step=None, center=True, known_S=None, peel=0,
-                  two_signed_alpha=None, weight=None, min_move=None):
+                  two_signed_alpha=None, weight=None, min_move=None, split=False, gpu_slot=None,
+                  stat='rank'):
     """Steps 2-7 from conditioned responses R (one row per response; agent in [0, N), step in
     [0, T)). Returns the scan result plus the factor count, dimensions, membership estimate
-    and the agent ranking score; peel > 0 adds up to that many peeled groups (peel_groups)."""
+    and the agent ranking score; peel > 0 adds up to that many peeled groups (peel_groups).
+    split=True adds step 8: S_hat's linked-pair components ('components'; with peel, also per
+    peeled group and over the whole cohort). stat: 'rank' or 'cosine' (module docstring)."""
+    import contextlib
     pos = positions(R, agent, step, N, T, d=d, seed=seed)
     D = increments(pos, mode=mode, per_step=per_step, center=center, weight=weight, min_move=min_move)
     D, kf = remove_factors(D, two_signed_alpha=two_signed_alpha) if n_factors == 'auto' \
         else remove_factors(D, kmax=int(n_factors))
     d_eff = D.shape[1] * D.shape[2] - kf
-    res = test(D, d_eff, B=B, kind=kind, seed=seed, workers=workers, known_S=known_S)
-    S_hat, b_hat, score = estimate(D, d_eff, res)
+    Q = step_scores(D) if stat == 'rank' else None
+    res = test(D, d_eff, B=B, kind=kind, seed=seed, workers=workers, known_S=known_S, Q=Q)
+    S_hat, b_hat, score = estimate(D, d_eff, res) if Q is None else estimate_rank(Q, res)
     res.update(n_factors=kf, d_eff=d_eff, d=pos['d'], explained=pos['explained'],
                S_hat=S_hat, band_hat=b_hat, rank_score=score, reliability_fit=pos.get('reliability_fit'), n_static=pos.get('n_static'),
                n_missing=int((np.linalg.norm(D, axis=2) == 0).sum()))
     if peel:
         res['groups'] = peel_groups(D, d_eff, first=res, max_groups=peel, B=B, kind=kind, seed=seed,
-                                    workers=workers)
-        Z = loso_z(D, d_eff)
-        res['pair_thr'] = thr = pair_threshold(D, d_eff, seed=seed)
-        for g in res['groups']:
+                                    workers=workers, stat=stat)
+    if split and Q is not None:
+        Z = pair_scores(Q)
+        res['pair_thr'] = thr = pair_threshold_rank(D, Q, seed=seed, workers=workers)
+    elif split:
+        with (gpu_slot or contextlib.nullcontext()):
+            Z = loso_z(D, d_eff)
+            res['pair_thr'] = thr = pair_threshold(D, d_eff, seed=seed)
+    if split:
+        res['components'] = components(Z, S_hat, thr)
+        for g in res.get('groups', []):
             g['components'] = components(Z, g['members'], thr)
-        res['cohort_components'] = components(Z, np.arange(len(D)), thr)
+        if peel:
+            res['cohort_components'] = components(Z, np.arange(len(D)), thr)
     return res
 
 
@@ -464,8 +526,7 @@ def pair_threshold(D, d_eff, B=99, alpha=0.05, seed=0):
     """Family-wise threshold for loso_z over all pairs: the 1 - alpha quantile of its maximum
     over pairs under the per-step agent-ID shuffle."""
     rng = np.random.default_rng(seed)
-    N, L = D.shape[:2]
-    mx = [loso_z(np.stack([D[rng.permutation(N), t] for t in range(L)], 1), d_eff).max() for _ in range(B)]
+    mx = [loso_z(null_draw(D, 'shuffle', rng), d_eff).max() for _ in range(B)]
     return float(np.quantile(mx, 1 - alpha))
 
 
@@ -480,22 +541,266 @@ def components(Z, members, thr):
     return sorted(out, key=len, reverse=True)
 
 
-def peel_groups(D, d_eff, first=None, alpha=0.05, max_groups=10, B=199, kind='shuffle', seed=0, workers=1):
+def peel_groups(D, d_eff, first=None, alpha=0.05, max_groups=10, B=199, kind='shuffle', seed=0, workers=1,
+                stat='cosine'):
     """Several groups by peeling: test, estimate S_hat, set its members aside, and test the
     remaining agents again; stop at the first p > alpha, an empty S_hat, or fewer than 10
-    agents left. Each round is a level-alpha test of 'no colluding group among the agents
-    not yet set aside'. Returns one dict per round (indices into the full agent set)."""
+    agents left. A one-agent S_hat is not a subnetwork: it is set aside and peeling continues
+    (the round is kept, with subnetwork=False). Each round is a level-alpha test of 'no colluding group among the agents
+    not yet set aside'. Returns one dict per round (indices into the full agent set), with
+    each member's membership score against the round's S_hat ('member_score', aligned with
+    'members'). With stat='rank', each round ranks pairs among the agents it tests."""
     keep = np.arange(len(D))
     out = []
     for g in range(max_groups):
-        res = first if g == 0 and first is not None else test(D[keep], d_eff, B=B, kind=kind,
-                                                              seed=seed + g, workers=workers)
-        S, b, score = (first['S_hat'], first['band_hat'], first['rank_score']) if g == 0 and first is not None \
-            else estimate(D[keep], d_eff, res)
+        Q = step_scores(D[keep]) if stat == 'rank' else None
+        if g == 0 and first is not None:
+            res = first
+            S, b, score = first['S_hat'], first['band_hat'], first['rank_score']
+        else:
+            res = test(D[keep], d_eff, B=B, kind=kind, seed=seed + g, workers=workers, Q=Q)
+            S, b, score = estimate(D[keep], d_eff, res) if Q is None else estimate_rank(Q, res)
+        if Q is not None and len(S) >= 2:
+            score = member_z(Q, S)[0]                                     # against the final S_hat
         out.append(dict(p=res['p'], p_band=np.asarray(res['p_band']), obs=np.asarray(res['obs']),
-                        band=b, members=keep[S], n_tested=len(keep),
+                        band=b, members=keep[S], n_tested=len(keep), subnetwork=len(S) >= 2,
+                        member_score=np.asarray(score)[S] if score is not None and len(S) else np.array([]),
                         best=[None if x is None else keep[sorted(x)] for x in res['best']]))
         if res['p'] > alpha or len(S) == 0 or len(keep) - len(S) < 10:
             break
         keep = np.delete(keep, S)
     return out
+
+
+# ----------------------------------------------------------------------------- rank statistic (stat='rank')
+def step_scores(D):
+    """(L, N, N) per-step pair scores, float32: at each step, the cosine of two agents'
+    increments ranked among all pairs of agents observed at that step, as the normal score
+    Phi^-1((rank + 1/2) / n_pairs). NaN where either agent is missing at the step, and on the
+    diagonal. The per-step shuffle only relabels a step's scores, so they are computed once."""
+    from scipy.special import ndtri
+    N, L, _ = D.shape
+    Q = np.full((L, N, N), np.nan, np.float32)
+    for t in range(L):
+        nr = np.linalg.norm(D[:, t], axis=1)
+        o = np.flatnonzero(nr > 0)
+        if len(o) < 2:
+            continue
+        X = D[o, t] / nr[o, None]
+        i, j = np.triu_indices(len(o), 1)
+        g = (X @ X.T)[i, j]
+        r = np.empty(len(g)); r[np.argsort(g, kind='stable')] = np.arange(len(g))
+        q = ndtri((r + 0.5) / len(g)).astype(np.float32)
+        Qt = np.full((len(o), len(o)), np.nan, np.float32)
+        Qt[i, j] = q; Qt[j, i] = q
+        Q[t][np.ix_(o, o)] = Qt
+    return Q
+
+
+def majority_z(V):
+    """Majority statistic over steps. V: (L, ...) per-step scores, ~ N(0, 1) and independent
+    across steps under H0, NaN where missing. With k observed steps and m = floor(k/2) + 1,
+    M is the m-th largest value, the level exceeded in a majority of the steps (the median
+    for odd k). Returns z = Phi^-1(1 - p) and p = P(at least m of k N(0, 1) draws >= M), the
+    order-statistic tail, so z is comparable across k. z = -inf, p = 1 when k < 2."""
+    from scipy.special import comb, ndtr, ndtri
+    L = V.shape[0]
+    ok = ~np.isnan(V)
+    k = ok.sum(0)
+    m = k // 2 + 1
+    Vs = np.sort(np.where(ok, V, -np.inf), axis=0)                      # observed values last
+    M = np.take_along_axis(Vs, np.clip(L - m, 0, L - 1)[None], 0)[0].astype(np.float64)
+    q = ndtr(-M)
+    p = np.zeros(M.shape)
+    for j in range(1, L + 1):
+        use = (j >= m) & (j <= k)
+        if use.any():
+            p += np.where(use, comb(k, j) * q ** j * (1 - q) ** np.maximum(k - j, 0), 0.0)
+    p = np.clip(p, 1e-300, 1.0)
+    z = -ndtri(p)
+    short = k < 2
+    z[short], p[short] = -np.inf, 1.0
+    return z, p
+
+
+def pair_scores(Q):
+    """(N, N) majority z of every pair, diagonal -inf."""
+    L, N, _ = Q.shape
+    i, j = np.triu_indices(N, 1)
+    z = majority_z(Q[:, i, j])[0].astype(np.float32)
+    Z = np.full((N, N), -np.inf, np.float32)
+    Z[i, j] = z; Z[j, i] = z
+    return Z
+
+
+def _set_steps(sub):
+    """Per-step set scores from pair-score blocks sub (L, n_sets, s, s): sum over pairs /
+    sqrt(#pairs), NaN at steps where fewer than two members are observed."""
+    ok = ~np.isnan(sub)
+    n = ok.sum((2, 3)) / 2
+    tot = np.where(ok, sub, 0).sum((2, 3)) / 2
+    with np.errstate(invalid='ignore', divide='ignore'):
+        return np.where(n > 0, tot / np.sqrt(n), np.nan)
+
+
+def set_scores(Q, sets, chunk=128):
+    """Majority z of each set (index arrays)."""
+    out = np.empty(len(sets))
+    sizes = np.array([len(S) for S in sets])
+    for s in np.unique(sizes):
+        ix = np.flatnonzero(sizes == s)
+        I = np.array([np.sort(np.fromiter(sets[i], int)) for i in ix])
+        for a in range(0, len(ix), chunk):
+            c = I[a:a + chunk]
+            out[ix[a:a + chunk]] = majority_z(_set_steps(Q[:, c[:, :, None], c[:, None, :]]))[0]
+    return out
+
+
+def balls_rank(Q, Zp, sizes=(5, 10, 20, 40, 80), top=50, rounds=3, chunk=64):
+    """Nearest-neighbour balls by pair score, all scored at once from their nested prefixes,
+    and local-search refinements of the `top` best balls per size (each set replaced by the s
+    agents with the largest summed pair score to it, until it stops changing).
+    Returns [(frozenset, label)] and the balls' scores."""
+    N = len(Zp)
+    sizes = [s for s in sizes if s <= max(3, N // 4)]
+    smax = max(sizes)
+    nb = np.argpartition(-Zp, smax - 1, axis=1)[:, :smax - 1]
+    nb = np.take_along_axis(nb, np.argsort(-np.take_along_axis(Zp, nb, axis=1), axis=1), axis=1)
+    X = np.c_[np.arange(N), nb]                                         # self, then neighbours
+    Q0, O = np.nan_to_num(Q), (~np.isnan(Q)).astype(np.float32)
+    r_, c_ = np.tril_indices(smax, -1)                                  # pairs ordered by the later member,
+    o_ = np.argsort(r_, kind='stable'); r_, c_ = r_[o_], c_[o_]          # so prefix s holds the first s(s-1)/2
+    V = np.empty((len(sizes), Q.shape[0], N))
+    for a in range(0, N, chunk):
+        c = X[a:a + chunk]
+        tot = Q0[:, c[:, r_], c[:, c_]]                                 # (L, n, smax(smax-1)/2)
+        cnt = O[:, c[:, r_], c[:, c_]]
+        for bi, s in enumerate(sizes):
+            k = s * (s - 1) // 2
+            n = cnt[:, :, :k].sum(2)
+            with np.errstate(invalid='ignore', divide='ignore'):
+                V[bi, :, a:a + chunk] = np.where(n > 0, tot[:, :, :k].sum(2) / np.sqrt(n), np.nan)
+    sc = majority_z(V.transpose(1, 0, 2))[0]                           # (sizes, N)
+    out = [(frozenset(X[i, :s].tolist()), f'ball({s})') for bi, s in enumerate(sizes) for i in range(N)]
+    G = np.where(np.isfinite(Zp), Zp, 0.0)
+    ref = []
+    for bi, s in enumerate(sizes):
+        for i in np.argsort(-sc[bi])[:top]:
+            S = X[i, :s]
+            for _ in range(rounds):
+                S_new = np.argpartition(-G[:, S].sum(1), s - 1)[:s]
+                if set(S_new) == set(S):
+                    break
+                S = S_new
+            ref.append((frozenset(S.tolist()), f'refined({s})'))
+    return out, sc.ravel(), ref
+
+
+def _step_units(D):
+    """Increments scaled to unit length at every observed step, flattened (each step counts
+    equally); features for the cluster and community candidates."""
+    nr = np.linalg.norm(D, axis=2, keepdims=True)
+    return (D / np.maximum(nr, 1e-12)).reshape(len(D), -1)
+
+
+def band_max_rank(D, Q, seed=0):
+    """Largest majority z per size band (rank statistic). Band 0 (pairs) is exact."""
+    Zp = pair_scores(Q)
+    out = np.full(len(BANDS), -np.inf)
+    best = [None] * len(BANDS)
+    i, j = np.unravel_index(np.argmax(Zp), Zp.shape)
+    if np.isfinite(Zp[i, j]):
+        out[0], best[0] = Zp[i, j], frozenset([int(i), int(j)])
+    F = _step_units(D)
+    el = np.linalg.norm(F, axis=1) > 0
+    bl, bsc, ref = balls_rank(Q, Zp)
+    rest = cands.dedupe(cands.clusters(F, el, seed=seed) + cands.comove(F, el, seed=seed) + ref)
+    fam = [S for S, _ in bl] + [S for S, _ in rest if len(S) >= BANDS[1]]
+    z = np.r_[bsc, set_scores(Q, [S for S, _ in rest if len(S) >= BANDS[1]])] if rest else bsc
+    sz = np.array([len(S) for S in fam])
+    band = np.searchsorted(BANDS, sz, side='right') - 1
+    for b in np.unique(band):
+        ii = np.flatnonzero(band == b)
+        jj = ii[np.argmax(z[ii])]
+        if z[jj] > out[b]:
+            out[b], best[b] = z[jj], fam[jj]
+    return out, best
+
+
+def shuffle_rank(D, Q, rng):
+    """One per-step shuffle draw, applied to the increments and their pair scores alike
+    (among the agents observed at each step, as null_draw(D, 'shuffle'))."""
+    N, L, _ = D.shape
+    Dn = np.zeros_like(D)
+    Qn = np.full_like(Q, np.nan)
+    obs = np.linalg.norm(D, axis=2) > 0
+    for a in range(L):
+        o = np.flatnonzero(obs[:, a])
+        p = rng.permutation(o)
+        Dn[o, a] = D[p, a]
+        Qn[a][np.ix_(o, o)] = Q[a][np.ix_(p, p)]
+    return Dn, Qn
+
+
+def member_z(Q, S):
+    """Each agent against the set S. Per step, the mean of its pair scores with the observed
+    members other than itself, ranked among all agents observed at that step and turned into a
+    normal score (the members of a group are correlated with each other, so the mean's spread
+    for an agent unrelated to S depends on S; its rank among agents does not). Majority z and
+    p over steps."""
+    from scipy.special import ndtri
+    sub = Q[:, :, np.asarray(S)]
+    ok = ~np.isnan(sub)
+    n = ok.sum(2)
+    with np.errstate(invalid='ignore', divide='ignore'):
+        V = np.where(n > 0, np.where(ok, sub, 0).sum(2) / n, np.nan)
+    for t in range(len(V)):
+        o = np.flatnonzero(~np.isnan(V[t]))
+        if len(o):
+            r = np.empty(len(o)); r[np.argsort(V[t, o], kind='stable')] = np.arange(len(o))
+            V[t, o] = ndtri((r + 0.5) / len(o))
+    return majority_z(V)
+
+
+def estimate_rank(Q, res, q=0.05, rounds=5):
+    """estimate() for the rank statistic: membership by member_z, Benjamini-Hochberg at q."""
+    obs, nulls, pb, best = res['obs'], res['nulls'], res['p_band'], res['best']
+    occ = np.flatnonzero(np.isfinite(obs))
+    with np.errstate(invalid='ignore'):
+        zstd = (obs[occ] - nulls[:, occ].mean(0)) / np.maximum(nulls[:, occ].std(0), 1e-12)
+    b = int(occ[np.lexsort((-np.nan_to_num(zstd, nan=-np.inf), pb[occ]))[0]])
+    N = Q.shape[1]
+    S = np.array(sorted(best[b]))
+    score = None
+    for _ in range(rounds):
+        if len(S) < 2:
+            break
+        t, pv = member_z(Q, S)
+        if score is None:
+            score = t
+        o = np.argsort(pv)
+        ok = pv[o] <= q * np.arange(1, N + 1) / N
+        S_new = np.sort(o[:int(np.flatnonzero(ok).max()) + 1]) if ok.any() else np.array([], int)
+        if np.array_equal(S_new, S):
+            break
+        S = S_new
+    return S, b, score
+
+
+def _pair_max_worker(seed):
+    _, Qn = shuffle_rank(_CTX['D'], _CTX['Q'], np.random.default_rng(seed))
+    return float(pair_scores(Qn).max())
+
+
+def pair_threshold_rank(D, Q, B=99, alpha=0.05, seed=0, workers=1):
+    """Family-wise threshold for the pair majority z: the 1 - alpha quantile of its maximum
+    over pairs under the per-step shuffle."""
+    _CTX.update(D=D, Q=Q)
+    args = [seed * 7919 + b for b in range(B)]
+    if workers > 1:
+        with mp.get_context('fork').Pool(workers) as pool:
+            mx = pool.map(_pair_max_worker, args, chunksize=1)
+    else:
+        mx = [_pair_max_worker(a) for a in args]
+    _CTX.clear()
+    return float(np.quantile(mx, 1 - alpha))

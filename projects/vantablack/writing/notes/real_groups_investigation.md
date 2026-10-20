@@ -131,3 +131,196 @@ pair threshold 4.08. Results are in `data/results/real_tstep_01-30_02-09_T8_ms6.
   - The ClawGatherer farm has no accounts in this cohort; it posts after Feb 9.
   - Only pairs and a trio of the 14 FloClaw accounts link: their co-movement is weaker
     (median cosine 0.61) than the clones' (0.95-0.98).
+
+## Rerun with the corrected null (2026-10-19)
+
+The per-step shuffle now permutes only the agents observed at each step (`decisions.md`). Same
+window, cohort and settings (`--reuse`). The previous result is kept as
+`real_tstep_01-30_02-09_T8_ms6_v1_plainshuffle.json`.
+
+- Peeling stops after 15 significant rounds (was 20); the 16th has p = 0.075. Every round still
+  sits at the p floor (0.025 with 5 bands and B = 199), consistent with the simulations: residual
+  sparse two-signed structure keeps the global test rejecting on Moltbook.
+- Pair threshold 4.02 (was 4.08).
+- Every farm is recovered: QwenPoweredClaw7/8 group, 277/MochiNews group, QwenPoweredClaw9/11/12,
+  MusonAgent + SecondAgent, the 31-minute CLAW farm (6), the Mizuki farm (6), ClawdBot (now
+  ClawdBotThird/Fourth + ClawdAnalyzer; ClawdBotSecond no longer links), yjsolx + yjsolxx,
+  AtlasMolty + QwenPoweredClaw10.
+- xmolt02-06 and the HK farm now come out as one component of 9 within a set (were two rounds),
+  matching their shared "Steady minting from HK" template.
+- FloClaw links as a trio (FloClaw2, Floflo, floflo1) plus the pair FloClaw1 + FloClaw5.
+- Pairs that no longer appear: Cadence_II + HeatherUberSlut, AShareQuantBot + NikoClaw. New pair:
+  Jureu + SirMoltemont (not yet inspected).
+
+## Rank statistic (2026-10-20)
+
+Collusion is high correlation across many steps (`decisions.md`). Each pair's per-step cosine is
+ranked among all pairs at that step, and the score is the median over steps (majority statistic).
+Same window and cohort (`--reuse`); the cosine result is kept as
+`real_tstep_01-30_02-09_T8_ms6_v2_cosine.json`. Scan time 1890 s (cosine 391 s).
+
+- **The large-set bands no longer reject.** The 31-100 band has p = 1.0 in every round and the 101+
+  band is at 0.015-0.1. With cosine they stayed at z 71-115. The sparse two-signed structure
+  apparently acts in few steps, and the median ignores it. The pair and small-set bands are at the
+  p floor in rounds 0-23. Peeling stops at round 24 (p = 0.05); round 25 has an empty set.
+- Pair threshold 5.49 (cosine LOSO: 4.02).
+- **Components:**
+  - xmolt02-06 + Hope_QuantGirl (6);
+  - the HK farm + Aimax and clawd_xiaoqiang (6);
+  - the 31-minute CLAW farm (6);
+  - Mizuki (5: no Tazania);
+  - QwenPoweredClaw9-12 (4);
+  - QwenPoweredClaw4/7/8;
+  - MochiNews/NeonPincer2026/moge-max (no 277);
+  - FloClaw1/3/5;
+  - ClawdBotSecond/Third/Fourth;
+  - Claw_Vantage_X/TideHunterCoreAI2/Trader_S18Bot (new);
+  - pairs: MusonAgent + SecondAgent, OpenAkita + XiaoLe, AtlasMolty + Jerry_A1_7d65751b, Kirk +
+    leksoAI, Clawd_Utilitarian + herbert_clawd, Antigravity-CLI + Evie_ran, LianGuanExchange +
+    clawwatchradarai, G_Agent + RabiaClawdBot.
+
+  The newcomer sets (rounds 9, 14, 17-23) have none.
+- **Dropped:**
+  - yjsolx + yjsolxx: high in every step, but only at normal score 1.4-3.9 (median 1.84, z 4.3).
+    At d = 10 a per-step cosine of 0.6-0.9 is not rare among 3.3M pairs.
+  - 277 + MochiNews: high in steps 0-2 only (z 1.7).
+  - Jureu + SirMoltemont: z 4.9.
+- New pairs and the new trio are not inspected.
+- **Member-level check of all 24 cohort components** (real_investigate.py applied to the
+  components; output in the session scratchpad, not kept):
+  - **Solid, 9 families:** the members share a template and a posting interval, and their hourly
+    activity correlates at r 0.7-1.0.
+    - xmolt02-06;
+    - the HK farm (HK_CLAW_Minter, m4molb, MacClawdMinter, gxtmolt; 111-168 replies between
+      them);
+    - the 31-minute CLAW farm;
+    - Mizuki;
+    - QwenPoweredClaw9-12;
+    - QwenPoweredClaw4/7/8;
+    - FloClaw1/3/5/6;
+    - ClawdBotSecond/Third/Fourth;
+    - MusonAgent + SecondAgent.
+  - **Hangers-on, 5 accounts, joined by one weak link each:** Hope_QuantGirl, Manus_AI_Agent_2026,
+    clawd_xiaoqiang, Aimax and YeFan. None shares a template or hourly activity with its farm.
+  - **Unclear, 2 trios with different content:** MochiNews/NeonPincer2026/moge-max (scheduled
+    posters) and TideHunterCoreAI2/Trader_S18Bot/Claw_Vantage_X.
+  - **Unsupported, 13 pairs:** no shared template, hourly r about 0, mostly low-activity accounts
+    (8-20 actions, several posting once a day). The family-wise threshold should give at most
+    one false link in 20 runs, so the pair null does not hold for these accounts. Suspected
+    cause, unverified: increments of low-activity agents differ in distribution (noisier, more
+    anisotropic), and the shuffle mixes them with active agents.
+
+## Rank statistic, missing increments kept missing after factor removal (2026-10-20)
+
+- **Run:** the bug fix in `decisions.md`; the previous result is
+  `real_tstep_01-30_02-09_T8_ms6_v3_rank_factorfill.json`.
+- **Scan:** 506 s. 5108 increments are missing (static 327).
+- **Pair threshold:** 5.52.
+- **Peeling stops by itself** at round 5 (p = 0.15). The 31-100 band has p = 1.0 throughout.
+
+| Round | Components |
+|---|---|
+| 0 | the 31-minute CLAW farm (ClawdWorkspace, DigitalMacroLabAssistant, MintingAssistant, hiymc, pyyypf) |
+| 1 | Mizuki (MizukiAI, Mizukih, Mizukiih, Mizukix, Xennah, Zoshita) |
+| 2 | FloClaw1/3/5/6; FloClaw2 + Floflo |
+| 3 | ClawdBotSecond/Third/Fourth |
+| 4 | QwenPoweredClaw2 + Wynnie |
+
+- The cohort components are the same six.
+- **Five of six are verified families.** QwenPoweredClaw2 + Wynnie has no supporting evidence:
+  Wynnie posts introductions, with hourly r -0.02 and no shared template.
+- **Lost:**
+  - The static clones (xmolt, the HK farm, QwenPoweredClaw9-12, MusonAgent + SecondAgent): each
+    is observed in only 1 of 7 steps.
+  - QwenPoweredClaw7/8: pair z 5.50, just under the threshold.
+  - yjsolx + yjsolxx: 2 observed steps.
+
+## Without the two-signed rule (2026-10-20)
+
+- **Run:** the rule is dropped (`decisions.md`). No factors are removed: no direction is
+  pervasive. The previous result is `real_tstep_01-30_02-09_T8_ms6_v4_rank_twosigned.json`.
+- **Scan:** 729 s.
+- **Pair threshold:** 5.52.
+- **Peeling** stops at round 8 (p = 0.075; round 7 p = 0.05).
+
+| Round | Components |
+|---|---|
+| 0 | FloClaw1/2/3/5/6/7/13, Floflo, floflo1 (9; the cohort component adds FloClaw14) |
+| 1 | Mizuki (6) |
+| 2 | ClawdBotSecond/Third/Fourth/Fifth + ClawdAnalyzer (5) |
+| 3 | the 31-minute CLAW farm (5) |
+| 4-6 | none |
+| 7 | QwenPoweredClaw7/8 |
+
+- The cohort adds the pair XiaoBaiAI + valt (not inspected).
+- QwenPoweredClaw2 + Wynnie is gone.
+- **Compared with the two-signed rule on:** FloClaw grows from 4 + 2 to 10 accounts, ClawdBot from
+  3 to 5, and QwenPoweredClaw7/8 returns. The removed directions had taken part of these families'
+  shared movement with them.
+- **Member-level check of every round** (`real_investigate.py`; its pair "inc z" and step
+  contributions are the cosine diagnostics, not the rank statistic):
+  - **Round 0, FloClaw (12 in S_hat): one operator.** FloClaw1/2/3/5/6/7, Floflo and floflo1 run
+    the "$CLAW PROTOCOL" comment flood (about 1,200 actions each, hourly r 0.91-0.94, 24-45 shared
+    threads per pair). FloClaw9/10/11/13 run the lower-volume "CLAW mint | mbc#.xyz" template.
+  - **Round 1, Mizuki (8): one operator.** The 7 Mizuki accounts share a template, a 35-minute
+    interval and one image repository; Tazania is in S_hat only. Kuro_ is a hanger-on (t 2.07, no
+    link).
+  - **Round 2, ClawdBot (5): one script.** A 32.0-minute interval and hourly r 0.94-0.98, with a
+    different title per account.
+  - **Round 3, the 31-minute CLAW farm (5): one script.** Same template, hourly r 0.75-0.96.
+  - **Round 4 (no component): five high-volume generic commenters.** ClawdNew123, NEIA,
+    Starclawd-1, emergebot and alignbot post 8k-64k comments with no shared template, and share
+    600-4,900 threads because they comment everywhere. Probably a shared environment (they
+    answer the same new posts), not coordination. Unclear.
+  - **Round 5 (no component): the XNO promotion ring, the clearest coordination found.**
+    - XNO_Scout_OC2, XNO_Amplifier_OC, XNO_Sentinel_OC, XNO_Advocate_Bot and MoltPoster_CBt3pLAA
+      all promote XNO in r/cryptocurrency and r/xno.
+    - They have hourly r 0.79-0.94, 289-370 shared threads per pair, and 76-227 replies to each
+      other.
+    - AstronautSHE and UnstableEmber are hangers-on.
+    - Found at the set level only: no pair passes the family-wise pair threshold.
+  - **Round 7 (p = 0.05), QwenPoweredClaw4/5/7/8: one script.**
+  - **Rounds 6 and 8:** a single member each.
+  - **Cohort pair XiaoBaiAI + valt:** no evidence (hourly r 0, no template). A false link.
+- **Evidence strength per set** (`real_investigate.py`, rebuilt 2026-10-20). Each cell is the
+  median over member pairs; the p-value is against the same median over 500 random cohort sets
+  of the same size (floor 0.002). The co-movement column is the rank statistic (pair majority z).
+
+  | Set | Co-movement z | Content cos | Template J | Hourly r | Replies | Shared threads |
+  |---|---|---|---|---|---|---|
+  | R0 FloClaw (12) | 4.29 (.002) | 0.95 (.002) | 0.38 (.002) | 0.63 (.002) | 0 | 1 (.002) |
+  | R1 Mizuki (8) | 4.03 (.002) | 0.99 (.002) | 0.19 (.002) | 0.11 (.09) | 0 | 3 (.002) |
+  | R2 ClawdBot (5) | 6.59 (.002) | 0.95 (.002) | 0.12 (.002) | 0.94 (.002) | 0 | 0 |
+  | R3 31-min farm (5) | 6.50 (.002) | 1.00 (.002) | 0.67 (.002) | 0.79 (.002) | 0 | 0 |
+  | R4 mass commenters (5) | 3.43 (.002) | 0.20 (.10) | 0 | 0.48 (.002) | 52 (.002) | 3177 (.002) |
+  | R5 XNO ring (7) | 2.94 (.002) | 0.60 (.002) | 0 | 0.28 (.004) | 4 (.002) | 10 (.002) |
+  | R7 QwenPoweredClaw4/5/7/8 | 4.94 (.002) | 0.99 (.002) | 0.23 (.002) | 0.82 (.002) | 0 | 0 |
+  | XiaoBaiAI + valt | 5.76 | 0.94 (.004) | 0 | 0.01 (.67) | 0 | 0 |
+
+  - **Farms:** strong on co-movement, content, templates and (except Mizuki) timing. No replies.
+  - **R4 and R5:** strong on interaction (replies, shared threads), moderate on content and
+    timing. The random-set baseline is mostly low-activity agents, so the interaction p-values of
+    high-volume accounts (R4: 8k-64k comments) are overstated. An activity-matched baseline is
+    needed before reading R4 as coordination.
+  - **XiaoBaiAI + valt:** content similarity only, apparently shared language (both post in
+    Chinese). No timing or interaction. A false link.
+
+## Subnetwork = S_hat (2026-10-20)
+
+Rerun with components off (`split=False`); each round's S_hat is the subnetwork, members reported
+with their membership z against the final S_hat. Sets identical to the previous run (only the
+reporting changed); the evidence table above is unchanged.
+
+| Round | p | Members (membership z) |
+|---|---|---|
+| 0 | .025 | FloClaw1 5.9, Floflo 5.8, FloClaw6 5.8, FloClaw5 5.7, floflo1 5.6, FloClaw7 5.6, FloClaw3 5.5, FloClaw2 5.2, FloClaw10 4.9, FloClaw9 4.5, FloClaw11 4.4, FloClaw13 3.9 |
+| 1 | .025 | Mizukih 5.9, MizukiAI 5.5, Mizukix 5.4, Xennah 5.1, Zoshita 4.9, Mizukiih 3.9, Tazania 3.8, Kuro_ 2.9 |
+| 2 | .025 | ClawdBotFourth 6.4, ClawdBotThird 6.3, ClawdAnalyzer 6.2, ClawdBotSecond 6.0, ClawdBotFifth 6.0 |
+| 3 | .025 | ClawdWorkspace 5.6, pyyypf 5.6, DigitalMacroLabAssistant 5.4, hiymc 4.6, MintingAssistant 4.3 |
+| 4 | .025 | alignbot 5.0, ClawdNew123 4.7, emergebot 4.7, NEIA 4.2, Starclawd-1 4.1 |
+| 5 | .025 | MoltPoster_CBt3pLAA 5.1, XNO_Amplifier_OC 4.9, XNO_Sentinel_OC 4.5, UnstableEmber 4.5, XNO_Scout_OC2 4.3, AstronautSHE 4.3, XNO_Advocate_Bot 4.0 |
+| 6 | .025 | XiaoBaiAI 4.6 (singleton: its seed partner valt failed membership) |
+| 7 | .050 | QwenPoweredClaw7 4.8, QwenPoweredClaw8 4.6, QwenPoweredClaw4 4.4, QwenPoweredClaw5 4.2 |
+| 8 | .075 | stop |
+
+Decided (user): a one-agent S_hat is set aside and peeling continues; round 6 is flagged `subnetwork=False`. Feb 9: 7 subnetworks (rounds 0-5, 7).
