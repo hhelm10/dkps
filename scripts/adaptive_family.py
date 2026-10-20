@@ -7,7 +7,7 @@ and raw), pooled alpha blend. Deterministic (no draws); bootstrap CIs
 over systems; paired blend-IRT deltas.
 
 Usage: python scripts/adaptive_family.py swe|tb2
-Writes project/trubric/data/{q100,tb2}_adaptive_family.json.
+Writes projects/trubric/data/{q100,tb2}_adaptive_family.json.
 """
 import json
 import os
@@ -47,7 +47,7 @@ def load_swe():
     V = np.asarray(z['vecs'], np.float32)[[ids.index(q) for q in q100]]
     ks = (3, 5)
     return y, B, allowed, Xq, Xr.astype(np.float32), V, ks, \
-        'project/trubric/data/q100_adaptive_family.json'
+        'projects/trubric/data/q100_adaptive_family.json'
 
 
 def load_tb2():
@@ -92,7 +92,7 @@ def load_tb2():
     V = np.asarray(z['vecs'], np.float32)[[ids.index(t) for t in tasks]]
     ks = (3, 5, 7, 10, 15)
     return y, B, allowed, Xq, Xr.astype(np.float32), V, ks, \
-        'project/trubric/data/tb2_adaptive_family.json'
+        'projects/trubric/data/tb2_adaptive_family.json'
 
 
 def main(bench):
