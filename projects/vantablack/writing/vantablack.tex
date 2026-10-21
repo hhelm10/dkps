@@ -197,11 +197,12 @@ with the sums over the responses of all agents at all time steps, is what was sa
 
 \paragraph{Kernels used here.} In all experiments $\Gamma$ is built as above with a linear response kernel, $k_\X(x,x')=x^\top x'$, so $\phi$ is the identity and the positions are principal components of mean conditioned response embeddings. The query kernel is local: $k_\Q(u,u')=\exp\{-\|u-u'\|^2/(2h^2)\}$ if $u'$ is among the $k=64$ observed queries nearest to $u$ and $0$ otherwise, with $h$ the median distance from an observed query to its nearest neighbour. Kernels with a single global bandwidth do not suit query embeddings of tens to hundreds of dimensions, where distances concentrate: the median-distance bandwidth gives every response nearly equal weight, so that $\hat\mu$ is the global mean and nothing is conditioned on, while the rules of \citet{scott1992multivariate} and \citet{silverman1986density} put nearly all weight on the response itself. The neighbourhood size $k$ is the effective smoothing parameter; in leave-one-out prediction of a response from its query, the error is flat for $k$ between $32$ and $128$ in every simulation setting we checked, and $k=64$ lies in that range.
 
-\paragraph{Split-half increments.} Consecutive increments $\hat\psi_i^{(t+1)} - \hat\psi_i^{(t)}$ and $\hat\psi_i^{(t+2)} - \hat\psi_i^{(t+1)}$ share the estimation error of $\hat\psi_i^{(t+1)}$ with opposite signs, so the increment series of every agent is negatively autocorrelated; two independent autocorrelated series correlate spuriously, which a permutation null that treats steps as independent does not reproduce. We split each unit's responses into two disjoint halves, $A$ and $B$, compute positions $\hat\psi_{i,A}^{(t)}$ and $\hat\psi_{i,B}^{(t)}$ from each half, and use
+\paragraph{Split-half increments.} The natural increment $\hat\psi_i^{(t+1)} - \hat\psi_i^{(t)}$ is not suitable. Consecutive increments $\hat\psi_i^{(t+1)} - \hat\psi_i^{(t)}$ and $\hat\psi_i^{(t+2)} - \hat\psi_i^{(t+1)}$ share the estimation error of $\hat\psi_i^{(t+1)}$ with opposite signs, so every agent's increments alternate in direction from one step to the next even when the agent does not move. If two agents' errors happen to align at one step, the shared error carries their alignment into the next step, so pairs of agents appear to move together repeatedly; the per-step permutation, which treats steps as independent, removes this carry-over and does not reproduce it. The resulting excess of rejections grows with the share of estimation error in the increments: in the base simulation of Section~\ref{sec:sims} with $m=5$ responses per agent per step, a test on these increments rejected a true null in $58$ of $100$ replicates, against $4$ of $100$ with the construction below; with $m=20$ the two rejected in $2$ and $1$ of $60$. We split each unit's responses into two disjoint halves, $A$ and $B$, compute positions $\hat\psi_{i,A}^{(t)}$ and $\hat\psi_{i,B}^{(t)}$ from each half, and use
 \begin{equation}
+\label{eq:increment}
 \hat\delta_i^{(t)} \;=\; \hat\psi_{i,A}^{(t+1)} - \hat\psi_{i,B}^{(t)},
 \end{equation}
-so that consecutive increments share no estimation error. An increment is \emph{missing} if either half is empty (the agent was inactive) or if it is shorter than a small fraction of the median increment (the agent posted identical content at both steps and did not move).
+so that consecutive increments share no estimation error: position $t+1$ enters increment $t$ through half $A$ and increment $t+1$ through half $B$. Each position then rests on half of the unit's responses, so the increments are noisier; this costs power when responses are plentiful (at $m=20$ and $\rho=0.3$, $0.85$ against $1.00$ for the natural increment) and is the price of a test that is valid however few responses an agent gives. An increment is \emph{missing} if either half is empty (the agent was inactive) or if it is shorter than a small fraction of the median increment (the agent posted identical content at both steps and did not move).
 
 \paragraph{Common components.} The common component $c^{(t)}$ of \eqref{eq:model} is removed by subtracting, at each step, the mean increment over the agents observed at that step. Broader shared structure, such as a direction along which a large share of the platform moves together, is removed by a factor step: directions of the $N\times Ld$ increment matrix whose singular values exceed the Marchenko--Pastur noise edge are removed while their agent loadings are diffuse (at least a third of the agents load on them beyond noise). A colluding subnetwork loads on its own members only and is not removed.
 
@@ -210,12 +211,14 @@ so that consecutive increments share no estimation error. An increment is \emph{
 
 \paragraph{Pair scores.} At each step $t$, let $\cos_{ij}^{(t)}$ be the cosine between the increments of agents $i$ and $j$, for all pairs observed at that step. We replace each cosine by its rank among all $n_t$ such pairs and transform the rank to a normal score,
 \begin{equation}
+\label{eq:pairscore}
 q_{ij}^{(t)} \;=\; \Phi^{-1}\!\Big(\frac{\mathrm{rank}(\cos_{ij}^{(t)}) - \tfrac12}{n_t}\Big).
 \end{equation}
 Ranking within each step makes every step count equally, whatever the size of the platform's movement at that step, and makes the scores insensitive to the scale and distribution of the increments.
 
 \paragraph{Set scores.} For a candidate set $S$, its score at step $t$ is the standardized sum of its pair scores,
 \begin{equation}
+\label{eq:setscore}
 Z_S^{(t)} \;=\; \binom{|S|}{2}^{-1/2}\sum_{i<j\in S} q_{ij}^{(t)},
 \end{equation}
 over the pairs observed at that step, which is approximately standard normal under the null. Collusion is co-movement that repeats, so across steps we use the \emph{majority statistic}: with $L_S$ the number of steps at which $S$ has at least two observed members and $m_S=\lfloor L_S/2\rfloor+1$, let $M_S$ be the $m_S$-th largest of $Z_S^{(1)},\dots,Z_S^{(L)}$, the level that $S$ exceeds at a majority of its steps. Its tail probability under independent standard normal scores is the binomial tail of an order statistic, which we express as a $z$-score,
@@ -241,7 +244,7 @@ When the null is rejected, let $S_0$ be the best set of the most significant ban
 
 \paragraph{Agent scores.} At each step, agent $i$'s mean pair score with the observed members of $S_0$ (other than $i$) is ranked among all observed agents and transformed to a normal score $v_i^{(t)}$, and the agent's score is $s_i = L_i^{-1/2}\sum_t v_i^{(t)}$ over its $L_i$ observed steps. Ranking among agents calibrates the score whatever the correlation among the members of $S_0$; summing uses every step, and since each step's normal score is bounded by $\Phi^{-1}(1-1/2N)$, no single step can make an agent a member.
 
-\paragraph{Two-groups model.} The scores are modelled as $s_i \sim (1-\pi)\,N(\mu_0,\tau^2) + \pi\,N(\mu_1,\tau^2)$ with $\mu_1>\mu_0$, fitted by EM. The null component is estimated rather than fixed at $N(0,1)$ (an empirical null): the members take the top ranks at every step, which shifts the other agents' scores down. The two components share a variance, so the posterior probability of membership increases with the score. The estimate is the set of agents with posterior probability above $1/2$, the Bayes rule for misclassification; it is recomputed against the new set until it stops changing. Members are reported with their scores $s_i$, which grade the strength of each member's attachment.
+\paragraph{Two-groups model.} The scores are modelled as $s_i \sim (1-\pi)\,N(\mu_0,\tau^2) + \pi\,N(\mu_1,\tau^2)$ with $\mu_1>\mu_0$, fitted by EM. The null component is estimated rather than fixed at $N(0,1)$ (an empirical null): the members take the top ranks at every step, which shifts the other agents' scores down. The two components share a variance, so the posterior probability of membership increases with the score. The estimate is the set of agents whose posterior probability of membership $w_i$ exceeds $1/2$, the Bayes rule for misclassification; it is recomputed against the new set until it stops changing. Members are reported with their scores $s_i$, which grade the strength of each member's attachment.
 
 \subsection{Several subnetworks}
 \label{sec:peel}
@@ -252,27 +255,25 @@ To find several subnetworks we peel: test, estimate $\hat S$, set its members as
 \caption{Detecting \& estimating colluding subnetworks}
 \label{alg:main}
 \begin{algorithmic}[1]
-\STATE {\bfseries Input:} responses of $N$ agents at $T$ time steps; a kernel $\Gamma$ between sets of responses; permutations $B$; level $\alpha$.
-\STATE Estimate a query for every response from its context.
-\STATE Embed every (agent, time step) pair, and each half of its responses, jointly from $\Gamma$ (Section~\ref{sec:est-ps}).
-\STATE $\mathcal A\leftarrow$ all agents.
+\STATE {\bfseries Input:} $\D^{(1)},\dots,\D^{(T)}$, $\Gamma$, $B$, $\alpha$
+\STATE $\hat\psi_i^{(t)}\leftarrow$ kernel PCA of $\Gamma$ over all units \hfill(Sec.~\ref{sec:est-ps})
+\STATE $\hat\delta_i^{(t)}\leftarrow$ split-half increments \hfill\eqref{eq:increment}
+\STATE $\mathcal A\leftarrow\N$
 \LOOP
-  \STATE At every step, score how much each pair of agents in $\mathcal A$ moved together.
-  \STATE Summarize each candidate set's co-movement across all steps; keep the strongest sets (Sections~\ref{sec:stat}--\ref{sec:scan}).
-  \STATE Repeat the previous two lines $B$ times with the agent labels permuted independently at every step.
-  \STATE Compute the $p$-value of the strongest sets against the permutations.
-  \IF{$p>\alpha$}
-    \STATE {\bfseries stop}
-  \ENDIF
-  \STATE $\hat S\leftarrow$ the strongest set.
+  \STATE $q_{ij}^{(t)}$, $i,j\in\mathcal A$ \eqref{eq:pairscore}; \ $\Lambda_b\leftarrow\max_{S\in\Sfam,\,|S|\in b} z(S)$ \eqref{eq:majority}
+  \FOR{$\beta=1$ {\bfseries to} $B$}
+    \STATE permute labels at each $t$; recompute $\Lambda_b^{(\beta)}$
+  \ENDFOR
+  \STATE $p\leftarrow$ permutation min-$p$ over bands \hfill(Sec.~\ref{sec:scan})
+  \STATE {\bfseries if} $p>\alpha$ {\bfseries then stop}
+  \STATE $\hat S\leftarrow$ best set of the most significant band
   \REPEAT
-    \STATE Score every agent's co-movement with $\hat S$, summed over steps.
-    \STATE Fit two normal distributions to the scores: members and non-members.
-    \STATE $\hat S\leftarrow$ the agents more likely members than not (Section~\ref{sec:membership}).
-  \UNTIL{$\hat S$ does not change}
-  \STATE Report $\hat S$ if it has at least two agents; remove it from $\mathcal A$.
+    \STATE $s_i\leftarrow$ score of $i$ against $\hat S$ \hfill(Sec.~\ref{sec:membership})
+    \STATE $w_i\leftarrow$ posterior of the two-groups model fit to $\{s_i\}$
+    \STATE $\hat S\leftarrow\{i\in\mathcal A: w_i>1/2\}$
+  \UNTIL{$\hat S$ is unchanged}
+  \STATE {\bfseries if} $|\hat S|\ge2$ {\bfseries then} report $(\hat S,p)$; \ $\mathcal A\leftarrow\mathcal A\setminus\hat S$
 \ENDLOOP
-\STATE {\bfseries Output:} the reported subnetworks, each with its $p$-value.
 \end{algorithmic}
 \end{algorithm}
 

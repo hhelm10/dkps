@@ -298,3 +298,13 @@ These are documented in `methods.md`.
   k in 32-128 in four simulation settings (best 64 at the base cell, 32 elsewhere); the Gaussian
   weights inside the 64 neighbours add nothing (225.5 vs 225.7). The best global Gaussian
   bandwidth by CV (0.25-0.3 x nn distance) is knife-edged and worse (233).
+
+- **2026-10-21 — Split-half increments kept (user: "let's just roll with the split").** Checked
+  against the natural increment psi(t+1) - psi(t) (tstep mode='overlap') on the base cell, B = 99:
+  m = 20: Type I 1/60 (split) vs 2/60 (natural); rho = 0.3 power 0.85 vs 1.00, S_hat precision /
+  recall 0.74 / 0.76 vs 0.88 / 0.89 (20 reps). m = 5: Type I 4/100 (split) vs 58/100 (natural);
+  rho = 0.5 power 0.65 vs 1.00 (the natural increment's power is meaningless there). The shared
+  estimation error of position t+1 carries a chance alignment of two agents into the next step,
+  which the per-step permutation does not reproduce. Explained in Section 4.1 with these numbers.
+  Possible later: a null that keeps each agent's alternation (block permutation, or modelling the
+  -1/2 noise correlation) to recover power; not pursued.
