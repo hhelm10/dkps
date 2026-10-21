@@ -106,7 +106,7 @@ Language-model agents with memory, reflection, and planning produce believable e
 Black-box generative models can be compared through their responses: the data kernel is the Gram matrix of embedded responses to a common query set \citep{duderstadt2023comparing}, and the induced perspective space tracks systems of interacting models and shows how communication topology governs the diffusion of perspectives, adversarial ones included, generalizing model collapse \citep{shumailov2024ai} to networks of models \citep{helm2024tracking}. Inference in the data kernel perspective space (DKPS) and the consistency and concentration of its representations are developed in \citet{helm2025statistical,acharyya2024consistent,acharyya2025concentration}, regression on DKPS representations is query-efficient \citep{helm2026query}, and the Product Kernel Perspective Space (PKPS) extends the construction to models that answered different queries, concentrating at the paired rate up to a query-overlap factor \citep{pkps2026}. Over time, the temporal DKPS embeds (agent, time) pairs jointly and tests for change in a single agent or in a pre-specified group \citep{bridgeford2025detecting}, and adaptive control charts on the system-level trajectory give continuous monitoring at the cost of vulnerability to agents that defect slowly \citep{helm2026control}. We use PKPS as our representation because the observation model of Section~\ref{sec:setting} is sparse and unpaired by nature, and the temporal embedding and permutation null of the temporal DKPS as our inferential starting point. We differ in the question: every method in this line tests for change in an agent, a group, or a system that is given in advance, whereas our group is unknown and must be found, which turns a two-sample test into a scan and requires the concentration results above to control estimation error uniformly over candidate groups.
 
 \paragraph{Statistical network science.}
-Latent position models represent vertices by points whose inner products give edge probabilities, and adjacency spectral embedding recovers those points up to rotation with guarantees for clustering, classification, and testing \citep{athreya2018statistical,lyzinski2014perfect,lyzinski2017community,priebe2019two}; for several graphs on a common vertex set the omnibus embedding places every (vertex, graph) pair in one space so that a vertex can be compared across graphs \citep{levin2017omnibus}, and nonparametric two-sample tests decide whether two graphs share a generating distribution \citep{tang2017nonparametric}. Scan statistics on graphs detect a small subset of vertices whose behavior is anomalous: vertex-centered locality statistics \citep{priebe2005scan,rukhin2011comparative} and their extensions to time series of graphs \citep{park2013anomaly,wang2014locality,chen2025multiple} scan the neighborhoods of a graph for excess connectivity and have power against a chatter alternative in which a subset raises its mutual connectivity; the general theory of scanning a candidate family of clusters for an elevated mean \citep{glaz2001scan,kulldorff1997spatial,ariascastro2011detection}, the statistical and computational limits of planted-subgraph detection \citep{verzelen2015community,hajek2015computational}, and spectral relaxations of the graph scan \citep{sharpnack2016detecting} characterize when such a subset is detectable. Vertex nomination ranks vertices by their probability of belonging to a subset of interest given a few known members \citep{fishkind2015vertex}, including when an adversary modifies the graph to hide the subset \citep{agterberg2020vertex}, and change-point methods localize the time at which a sequence of networks changes distribution \citep{padilla2022change,wang2021optimal}, the natural tool for the onset-estimation problem we defer to future work. Our method is an instance of this template with one substitution: the latent position is estimated from behavior rather than from edges, with (agent, time) pairs as vertices and behavioral similarity in place of adjacency, so that no graph is observed. The joint embedding of Section~\ref{sec:est-ps} is the omnibus embedding's analogue; Definition~\ref{def:collusion} is the chatter alternative stated in the latent space; the scan \eqref{eq:scan} is an elevated-mean cluster scan over a data-driven family calibrated by permutation; and membership estimation is vertex nomination without seeds. We differ in what is assumed observed: scan statistics on graphs, vertex nomination, and network change-point methods all take the graph as data, and their guarantees rest on the adjacency matrix concentrating around its expectation, whereas our ``edges'' are sparse, unpaired, and sometimes-estimated query--response pairs, and the role of adjacency concentration is played by the concentration of the behavioral representation.
+Latent position models represent vertices by points whose inner products give edge probabilities, and adjacency spectral embedding recovers those points up to rotation with guarantees for clustering, classification, and testing \citep{athreya2018statistical,lyzinski2014perfect,lyzinski2017community,priebe2019two}; for several graphs on a common vertex set the omnibus embedding places every (vertex, graph) pair in one space so that a vertex can be compared across graphs \citep{levin2017omnibus}, and nonparametric two-sample tests decide whether two graphs share a generating distribution \citep{tang2017nonparametric}. Scan statistics on graphs detect a small subset of vertices whose behavior is anomalous: vertex-centered locality statistics \citep{priebe2005scan,rukhin2011comparative} and their extensions to time series of graphs \citep{park2013anomaly,wang2014locality,chen2025multiple} scan the neighborhoods of a graph for excess connectivity and have power against a chatter alternative in which a subset raises its mutual connectivity; the general theory of scanning a candidate family of clusters for an elevated mean \citep{glaz2001scan,kulldorff1997spatial,ariascastro2011detection}, the statistical and computational limits of planted-subgraph detection \citep{verzelen2015community,hajek2015computational}, and spectral relaxations of the graph scan \citep{sharpnack2016detecting} characterize when such a subset is detectable. Vertex nomination ranks vertices by their probability of belonging to a subset of interest given a few known members \citep{fishkind2015vertex}, including when an adversary modifies the graph to hide the subset \citep{agterberg2020vertex}, and change-point methods localize the time at which a sequence of networks changes distribution \citep{padilla2022change,wang2021optimal}, the natural tool for the onset-estimation problem we defer to future work. Our method is an instance of this template with one substitution: the latent position is estimated from behavior rather than from edges, with (agent, time) pairs as vertices and behavioral similarity in place of adjacency, so that no graph is observed. The joint embedding of Section~\ref{sec:est-ps} is the omnibus embedding's analogue; Definition~\ref{def:collusion} is the chatter alternative stated in the latent space; the scan of Section~\ref{sec:scan} searches a data-driven family for a cluster of elevated pairwise association and is calibrated by permutation; and membership estimation is vertex nomination without seeds. We differ in what is assumed observed: scan statistics on graphs, vertex nomination, and network change-point methods all take the graph as data, and their guarantees rest on the adjacency matrix concentrating around its expectation, whereas our ``edges'' are sparse, unpaired, and sometimes-estimated query--response pairs, and the role of adjacency concentration is played by the concentration of the behavioral representation.
 % ---- setting
 \section{Setting and problem statement}
 \label{sec:setting}
@@ -143,35 +143,36 @@ If two units have the same conditional response distribution for every query, th
 \subsection{Colluding subnetworks}
 \label{sec:collusion}
 
-We assume a burn-in period $t\le t_0$ during which no collusion is present, as in \citet{helm2026control}. Define the \emph{displacement} of agent $i$ at time $t>t_0$ as
+Write $\psi_i^{(t)}\in\R^d$ for the position of agent $i$ at time $t$ in the perspective space and
 \begin{equation}
-\Delta_i^{(t)} \;=\; \psi_i^{(t)} - \psi_i^{(t_0)} \in \R^d .
+\delta_i^{(t)} \;=\; \psi_i^{(t+1)} - \psi_i^{(t)}, \qquad t=1,\dots,L,\quad L=T-1,
 \end{equation}
-Displacements may be nonzero for benign reasons: the environment drifts, or agents learn. We model such benign change as a common component shared by all agents and allow the colluding subnetwork to move relative to it.
+for its \emph{increment}: how the agent's behavior moved between consecutive time steps. Increments are nonzero for benign reasons: the environment drifts, topics come and go, agents learn. Benign movement that is shared by the whole platform is a common component; benign movement specific to an agent is independent of the other agents. A colluding subnetwork is a set of agents whose movements are tied to each other, step after step.
 
 \begin{definition}[Colluding subnetwork]
 \label{def:collusion}
-A subset $S\subset\N$ is a \emph{colluding subnetwork} at time $t>t_0$ if there is a direction $v\in\R^d$, $\|v\|=1$, an effect size $\delta>0$, and a common component $c^{(t)}\in\R^d$ such that
+A subset $S\subset\N$ with $|S|\ge 2$ is a \emph{colluding subnetwork} with effect size $\rho\in(0,1]$ if
 \begin{equation}
 \label{eq:model}
-\Delta_i^{(t)} \;=\; c^{(t)} + \delta\, v\,\ind\{i\in S\} \qquad\text{for all } i\in\N .
+\delta_i^{(t)} \;=\; c^{(t)} + \sigma_i^{(t)}\Big(\sqrt{\rho}\,g_S^{(t)}\,\ind\{i\in S\} + \sqrt{1-\rho\,\ind\{i\in S\}}\;e_i^{(t)}\Big), \qquad t=1,\dots,L,
 \end{equation}
-The null hypothesis of no collusion is $\delta = 0$, equivalently $S=\emptyset$.
+where $c^{(t)}$ is a common component, $\sigma_i^{(t)}>0$ a scale, and $g_S^{(t)}$ and the $e_i^{(t)}$ are mutually independent, mean zero, isotropic, and independent across time steps. Two members of $S$ then have increments with correlation $\rho$ at every step, and every other pair has uncorrelated increments. The null hypothesis is that no such $S$ exists: given the common components, the increments of different agents are independent.
 \end{definition}
 
-The definition is deliberately behavioral: it says that a subset of agents changed in the same way at the same time, relative to everyone else, and makes no reference to a score, a reward, or the agents' intent. It covers the motivating examples. Agents flooding a platform with near-identical content move together toward the content's representation; agents that establish a shared channel and divide labor move together toward the behaviors that channel induces. It does not cover a single agent acting alone (that is $|S|=1$, which is detectable but is not collusion) and it does not by itself distinguish collusion from homophily: a subset of agents that were always similar and remain so has $\Delta_i^{(t)} = c^{(t)}$ and is not flagged, which is the intended behavior, while a subset that becomes similar after $t_0$ is flagged whether or not the agents intended it. Definition~\ref{def:collusion} is stated for a single post-burn-in time $t$; a colluding subnetwork with onset $t^*$ satisfies \eqref{eq:model} with $\delta>0$ for $t\ge t^*$ and $\delta=0$ for $t_0<t<t^*$. Estimating $t^*$ is a sequential problem that we leave to future work (Section~\ref{sec:discussion}); here $t$ is a fixed post-burn-in time.
+The definition is behavioral and makes no reference to a score, a reward, or intent: a subset of agents whose behavior keeps moving together, more than chance allows, after the movement shared by the whole platform is removed. Agents run by one operator from one script move together whenever the script changes; agents that coordinate through a shared channel move together whenever the channel's instructions change. Two consequences are deliberate. A set of agents that are similar but static, such as clones posting the same template throughout, does not move and is not a colluding subnetwork, and neither is a single joint jump: what identifies collusion is repeated co-movement, so one step, however extreme, does not suffice. And the definition does not distinguish coordination from a shared stimulus that only the members respond to; we return to this in Section~\ref{sec:discussion}. Several disjoint subnetworks $S_1,\dots,S_K$, each with its own process $g_{S_k}^{(t)}$, are covered by the same construction.
 
 \subsection{The estimation problem}
 \label{sec:problem}
 
-Given $\D^{(1)},\dots,\D^{(T)}$, embedding functions $g_\Q$ and $g_\X$, and the burn-in time $t_0$, we address two problems.
+Given $\D^{(1)},\dots,\D^{(T)}$ and the embedding functions $g_\Q$ and $g_\X$, we address three problems.
 
 \begin{itemize}
-  \item[\textbf{P0}] \textbf{Detection.} Test $H_0:\delta=0$ against $H_1:\delta>0$ in \eqref{eq:model}, with $S$, $v$, and $c^{(t)}$ unknown.
-  \item[\textbf{P1}] \textbf{Membership estimation.} Given that $H_0$ is rejected, estimate $S$.
+  \item[\textbf{P0}] \textbf{Detection.} Test the null hypothesis that no colluding subnetwork exists, with $S$, $\rho$, $c^{(t)}$, and $\sigma_i^{(t)}$ unknown.
+  \item[\textbf{P1}] \textbf{Membership estimation.} Given that the null is rejected, estimate $S$.
+  \item[\textbf{P2}] \textbf{Several subnetworks.} Estimate $S_1,\dots,S_K$ when $K$ is unknown.
 \end{itemize}
 
-The difficulty is that neither $\psi_i^{(t)}$ nor $\Delta_i^{(t)}$ is observed. They must be estimated from $\D^{(1)},\dots,\D^{(T)}$ through \eqref{eq:obs}, in which the number of responses per agent per time step is small, the queries are unpaired across agents and across time, and in the vantablack setting the queries are themselves estimates. The estimation error in $\hat\Delta_i^{(t)}$ depends on $m_i^{(t)}$, on the overlap between the query distributions of the units being compared, and on the error in $\hat u_j$. The quantities that govern Type~I error and power are therefore the effect size $\delta$, the number of agents $N$ and the size $|S|$ of the colluding subnetwork, the number of responses $m$ per agent per time step, and the quality of the query estimates. Section~\ref{sec:sims} characterizes the method along each of these axes.
+The difficulty is that neither $\psi_i^{(t)}$ nor $\delta_i^{(t)}$ is observed. They must be estimated from $\D^{(1)},\dots,\D^{(T)}$ through \eqref{eq:obs}, in which the number of responses per agent per time step is small, the queries are unpaired across agents and across time, and in the vantablack setting the queries are themselves estimates. The estimation error in $\hat\delta_i^{(t)}$ depends on $m_i^{(t)}$ and on the overlap between the query distributions of different agents. The quantities that govern Type~I error and power are therefore the effect size $\rho$, the number of agents $N$, the size $|S|$ of the subnetwork, the number of responses $m$ per agent per time step, and the number of time steps $T$. Section~\ref{sec:sims} characterizes the method along each of these axes.
 
 \begin{remark}[Scores]
 In many deployments a score $\sigma^{(t)}(A)$ is also observed for subsets $A$ of agents (votes, karma, task reward). A colluding subnetwork in the sense of Definition~\ref{def:collusion} is \emph{adversarial} if its behavior lowers the score of the agents outside it relative to a benign counterfactual. Scores are not part of the observation model \eqref{eq:obs} and we do not use them for detection; when available they serve to characterize the consequences of a detected subnetwork and to choose a response to it. We return to this in Section~\ref{sec:discussion}.
@@ -180,98 +181,106 @@ In many deployments a score $\sigma^{(t)}(A)$ is also observed for subsets $A$ o
 \section{Method}
 \label{sec:method}
 
-The method has three steps: estimate the perspective space of (agent, time) pairs from sparse and unpaired responses (Section~\ref{sec:est-ps}); compute and center agent displacements (Section~\ref{sec:disp}); scan a family of candidate subsets for an anomalously large shared displacement, calibrating the scan statistic by permutation (Section~\ref{sec:scan}). Section~\ref{sec:theory} states the guarantee that motivates the construction. Algorithm~\ref{alg:main} summarizes the procedure.
+The method has five steps: estimate each agent's position at each time step and its increments (Section~\ref{sec:est-ps}); score how strongly each pair of agents, and each candidate set, moves together across steps (Section~\ref{sec:stat}); scan a data-driven family of candidate sets and calibrate the scan by a per-step permutation of agent labels (Section~\ref{sec:scan}); estimate the members of a detected subnetwork (Section~\ref{sec:membership}); and repeat on the remaining agents to find further subnetworks (Section~\ref{sec:peel}). Algorithm~\ref{alg:main} summarizes the procedure.
 
-\subsection{Estimating the perspective space}
+\subsection{Positions and increments}
 \label{sec:est-ps}
 
-Fix two time points, the end of burn-in $t_0$ and a post-burn-in time $t$, and index the $2N$ units $a=(i,\tau)$, $\tau\in\{t_0,t\}$. Enumerate all observed queries $q_1,\dots,q_M$ with embeddings $u_j$ (or $\hat u_j$) and let $x_{aj}$ denote the embedded response of unit $a$ to query $j\in\I_a$. The sample affinity between units $a$ and $a'$ is the PKPS affinity of \citet{pkps2026},
+\paragraph{Conditioning on the query.} A response depends on the agent and on the query it answers, and different agents answer different queries. We remove the part of each response that the query alone explains. For a response $x_j$ to query $u_j$, let $\hat\mu(u_j)$ be the kernel-weighted mean of the responses of all agents, at all time steps, to the $k$ observed queries nearest to $u_j$, with a Gaussian kernel whose bandwidth is the median nearest-neighbour distance; the conditioned response is $r_j = x_j - \hat\mu(u_j)$. As in PKPS (Section~\ref{sec:ps}), an agent is compared through what it said relative to what was said to similar queries, so agents that answered different queries remain comparable, and all positions are estimated at once from all agents' data. In the vantablack setting $u_j$ is replaced by $\hat u_j$.
+
+\paragraph{Positions.} The position of the unit $(i,t)$ is the mean of its conditioned responses, projected onto the leading $d$ principal directions of all unit means, with $d$ chosen by the profile-likelihood elbow of the singular values \citep{zhu2006automatic}. These are the PKPS positions of the units for a linear response kernel.
+
+\paragraph{Split-half increments.} Consecutive increments $\hat\psi_i^{(t+1)} - \hat\psi_i^{(t)}$ and $\hat\psi_i^{(t+2)} - \hat\psi_i^{(t+1)}$ share the estimation error of $\hat\psi_i^{(t+1)}$ with opposite signs, so the increment series of every agent is negatively autocorrelated; two independent autocorrelated series correlate spuriously, which a permutation null that treats steps as independent does not reproduce. We split each unit's responses into two disjoint halves, $A$ and $B$, compute positions $\hat\psi_{i,A}^{(t)}$ and $\hat\psi_{i,B}^{(t)}$ from each half, and use
 \begin{equation}
-\label{eq:affinity}
-\hat A_{aa'} \;=\; \frac{\sum_{j\in\I_a}\sum_{l\in\I_{a'}} k_\Q(u_j,u_l)\,k_\X(x_{aj},x_{a'l})}{\sum_{j\in\I_a}\sum_{l\in\I_{a'}} k_\Q(u_j,u_l)} ,
+\hat\delta_i^{(t)} \;=\; \hat\psi_{i,A}^{(t+1)} - \hat\psi_{i,B}^{(t)},
 \end{equation}
-which is defined whenever $|\I_a|,|\I_{a'}|\ge 1$ and $k_\Q$ is strictly positive. The induced squared distance is $\hat D^2_{aa'} = \hat A_{aa}+\hat A_{a'a'}-2\hat A_{aa'}$ and the estimated perspective space $\{\hat\psi_i^{(\tau)}\}$ is the $d$-dimensional classical multidimensional scaling configuration of $\hat D$. We use Gaussian kernels $k_\Q(u,u') = \exp(-\|u-u'\|^2/2h_\Q^2)$ and $k_\X(x,x') = \exp(-\|x-x'\|^2/2h_\X^2)$ with bandwidths set by the median heuristic on the pooled embeddings, and we choose $d$ by the profile-likelihood elbow of the scree plot of $\hat D$; both choices are fixed before testing and are permuted along with the data.
+so that consecutive increments share no estimation error. An increment is \emph{missing} if either half is empty (the agent was inactive) or if it is shorter than a small fraction of the median increment (the agent posted identical content at both steps and did not move).
 
-Equation~\eqref{eq:affinity} has a convenient matrix form. Let $K_\Q$ and $K_\X$ be the $M_{\mathrm{tot}}\times M_{\mathrm{tot}}$ kernel matrices over all $M_{\mathrm{tot}} = \sum_a|\I_a|$ observed (unit, query) pairs, and let $Z\in\{0,1\}^{M_{\mathrm{tot}}\times 2N}$ assign each observed pair to its unit. Then
+\paragraph{Common components.} The common component $c^{(t)}$ of \eqref{eq:model} is removed by subtracting, at each step, the mean increment over the agents observed at that step. Broader shared structure, such as a direction along which a large share of the platform moves together, is removed by a factor step: directions of the $N\times Ld$ increment matrix whose singular values exceed the Marchenko--Pastur noise edge are removed while their agent loadings are diffuse (at least a third of the agents load on them beyond noise). A colluding subnetwork loads on its own members only and is not removed.
+
+\subsection{Repeated co-movement}
+\label{sec:stat}
+
+\paragraph{Pair scores.} At each step $t$, let $\cos_{ij}^{(t)}$ be the cosine between the increments of agents $i$ and $j$, for all pairs observed at that step. We replace each cosine by its rank among all $n_t$ such pairs and transform the rank to a normal score,
 \begin{equation}
-\label{eq:matrix}
-\hat A \;=\; \big(Z^\top (K_\Q\circ K_\X) Z\big) \oslash \big(Z^\top K_\Q Z\big),
+q_{ij}^{(t)} \;=\; \Phi^{-1}\!\Big(\frac{\mathrm{rank}(\cos_{ij}^{(t)}) - \tfrac12}{n_t}\Big).
 \end{equation}
-with $\circ$ and $\oslash$ the entrywise product and quotient. The kernel matrices depend only on the observed queries and responses; the assignment $Z$ is the only object that changes under the permutations of Section~\ref{sec:scan}, which makes the permutation null inexpensive.
+Ranking within each step makes every step count equally, whatever the size of the platform's movement at that step, and makes the scores insensitive to the scale and distribution of the increments.
 
-In the vantablack setting $u_j$ is replaced by $\hat u_j$. Query estimation error enters \eqref{eq:affinity} only through the query kernel, where it acts like additional bandwidth: responses to queries that are in fact dissimilar receive weight they should not, which biases $\hat A$ toward the unconditional response similarity. The simulations of Section~\ref{sec:sims} quantify the resulting loss of power as a function of the query estimation error.
-
-\subsection{Displacements}
-\label{sec:disp}
-
-The estimated displacement of agent $i$ is $\hat\Delta_i = \hat\psi_i^{(t)} - \hat\psi_i^{(t_0)}$. Because the units are embedded jointly, the two time points share a coordinate system and no alignment step is needed. The common component $c^{(t)}$ of \eqref{eq:model} is a nuisance; since the colluding subnetwork is a minority of agents we remove it by subtracting a robust center,
+\paragraph{Set scores.} For a candidate set $S$, its score at step $t$ is the standardized sum of its pair scores,
 \begin{equation}
-\tilde\Delta_i \;=\; \hat\Delta_i - \operatorname{med}\{\hat\Delta_1,\dots,\hat\Delta_N\},
+Z_S^{(t)} \;=\; \binom{|S|}{2}^{-1/2}\sum_{i<j\in S} q_{ij}^{(t)},
 \end{equation}
-with the coordinate-wise median. Let $\hat\Sigma$ be a robust estimate of the covariance of $\{\tilde\Delta_i\}$ (we use the minimum covariance determinant estimator); it captures the estimation noise of the displacements under the null and standardizes the scan statistic across directions.
+over the pairs observed at that step, which is approximately standard normal under the null. Collusion is co-movement that repeats, so across steps we use the \emph{majority statistic}: with $L_S$ the number of steps at which $S$ has at least two observed members and $m_S=\lfloor L_S/2\rfloor+1$, let $M_S$ be the $m_S$-th largest of $Z_S^{(1)},\dots,Z_S^{(L)}$, the level that $S$ exceeds at a majority of its steps. Its tail probability under independent standard normal scores is the binomial tail of an order statistic, which we express as a $z$-score,
+\begin{equation}
+\label{eq:majority}
+z(S) \;=\; \Phi^{-1}\Big(1 - \Prob\big[\mathrm{Bin}\big(L_S, 1-\Phi(M_S)\big)\ge m_S\big]\Big),
+\end{equation}
+comparable across sets with different numbers of observed steps. A single step, however extreme, cannot make $z(S)$ large; a set that moves together moderately but at most steps can.
 
-\subsection{Scan statistic and permutation null}
+\subsection{Scan and permutation null}
 \label{sec:scan}
 
-For a candidate subset $S\subset\N$ with $|S|\ge 2$, define
-\begin{equation}
-\label{eq:TS}
-T(S) \;=\; |S|\;\bar\Delta_S^\top\hat\Sigma^{-1}\bar\Delta_S, \qquad \bar\Delta_S = \frac{1}{|S|}\sum_{i\in S}\tilde\Delta_i .
-\end{equation}
-Under $H_0$ and a Gaussian approximation to the displacement noise, $T(S)$ is approximately $\chi^2_d$ for any fixed $S$; under \eqref{eq:model} with $S$ the true subnetwork, $T(S)$ has noncentrality of order $|S|\delta^2/\sigma^2$, where $\sigma^2$ is the noise scale of $\tilde\Delta$ in the direction $v$. The statistic rewards subsets that are large and move together, and it is invariant to the direction of movement.
+\paragraph{Candidate family.} The family $\Sfam$ is built from the data: (i) every pair of agents; (ii) for every agent, the agent and its nearest neighbours by the pair statistic $z(\{i,j\})$, at sizes $5$, $10$, $20$, $40$ and $80$ (up to $N/4$); (iii) local-search refinements of the best of these sets at each size, each replaced by the agents with the largest summed pair statistic to it until it stops changing; and (iv) $k$-means clusters of the agents' unit-normalized increment series. The family is divided into size bands $\{2\}$, $[3,10]$, $[11,30]$, $[31,100]$ and $[101,N]$, and the scan statistic of band $b$ is $\Lambda_b = \max_{S\in\Sfam,\,|S|\in b} z(S)$.
 
-Scanning over all $2^N$ subsets is infeasible and would dilute power. We scan over a data-driven candidate family $\Sfam$ constructed from the displacements themselves:
-\begin{enumerate}
-  \item \emph{Clusters.} For $k=2,\dots,K$, run $k$-means on $\{\tilde\Delta_i\}$ and include every cluster of size at least two.
-  \item \emph{Nested sets along the leading direction.} Let $w$ be the leading eigenvector of $\hat\Sigma^{-1/2}\,\mathrm{Cov}(\tilde\Delta)\,\hat\Sigma^{-1/2}$. Order the agents by $|w^\top\hat\Sigma^{-1/2}\tilde\Delta_i|$ and include the top-$r$ sets for $r=2,\dots,\lfloor N/2\rfloor$.
-\end{enumerate}
-The family has $O(KN)$ members. The scan statistic and the membership estimate are
-\begin{equation}
-\label{eq:scan}
-\Lambda \;=\; \max_{S\in\Sfam} T(S), \qquad \hat S \;=\; \argmax_{S\in\Sfam} T(S).
-\end{equation}
+\paragraph{Null.} Under the null, given the common components, the increments of different agents are independent, so relabelling the agents at one step leaves the joint distribution of the increments unchanged as long as each step is relabelled on its own. A draw from the null permutes the agent labels independently at every step, among the agents observed at that step, and recomputes everything that depends on the labels: the pair scores, the candidate family, and the band maxima $\Lambda_b^{(1)},\dots,\Lambda_b^{(B)}$. The candidate family is rebuilt inside every draw, so the search over sets is part of what the null accounts for. The band $p$-value is $p_b = (1+\#\{\beta:\Lambda_b^{(\beta)}\ge\Lambda_b\})/(B+1)$.
 
-The null distribution of $\Lambda$ is obtained by permutation. Under $H_0$, agent $i$'s conditional behavior is the same at $t_0$ and $t$; if its query distribution is also unchanged then its observed (query, response) pairs at the two time points are exchangeable. For $b=1,\dots,B$: for every agent, pool its pairs from the two time points and reassign them at random, preserving the counts $m_i^{(t_0)}$ and $m_i^{(t)}$; recompute $\hat A$ via \eqref{eq:matrix} with the permuted $Z$, the embedding, the displacements, the candidate family, and $\Lambda_b$. The $p$-value is $(1+\#\{b:\Lambda_b\ge\Lambda\})/(B+1)$, and the test rejects at level $\alpha$ when it is at most $\alpha$. Because the candidate family is rebuilt inside every permutation, the selection of $S$ is accounted for and the test is exact under exchangeability.
+\paragraph{Global $p$-value.} The bands search overlapping sets, so their $p$-values are strongly dependent and a Bonferroni correction across bands is conservative. We calibrate the smallest band $p$-value by its own permutation distribution \citep{westfall1993resampling}: every draw's band $p$-values are computed against the other $B$ draws and the observed data, all $B+1$ of which are exchangeable under the null, and the global $p$-value is the share of the $B+1$ minima that are at most the observed one. The test is exact under the null.
 
-\begin{remark}[Query self-selection]
-The permutation is exact under the null that the joint distribution of (query, response) pairs is unchanged for every agent. This is stronger than $\delta=0$: an agent whose conditional behavior is unchanged but whose query distribution has shifted is not exchangeable across time. Two remedies are available. A \emph{conditional} permutation reassigns pairs across time only among pairs whose queries fall in the same stratum of the embedded query space, restoring exchangeability under the conditional null at the cost of fewer admissible permutations. Alternatively, a small query-kernel bandwidth reduces the sensitivity of $\hat A$ to the query marginal. We use the joint permutation in the simulations of Section~\ref{sec:sims}, where the query distributions are stationary, and the conditional permutation on the Moltbook data of Section~\ref{sec:realdata}, where they are not.
-\end{remark}
+\subsection{Membership}
+\label{sec:membership}
+
+When the null is rejected, let $S_0$ be the best set of the most significant band. Membership is estimated by scoring every agent against $S_0$ and separating the members from the rest with a two-groups model \citep{efron2004large}.
+
+\paragraph{Agent scores.} At each step, agent $i$'s mean pair score with the observed members of $S_0$ (other than $i$) is ranked among all observed agents and transformed to a normal score $v_i^{(t)}$, and the agent's score is $s_i = L_i^{-1/2}\sum_t v_i^{(t)}$ over its $L_i$ observed steps. Ranking among agents calibrates the score whatever the correlation among the members of $S_0$; summing uses every step, and since each step's normal score is bounded by $\Phi^{-1}(1-1/2N)$, no single step can make an agent a member.
+
+\paragraph{Two-groups model.} The scores are modelled as $s_i \sim (1-\pi)\,N(\mu_0,\tau^2) + \pi\,N(\mu_1,\tau^2)$ with $\mu_1>\mu_0$, fitted by EM. The null component is estimated rather than fixed at $N(0,1)$ (an empirical null): the members take the top ranks at every step, which shifts the other agents' scores down. The two components share a variance, so the posterior probability of membership increases with the score. The estimate is the set of agents with posterior probability above $1/2$, the Bayes rule for misclassification; it is recomputed against the new set until it stops changing. Members are reported with their scores $s_i$, which grade the strength of each member's attachment.
+
+\subsection{Several subnetworks}
+\label{sec:peel}
+
+To find several subnetworks we peel: test, estimate $\hat S$, set its members aside, and test the remaining agents again, stopping at the first round whose $p$-value exceeds $\alpha$. Each round is a level-$\alpha$ test of the null among the agents not yet set aside. A round whose estimate has a single member is not a subnetwork; that agent is set aside and peeling continues.
 
 \begin{algorithm}[t]
-\caption{Scan test for a colluding subnetwork (two time points)}
+\caption{Detecting colluding subnetworks from repeated co-movement}
 \label{alg:main}
 \begin{algorithmic}[1]
-\STATE {\bfseries Input:} $\D^{(t_0)}, \D^{(t)}$; embeddings $g_\Q, g_\X$; kernels $k_\Q, k_\X$; dimension $d$; family size $K$; permutations $B$; level $\alpha$.
-\STATE Embed queries and responses; form $K_\Q$, $K_\X$, and the assignment $Z$.
-\STATE $\hat A \leftarrow (Z^\top (K_\Q\circ K_\X) Z)\oslash(Z^\top K_\Q Z)$; $\hat D^2\leftarrow \mathrm{diag}(\hat A)\mathbf 1^\top + \mathbf 1\,\mathrm{diag}(\hat A)^\top - 2\hat A$.
-\STATE $\{\hat\psi_a\}\leftarrow\mathrm{CMDS}_d(\hat D)$; $\hat\Delta_i\leftarrow\hat\psi_{(i,t)}-\hat\psi_{(i,t_0)}$; center to $\tilde\Delta_i$; estimate $\hat\Sigma$.
-\STATE Build $\Sfam$ from $\{\tilde\Delta_i\}$; $\Lambda\leftarrow\max_{S\in\Sfam}T(S)$; $\hat S\leftarrow\argmax$.
-\FOR{$b=1$ {\bfseries to} $B$}
-  \STATE For each agent, randomly reassign its (query, response) pairs between $t_0$ and $t$, preserving counts; form $Z_b$.
-  \STATE Repeat lines 3--5 with $Z_b$ to obtain $\Lambda_b$.
-\ENDFOR
-\STATE $p\leftarrow(1+\#\{b:\Lambda_b\ge\Lambda\})/(B+1)$.
-\STATE {\bfseries Output:} reject $H_0$ if $p\le\alpha$; if rejected, return $\hat S$.
+\STATE {\bfseries Input:} $\D^{(1)},\dots,\D^{(T)}$; embeddings $g_\Q, g_\X$; neighbours $k$; permutations $B$; level $\alpha$.
+\STATE Condition every response on its query: $r_j\leftarrow x_j-\hat\mu(u_j)$.
+\STATE Positions of every unit $(i,t)$ from two halves of its responses; split-half increments $\hat\delta_i^{(t)}$; mark missing increments; center each step; remove diffuse factors.
+\STATE $\mathcal A\leftarrow\N$ \COMMENT{agents not yet set aside}
+\REPEAT
+  \STATE Pair scores $q_{ij}^{(t)}$ among $\mathcal A$; candidate family $\Sfam$; band maxima $\Lambda_b$ of $z(S)$.
+  \FOR{$\beta=1$ {\bfseries to} $B$}
+    \STATE Permute the agent labels in $\mathcal A$ independently at every step; recompute $q$, $\Sfam$, and $\Lambda_b^{(\beta)}$.
+  \ENDFOR
+  \STATE Global $p$ by permutation min-$p$ over bands.
+  \IF{$p\le\alpha$}
+    \STATE $S_0\leftarrow$ best set of the most significant band; $\hat S\leftarrow$ two-groups membership iterated from $S_0$.
+    \STATE Report $\hat S$ (with member scores) if $|\hat S|\ge 2$; $\mathcal A\leftarrow\mathcal A\setminus\hat S$.
+  \ENDIF
+\UNTIL{$p>\alpha$}
+\STATE {\bfseries Output:} the reported subnetworks, each with its round's $p$-value.
 \end{algorithmic}
 \end{algorithm}
 
 \subsection{Why the construction works}
 \label{sec:theory}
 
-The guarantee that motivates the method is the concentration of PKPS representations around their population counterparts. Under the assumptions of \citet[Theorem~1]{pkps2026} (bounded kernels and embeddings, positive cross-unit query-kernel mass $\kappa = \inf_{a,a'}\E[k_\Q(u,u')]$, and a rank-$d$ spectral gap $\lambda_d$ in the population Gram matrix), if every unit has at least $m$ responses then with probability at least $1-\eta$ there is an orthogonal $W$ such that
+\todo{Restate for the T-step statistic. The PKPS concentration bound below still controls the positions; what remains to be shown is that, under \eqref{eq:model} with $\rho>0$, the pair and set scores of $S$ separate from those of other sets as $m$ and $T$ grow, and that the two-groups membership estimate is consistent. The proposition and its proof in Appendix~\ref{app:proofs} are for the earlier two-time-point statistic and must be replaced.}
+
+The guarantee that motivates the construction is the concentration of PKPS representations around their population counterparts. Under the assumptions of \citet[Theorem~1]{pkps2026} (bounded kernels and embeddings, positive cross-unit query-kernel mass $\kappa = \inf_{a,a'}\E[k_\Q(u,u')]$, and a rank-$d$ spectral gap $\lambda_d$ in the population Gram matrix), if every unit has at least $m$ responses then with probability at least $1-\eta$ there is an orthogonal $W$ such that
 \begin{equation}
 \label{eq:conc}
 \max_a \|\hat\psi_a - W\psi_a\| \;\le\; \varepsilon_m
-\;:=\; C\,\kappa^{-2}\lambda_d^{-1/2}\sqrt{\frac{2dN\log(16N^2/\eta)}{2m}} ,
+\;:=\; C\,\kappa^{-2}\lambda_d^{-1/2}\sqrt{\frac{d\,n\log(4n^2/\eta)}{2m}} ,
 \end{equation}
-where $C$ depends only on the kernel bounds and the number of units is $2N$. Consequently $\max_i\|\hat\Delta_i - W\Delta_i\|\le 2\varepsilon_m$. Under \eqref{eq:model} the true centered displacements take two values, $-\tfrac{|S|}{N}\delta v$ outside $S$ and $(1-\tfrac{|S|}{N})\delta v$ inside, separated by $\delta$. When $\delta$ exceeds a constant multiple of $\varepsilon_m$, the estimated displacements of $S$ and of its complement occupy disjoint balls, so $S$ is a cluster of $\{\tilde\Delta_i\}$ for $k=2$ and the top-$|S|$ set along the leading direction; hence $S\in\Sfam$ and $T(S)\ge c\,|S|\delta^2/\sigma^2$ for a constant $c$, while every $S'\in\Sfam$ with $S'\ne S$ has strictly smaller statistic for the same reason. We record the consequence.
+where $C$ depends only on the kernel bounds and $n=NT$ is the number of units. Consequently every increment is estimated to within $2\varepsilon_m$. The rate in $m$ is the paired rate: the method does not require any two agents to have responded to a common query, and pays for unpairedness only through $\kappa^{-2}$. \todo{Check that the bound of \citet{pkps2026} covers the conditioning of Section~\ref{sec:est-ps} or state the corresponding bound.}
 
-\begin{proposition}[Consistency of detection and membership estimation]
+\begin{proposition}[Consistency, to be restated]
 \label{prop:consistency}
-Suppose the assumptions of \citet[Theorem~1]{pkps2026} hold for the $2N$ units, that \eqref{eq:model} holds with $|S|\ge 2$, and that the displacement noise is sub-Gaussian with scale $\sigma$. If $\delta/\varepsilon_m\to\infty$ and $|S|\delta^2/\sigma^2\to\infty$ as $m\to\infty$ (with $N$, $d$ fixed or growing slowly enough that $\varepsilon_m\to 0$), then for any fixed level $\alpha$ the permutation test of Algorithm~\ref{alg:main} has power tending to one and $\Prob(\hat S = S)\to 1$.
+\todo{Statement for the T-step test and the two-groups membership estimate.}
 \end{proposition}
-
-The proof is in Appendix~\ref{app:proofs}. Two features of \eqref{eq:conc} are worth drawing out because they govern the simulations. The rate in $m$ is the paired-DKPS rate: the method does not require any two agents to have responded to a common query, and pays for unpairedness only through the factor $\kappa^{-2}$, which is small when the agents' query distributions overlap little. And the bound grows with $N$ through $\sqrt{N\log N}$, while the signal grows with $|S|$ through $|S|\delta^2$; the regime of interest for platform data, many agents each with few responses and a small colluding subnetwork, is one in which both terms matter and neither dominates.
 % ---- simulations
 \section{Simulations}
 \label{sec:sims}
@@ -292,7 +301,9 @@ with $B\in\R^{12\times 3}$ having orthonormal columns, $W = 0.5\cdot G/\sqrt 6$ 
 \subsection{Method as run}
 \label{sec:sim-method}
 
-The query kernel is Gaussian with bandwidth set by the median heuristic on the observed queries; the response kernel is linear, so that the induced distance between two units is a query-weighted mean-shift distance. Self-affinities exclude the $j=l$ terms: without this, $\hat A_{aa}$ carries the response noise variance $\sigma_x^2 p_\X$ with weight equal to the diagonal share of the query-kernel mass, and every within-agent distance $\hat D^2_{(i,t_0),(i,t)}$ is biased upward by an amount comparable to $\delta^2$; the U-statistic form removes the bias and requires only $m_i\ge 2$. Units are embedded jointly in $d=3$ dimensions, displacements are centered by the coordinate-wise median and whitened by a 25\%-trimmed covariance, and the candidate family consists of $k$-means clusters for $k\in\{2,3,4\}$ and nested top-$r$ sets along the leading direction. The scan statistic is the maximum of the size-standardized $T(S)$, with per-size null moments from one set of permutations and the null distribution of the maximum from an independent set; using the same permutations for both inflated the Type~I error in pilot runs. Each permutation reassigns every agent's (query, response) pairs across the two time points preserving counts; only the assignment matrix $Z$ in \eqref{eq:matrix} changes.
+\todo{Sections~\ref{sec:sim-model}--\ref{sec:exp-member} still describe the earlier two-time-point simulation; to be rewritten for the $T$-step generator (increments with correlation $\rho$ among the members), the sweeps over $N$, $m$, $|S|$, $T$ and the number of subnetworks, and the oracle that knows $S$.}
+
+The method is run exactly as in Algorithm~\ref{alg:main}, with no tuning to the simulation: conditioning on the $k=64$ nearest observed queries, $d$ by the profile-likelihood elbow, split-half increments centered at each step, diffuse-factor removal, the majority statistic \eqref{eq:majority} over the candidate family of Section~\ref{sec:scan}, $B=99$ per-step permutations with the global $p$-value by permutation min-$p$, and two-groups membership. Peeling is used only in the experiment with several subnetworks. The oracle reference applies the same test, and the same membership rule, to the true set $S$: it measures what is lost by not knowing where to look.
 
 \subsection{Experiment 1: detection}
 \label{sec:exp-detect}
@@ -357,7 +368,9 @@ The method requires nothing from the agents beyond their observed behavior, and 
 \section{Proof of Proposition~\ref{prop:consistency}}
 \label{app:proofs}
 
-We write $n=2N$ for the number of units and index them by $a=(i,\tau)$, $\tau\in\{t_0,t\}$. Throughout, $\|\cdot\|$ is the Euclidean norm and $W$ is the orthogonal matrix of \eqref{eq:conc}; since the scan statistic \eqref{eq:TS} and the candidate family of Section~\ref{sec:scan} are invariant to a common orthogonal transformation of the displacements, we may take $W=I$ without loss of generality.
+\todo{This proof is for the earlier two-time-point statistic and candidate family; to be replaced together with Proposition~\ref{prop:consistency}.}
+
+We write $n=2N$ for the number of units and index them by $a=(i,\tau)$, $\tau\in\{t_0,t\}$. Throughout, $\|\cdot\|$ is the Euclidean norm and $W$ is the orthogonal matrix of \eqref{eq:conc}; since the scan statistic of the two-time-point method and the candidate family of Section~\ref{sec:scan} are invariant to a common orthogonal transformation of the displacements, we may take $W=I$ without loss of generality.
 
 \paragraph{Step 1: displacements concentrate.}
 By \citet[Theorem~1]{pkps2026} applied to the $n$ units, with probability at least $1-\eta$,

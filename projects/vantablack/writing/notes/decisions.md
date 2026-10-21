@@ -242,3 +242,46 @@ These are documented in `methods.md`.
   rho = 0.2 / 0.3 / 0.5; S_hat precision / recall 0.81 / 0.76 at rho = 0.3, 0.96 / 0.98 at 0.5.
   Groups of 2 or 5 are not detected at rho <= 0.5. The estimation figure now shows precision and
   recall of S_hat (it showed the ranking's normalized MRR).
+- **Figures (user, 2026-10-20).** Detection: 2x3, a) calibration under H0 (Pr[P <= p] of the pooled
+  null p-values vs the diagonal, 95% band), b-e) power vs N, m, |S|, T with the known-S oracle as
+  thin dashed lines, f) number of subnetworks. Estimation: precision (top row) and recall (bottom
+  row) of S_hat for N, m, |S|, T.
+- **Number of subnetworks (user, 2026-10-20).** 60 colluders in total split into K in {2, 3, 6, 10}
+  disjoint groups (30, 20, 10, 6 each), each with its own group process; found by peeling as on
+  Moltbook; a group is recovered when a reported subnetwork has Jaccard >= 0.5 with it. Pilot
+  (20 replicates): rho = 0.5 recovers 1.00 / 1.00 / 0.88 / 0.25 of the groups at K = 2 / 3 / 6 / 10;
+  rho = 0.3: 0.98 / 0.78 / 0.13 / 0.01. The global test still rejects (rho = 0.5, K = 10: 1.0), but
+  once a few groups are peeled the rest are each too small to detect alone (|S| = 6; panel d). The
+  oracle recovers 0.89-1.00 throughout. Generator unchanged for K = 1 (identical draws).
+- **Positions use all agents' data at once; no leave-agent-out (user, 2026-10-21).** Briefly tried
+  conditioning each agent on the other agents' responses only (as the PKPS package's pooled
+  mode, which uses m_{-a}), because heavy posters are partly conditioned on themselves (Feb 9
+  comments: own share of the reference median 4%, 95th percentile 54%). Reverted the same day.
+  User: "the leave one agent out paradigm is for predicting an attribute about the agent. not for
+  estimating the position." One reference m(u) from all responses and one embedding of all units.
+  The simulations now also include each response in its own reference (they excluded it, Moltbook
+  did not; user, 2026-10-21: re-run under this philosophy). Bandwidth from the nearest other
+  query in both.
+  Why pooled conditioning rather than pairwise-affinity PKPS (pair or local normalization):
+  always defined (pair normalization left 12% of Moltbook unit pairs undefined and 1.1% of
+  squared distances negative), and an explicit vector per unit puts both split halves in one
+  coordinate system. Cost no longer decides it (the per-step shuffle acts on increments, so the
+  embedding is computed once). Compared on the base cell: see below. Paper: "PKPS positions",
+  without naming the mode (user: too in the weeds).
+- **Pooled conditioning vs locally normalized PKPS (2026-10-21).** Base cell, 16 replicates per rho,
+  same data, increments, test and membership; local PKPS = linear response kernel, Gaussian query
+  kernel (median bandwidth), 1,000 random anchors, classical MDS of the 2NT half-units (d = 10 by
+  the elbow, as pooled). rho = 0.3: power 0.81 vs 0.50, S_hat precision / recall 0.79 / 0.77 vs
+  0.52 / 0.51; rho = 0.2: power 0.06 vs 0.12 (both near the floor; 16 replicates). Known-S power
+  1.0 in both. Kept pooled conditioning. Leave-agent-out made no difference in the simulations
+  (0.81 / 0.81 / 0.76), as expected with 0.2% of the responses per agent.
+
+- **2026-10-21 — Pilot sweep at 50 replicates per cell, N up to 1,000; no T = 2.** User asked for 50
+  replicates, N = 1,000 and possibly T = 2. T = 2 has a single increment: co-movement cannot repeat
+  and the majority statistic is p = 1 by construction (checked: p = 1 even with S known at
+  rho = 0.5), so the T panel starts at 3. Results (self-included conditioning, B = 99): Type I
+  29/600 = 0.048 (95% CI 0.033-0.069). Base cell power 0.14 / 0.82 / 1.00 at rho = 0.2 / 0.3 / 0.5
+  (known S: 1.0); S_hat precision / recall 0.79 / 0.76 at rho = 0.3 (oracle membership 0.87 /
+  0.81). N = 1,000: power 0.12 / 0.58 / 1.00, Type I 0.06. K = 2 / 3 / 6 / 10 at rho = 0.5:
+  recovered 1.00 / 1.00 / 0.88 / 0.30 (known S >= 0.99). 20-replicate results kept as
+  sim_detection_pilot_v7_20reps.csv.

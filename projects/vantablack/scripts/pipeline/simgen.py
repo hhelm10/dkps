@@ -56,7 +56,8 @@ class SimConfig:
     sigma_e: float = 1.0    # movement per step (every agent); base m = 20 gives ~75% movement, ~25% estimation noise in an increment
     sigma_x: float = 1.0    # response noise
     # colluding group
-    S_size: int = 20
+    S_size: int = 20        # colluders per group
+    n_groups: int = 1       # number of colluding groups (disjoint, each with its own group process)
     rho: float = 0.0        # effect size: correlation of colluders' increments (0 = H0)
     # nuisance
     r: int = 0              # number of platform factors
@@ -91,9 +92,14 @@ def generate(cfg: SimConfig):
 
     # ---- agents and the colluding group
     perm = rng.permutation(N)
-    S = np.sort(perm[:cfg.S_size]) if cfg.rho > 0 else np.array([], int)
+    K, s = cfg.n_groups, cfg.S_size
+    groups = [np.sort(perm[k * s:(k + 1) * s]) for k in range(K)] if cfg.rho > 0 else []
+    S = np.sort(np.concatenate(groups)) if groups else np.array([], int)
     inS = np.zeros(N, bool); inS[S] = True
-    niche = np.sort(perm[cfg.S_size:cfg.S_size + cfg.niche_size]) if cfg.niche_size else np.array([], int)
+    grp = np.full(N, -1)
+    for k, Gk in enumerate(groups):
+        grp[Gk] = k
+    niche = np.sort(perm[K * s:K * s + cfg.niche_size]) if cfg.niche_size else np.array([], int)
     eta = cfg.sigma_eta * rng.normal(size=(N, dl))
     B = cfg.load_mean + cfg.load_sd * rng.normal(size=(N, cfg.r)) if cfg.r else np.zeros((N, 0))
     noise_scale = np.exp(cfg.hetero * rng.normal(size=N)) if cfg.hetero else np.ones(N)
@@ -102,6 +108,7 @@ def generate(cfg: SimConfig):
     f = rng.normal(size=(T, cfg.r, dl))
     g = rng.normal(size=(T, dl))
     fn = rng.normal(size=(T, dl))
+    gk = [g] + [rng.normal(size=(T, dl)) for _ in range(cfg.n_groups - 1)]   # one process per group (K = 1: g)
     P = np.zeros((N, T, dl))
     e_prev = np.zeros((N, dl))
     for t in range(1, T):
@@ -114,7 +121,8 @@ def generate(cfg: SimConfig):
             d += cfg.sigma_f * B @ f[t]
         if cfg.niche_size:
             d[niche] += cfg.niche_sigma * fn[t]
-        d[inS] += cfg.sigma_e * np.sqrt(cfg.rho) * g[t] * noise_scale[inS, None]
+        for k, Gk in enumerate(groups):
+            d[Gk] += cfg.sigma_e * np.sqrt(cfg.rho) * gk[k][t] * noise_scale[Gk, None]
         P[:, t] = P[:, t - 1] + d
     Zlat = eta[:, None, :] + P                                 # (N, T, dl)
 
@@ -158,7 +166,7 @@ def generate(cfg: SimConfig):
         X[sl] = (z @ M0.T + cfg.s_mod * mod + ut[sl] @ W
                  + cfg.sigma_x * noise_scale[agent[sl], None] * eps)
 
-    return dict(agent=agent, step=step, U_obs=U_obs.astype(np.float32), X=X, S=S, niche=niche,
+    return dict(agent=agent, step=step, U_obs=U_obs.astype(np.float32), X=X, S=S, groups=groups, niche=niche,
                 P=P, cfg=asdict(cfg))
 
 

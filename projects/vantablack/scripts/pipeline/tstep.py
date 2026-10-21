@@ -4,7 +4,7 @@ Design: writing/notes/sim_detection_design.md. Input is per-response data
 (agent, step, observed query, response embedding) with equal m per agent-step.
 
   1. condition  x - m(u): PKPS pooled mode, Gaussian kernel on the k nearest
-                other queries (self excluded: every query is answered once)
+                queries, the response's own included (all positions from all the data)
   2. positions  mean residual per (agent, step), joint linear embedding to d
                 (first profile-likelihood elbow by default)
   3. increments split-half: delta(n, t) = psi_A(n, t+1) - psi_B(n, t), with A and B
@@ -61,7 +61,9 @@ BANDS = np.array([2, 3, 11, 31, 101])   # size-band lower edges; band 0 = pairs
 
 # ----------------------------------------------------------------------------- 1-4: features
 def condition(U, X, k=64, bw=1.0, chunk=None):
-    """Residuals x - kernel-weighted mean of the responses to the k nearest other queries."""
+    """Residuals x - kernel-weighted mean of all responses to the k nearest queries, the
+    response's own query included (one reference from all the data, as on Moltbook,
+    pipeline/pkps.py); bandwidth bw x the median distance to the nearest other query."""
     import torch
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
     chunk = chunk or max(128, int(1e8 // len(U)))
@@ -73,9 +75,8 @@ def condition(U, X, k=64, bw=1.0, chunk=None):
     idx_all, d_all = [], []
     for a in range(0, len(Ut), chunk):
         d = torch.cdist(Ut[a:a + chunk], Ut)
-        d[torch.arange(d.shape[0]), torch.arange(a, a + d.shape[0])] = float('inf')
-        v, i = d.topk(k, largest=False)
-        idx_all.append(i); d_all.append(v); nn_d.append(v[:, 0])
+        v, i = d.topk(k, largest=False)                                # includes the response itself
+        idx_all.append(i); d_all.append(v); nn_d.append(v[:, 1])
     sigma = bw * torch.cat(nn_d).median()
     for a, (i, v) in zip(range(0, len(Ut), chunk), zip(idx_all, d_all)):
         w = torch.exp(-v ** 2 / (2 * sigma ** 2))
@@ -470,7 +471,15 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None, Q=Non
     pb = np.where(occ, (1 + (nulls >= obs[None, :]).sum(0)) / (B + 1), 1.0)
     p = minp_global(obs, nulls, occ)
     out = dict(p=p, p_band=pb, obs=obs, best=best, nulls=nulls)
-    if known_S is not None and len(known_S) > 1 and Q is not None:
+    if known_S is not None and Q is not None and isinstance(known_S, list):
+        # several known groups: one known-S p-value each, from the same shuffle draws
+        Gs = [np.asarray(G) for G in known_S if len(G) > 1]
+        if Gs:
+            z_obs = set_scores(Q, Gs)
+            rng = np.random.default_rng(seed + 1)
+            zn = np.array([set_scores(shuffle_rank(D, Q, rng)[1], Gs) for _ in range(B)])
+            out.update(p_known=((1 + (zn >= z_obs[None]).sum(0)) / (B + 1)).tolist())
+    elif known_S is not None and len(known_S) > 1 and Q is not None:
         z_obs = set_scores(Q, [known_S])[0]
         rng = np.random.default_rng(seed + 1)
         zn = np.array([set_scores(shuffle_rank(D, Q, rng)[1], [known_S])[0] for _ in range(B)])
@@ -485,7 +494,7 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None, Q=Non
 
 def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers=1,
         n_factors='auto', gpu_slot=None, per_step=None, center=True, two_signed_alpha=None,
-        weight=None, min_move=None, split=False, stat='rank'):
+        weight=None, min_move=None, split=False, stat='rank', peel=0):
     """gpu_slot: optional lock/semaphore held while on the GPU (conditioning, and the pair
     threshold when split=True), so many replicate processes can share one GPU."""
     import contextlib
@@ -494,7 +503,9 @@ def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers
         R, sigma = condition(data['U_obs'], data['X'], k=k)
     res = run_residuals(R, data['agent'], data['step'], cfg['N'], cfg['T'], d=d, mode=mode,
                         kind=kind, B=B, seed=seed, workers=workers, n_factors=n_factors,
-                        per_step=per_step, center=center, known_S=data['S'] if len(data['S']) else None,
+                        per_step=per_step, center=center,
+                        known_S=(list(data['groups']) if len(data.get('groups', [])) > 1
+                                 else (data['S'] if len(data['S']) else None)), peel=peel,
                         two_signed_alpha=two_signed_alpha, weight=weight, min_move=min_move,
                         split=split, gpu_slot=gpu_slot, stat=stat)
     res.update(sigma=sigma)
@@ -854,6 +865,13 @@ def two_groups(z, iters=500):
     return w_out
 
 
+def membership(Q, S):
+    """One membership pass against the set S: each agent's score against S (member_z,
+    combine='sum'), the two-groups model, members at posterior > 1/2. With the true group as S
+    this is the oracle membership estimate (the simulations' known-S reference)."""
+    return np.flatnonzero(two_groups(member_z(Q, S, combine='sum')[0]) > 0.5)
+
+
 def estimate_rank(Q, res, rounds=10):
     """estimate() for the rank statistic (decisions.md, 2026-10-20). Seeded by the best set of
     the most significant band (the set the test's p-value is about). Each agent is scored
@@ -872,8 +890,7 @@ def estimate_rank(Q, res, rounds=10):
     if len(S) < 2:
         return S, b, None
     for _ in range(rounds):
-        z = member_z(Q, S, combine='sum')[0]
-        S_new = np.flatnonzero(two_groups(z) > 0.5)
+        S_new = membership(Q, S)
         if len(S_new) < 2 or np.array_equal(S_new, S):
             break
         S = S_new

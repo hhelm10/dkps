@@ -1,4 +1,4 @@
-\begin{thebibliography}{43}
+\begin{thebibliography}{46}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -67,6 +67,13 @@ Chen, G., Arroyo, J., Athreya, A., Cape, J., Vogelstein, J.~T., Park, Y.,
 Duderstadt, B., Helm, H.~S., and Priebe, C.~E.
 \newblock Comparing foundation models using data kernels.
 \newblock \emph{arXiv preprint arXiv:2305.05126}, 2023.
+
+\bibitem[Efron(2004)]{efron2004large}
+Efron, B.
+\newblock Large-scale simultaneous hypothesis testing: the choice of a null
+  hypothesis.
+\newblock \emph{Journal of the American Statistical Association}, 99\penalty0
+  (465):\penalty0 96--104, 2004.
 
 \bibitem[Fish et~al.(2024)Fish, Gonczarowski, and Shorrer]{fish2024algorithmic}
 Fish, S., Gonczarowski, Y.~A., and Shorrer, R.~I.
@@ -292,6 +299,12 @@ Wang, H., Tang, M., Park, Y., and Priebe, C.~E.
 \newblock \emph{IEEE Transactions on Signal Processing}, 62\penalty0
   (3):\penalty0 703--717, 2014.
 
+\bibitem[Westfall \& Young(1993)Westfall and Young]{westfall1993resampling}
+Westfall, P.~H. and Young, S.~S.
+\newblock \emph{Resampling-Based Multiple Testing: Examples and Methods for
+  $p$-Value Adjustment}.
+\newblock Wiley, 1993.
+
 \bibitem[{Zenity Labs}(2026)]{zenity2026moltbook}
 {Zenity Labs}.
 \newblock Agent-to-agent exploitation in the wild: Observed attacks on
@@ -299,5 +312,12 @@ Wang, H., Tang, M., Park, Y., and Priebe, C.~E.
 \newblock
   \url{https://labs.zenity.io/p/agent-to-agent-exploitation-in-the-wild-observed-attacks-on-moltbook-b929},
   2026.
+
+\bibitem[Zhu \& Ghodsi(2006)Zhu and Ghodsi]{zhu2006automatic}
+Zhu, M. and Ghodsi, A.
+\newblock Automatic dimensionality selection from the scree plot via the use of
+  profile likelihood.
+\newblock \emph{Computational Statistics \& Data Analysis}, 51\penalty0
+  (2):\penalty0 918--930, 2006.
 
 \end{thebibliography}

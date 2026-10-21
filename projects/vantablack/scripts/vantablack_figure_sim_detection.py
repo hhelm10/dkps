@@ -1,6 +1,13 @@
-"""Figure: detection simulations, 1x4 panels (swarm size, amount of content,
-subnetwork size, time). Rejection rate vs the swept variable, one line per
-effect size rho; rho = 0 is the Type I error (dashed gray, at alpha = 0.05).
+"""Figure: detection simulations, 2x3 panels.
+  a  calibration under H0: the empirical Pr[P <= p] of the p-values of all rho = 0 replicates
+     pooled, against the diagonal (an exact test lies on it), with a pointwise 95% binomial band
+  b-e  rejection rate vs swarm size, amount of content, subnetwork size, time; one colour per
+     effect size rho, solid = the scan, thin dashed = the oracle that knows S (the known-S test on
+     the same data and shuffle null); rho = 0 (gray) is the Type I error at alpha = 0.05.
+  Legends: colour (dots) = pairwise agent correlation rho; line style (black) = estimation regime
+  f  number of subnetworks K (60 colluders split into K groups): share of the K groups recovered by
+     peeling (a reported subnetwork with Jaccard >= 0.5), solid; oracle: share of the groups whose
+     known-S test rejects, dashed
 
     python vantablack_figure_sim_detection.py [--stage pilot]
 
@@ -16,26 +23,44 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 from pipeline.paths import RESULTS, ART, REPO
 sys.path.insert(0, os.path.join(REPO, 'scripts'))
 import hv_style as hv  # noqa: E402
 
-from sim_detection import BASE, SWEEPS  # noqa: E402
+from sim_detection import BASE, SWEEPS, K_TOTAL  # noqa: E402
 
-PANELS = [('N', 'a) Swarm size', 'agents N'),
-          ('m', 'b) Amount of content', 'responses per agent per step m'),
-          ('S_size', 'c) Subnetwork size', 'colluding agents |S|'),
-          ('T', 'd) Time', 'time steps T')]
+PANELS = [('N', 'b) Number of agents (N)', 'N'),
+          ('m', 'c) Amount of content per agent (m)', 'm'),
+          ('S_size', 'd) Size of subnetwork (|S|)', '|S|'),
+          ('T', 'e) Timesteps (T)', 'T'),
+          ('n_groups', 'f) Number of subnetworks (K)', 'K')]
 
 
-def cell_rates(df, sweep):
-    """Rows for one panel: the sweep's own cells plus the shared base cell."""
-    d = df[(df.sweep == sweep) | (df.sweep == 'base')]
-    d = d.assign(x=d[sweep])
-    g = d.groupby(['rho', 'x']).reject.agg(['mean', 'count']).reset_index()
-    g['se'] = np.sqrt(g['mean'] * (1 - g['mean']) / g['count'])
+def cell_rates(df, sweep, col):
+    """Rows for one panel: the sweep's own cells plus the shared base cell (not for K)."""
+    d = df[(df.sweep == sweep) | ((df.sweep == 'base') & (sweep != 'n_groups'))]
+    if sweep == 'S_size':                                              # no null cells off the base: no Type I line
+        d = d[d.rho > 0]
+    d = d.assign(x=d[sweep]).dropna(subset=[col])
+    g = d.groupby(['rho', 'x'])[col].agg(['mean', 'count']).reset_index()
+    g['se'] = np.sqrt(g['mean'].clip(0, 1) * (1 - g['mean'].clip(0, 1)) / g['count'])
     return g
+
+
+def centered_legends(fig, groups, y=0.0, gap=0.04, **kw):
+    """Place titled legends side by side on one row, the row centred on the figure."""
+    legs = [fig.legend(handles=h, title=t, loc='upper left', ncol=len(h), bbox_to_anchor=(0, y), **kw)
+            for t, h in groups]
+    fig.canvas.draw()
+    inv = fig.transFigure.inverted()
+    widths = [inv.transform(l.get_window_extent())[:, 0].ptp() for l in legs]
+    x = 0.5 - (sum(widths) + gap * (len(legs) - 1)) / 2
+    for l, w in zip(legs, widths):
+        l.set_bbox_to_anchor((x, y), transform=fig.transFigure)
+        x += w + gap
+    return legs
 
 
 def main():
@@ -46,34 +71,60 @@ def main():
     hv.apply()
     rhos = sorted(r for r in df.rho.unique() if r > 0)
     cols = {r: hv.CMAP_BLUE(v) for r, v in zip(rhos, np.linspace(0.35, 1.0, len(rhos)))}
-    fig, axes = plt.subplots(1, 4, figsize=(19, 4.6), sharey=True)
-    for ax, (sweep, title, xlabel) in zip(axes, PANELS):
-        g = cell_rates(df, sweep)
-        for rho in [0.0] + rhos:
+    gray = hv.ROLES['baseline_gray']['color']
+    fig, axes = plt.subplots(2, 3, figsize=(17, 9.4))
+    axes = axes.ravel()
+
+    # a) calibration under H0
+    ax = axes[0]
+    p0 = np.sort(df.loc[df.rho == 0, 'p'].values)
+    n0 = len(p0)
+    grid = np.linspace(0, 1, 401)
+    band = 1.96 * np.sqrt(grid * (1 - grid) / max(n0, 1))
+    ax.fill_between(grid, np.clip(grid - band, 0, 1), np.clip(grid + band, 0, 1), color=hv.EDGE, alpha=0.5, lw=0)
+    ax.plot([0, 1], [0, 1], color=hv.REFLINE, ls=':', lw=1.2)
+    ax.step(np.r_[0, p0, 1], np.r_[0, np.arange(1, n0 + 1) / n0, 1], where='post', color=gray, lw=3.2)
+    ax.set_xlim(0, 1); ax.set_ylim(-0.02, 1.02)
+    ax.set_title('a) CDF of p-value under the null', loc='left', fontsize=hv.SIZES['subtitle'])
+    ax.set_xlabel('p', fontsize=hv.SIZES['annot'])
+    ax.set_ylabel('Pr[P ≤ p]', fontsize=hv.SIZES['annot'])
+
+    # b-f
+    for ax, (sweep, title, xlabel) in zip(axes[1:], PANELS):
+        multi = sweep == 'n_groups'
+        col, col_o = ('recovered', 'recovered_known') if multi else ('reject', 'reject_known')
+        g, go = cell_rates(df, sweep, col), cell_rates(df, sweep, col_o)
+        if not multi:
+            h = g[g.rho == 0].sort_values('x')
+            if len(h):
+                ax.plot(h.x, h['mean'], marker='o', ms=4, color=gray, lw=3.0)
+                ax.fill_between(h.x, h['mean'] - h.se, h['mean'] + h.se, color=gray, alpha=0.12, lw=0)
+        for rho in rhos:
             h = g[g.rho == rho].sort_values('x')
-            if h.empty:
-                continue
-            if rho == 0:
-                kw = dict(color=hv.ROLES['baseline_gray']['color'], ls='--', lw=2.0, label='ρ = 0 (Type I error)')
-            else:
-                kw = dict(color=cols[rho], ls='-', lw=2.4, label=f'ρ = {rho:g}')
-            ax.plot(h.x, h['mean'], marker='o', ms=5, **kw)
-            ax.fill_between(h.x, h['mean'] - h.se, h['mean'] + h.se, color=kw['color'], alpha=0.15, lw=0)
-        ax.axhline(0.05, color=hv.REFLINE, ls=':', lw=1.2)
-        ax.axvline(BASE[sweep], color=hv.EDGE, lw=6, zorder=0)
+            ho = go[go.rho == rho].sort_values('x')
+            ax.plot(ho.x, ho['mean'], color=cols[rho], ls='--', lw=2.4, alpha=0.9)
+            ax.plot(h.x, h['mean'], marker='o', ms=5, color=cols[rho], lw=3.4)
+            ax.fill_between(h.x, h['mean'] - h.se, h['mean'] + h.se, color=cols[rho], alpha=0.15, lw=0)
+        if not multi:
+            ax.axhline(0.05, color=hv.REFLINE, ls=':', lw=1.2)
         ax.set_xscale('log')
         ax.set_xticks(SWEEPS[sweep]); ax.set_xticklabels([str(v) for v in SWEEPS[sweep]])
         ax.minorticks_off()
         ax.set_ylim(-0.02, 1.02)
         ax.set_title(title, loc='left', fontsize=hv.SIZES['subtitle'])
         ax.set_xlabel(xlabel, fontsize=hv.SIZES['annot'])
-    axes[0].set_ylabel('rejection rate at α = 0.05', fontsize=hv.SIZES['annot'])
-    h, l = axes[0].get_legend_handles_labels()
-    fig.legend(h, l, loc='lower center', ncol=len(l), fontsize=hv.SIZES['annot'], bbox_to_anchor=(0.5, -0.07))
-    reps = int(df.groupby(['sweep', 'value', 'rho']).size().median())
-    fig.text(0.995, 0.005, f'{a.stage}: ~{reps} replicates per point, ±1 SE; shaded bar = base value',
-             ha='right', va='bottom', fontsize=10, color=hv.INK_MUTE)
+        if sweep in ('N', 'S_size'):
+            ax.set_ylabel('rejection rate at α = 0.05', fontsize=hv.SIZES['annot'])
+        if multi:
+            ax.set_ylabel('share of subnetworks recovered', fontsize=hv.SIZES['annot'])
+
+    dot = lambda c, lab: Line2D([], [], color=c, ls='None', marker='o', ms=9, label=lab)
+    h_rho = [dot(gray, 'ρ = 0 (Type I error)')] + [dot(cols[r], f'ρ = {r:g}') for r in rhos]
+    h_reg = [Line2D([], [], color='black', lw=3.4, label='scan (S unknown)'),
+             Line2D([], [], color='black', lw=2.4, ls='--', label='oracle (S known)')]
+    kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False)
     fig.tight_layout()
+    centered_legends(fig, [('pairwise agent correlation', h_rho), ('estimation regime', h_reg)], y=0.0, **kw)
     name = 'vantablack_figure_sim_detection' + ('' if a.stage == 'full' else f'_{a.stage}')
     for ext in ('png', 'pdf'):
         fig.savefig(os.path.join(ART, f'{name}.{ext}'), dpi=200, bbox_inches='tight')
