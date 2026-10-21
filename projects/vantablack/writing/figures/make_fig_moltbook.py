@@ -41,6 +41,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(PROJ, 'scripts'))
 from pipeline.paths import REPO, DERIVED  # noqa: E402
+from pipeline.figstyle import apply_print_sizes, below_axes  # noqa: E402
 sys.path.insert(0, os.path.join(REPO, 'scripts'))
 import hv_style as hv  # noqa: E402
 from pipeline import tstep  # noqa: E402
@@ -72,9 +73,10 @@ order = np.r_[members, others]
 obs_unit = np.bincount(rows.agent_ix.values * T + rows.step.values, minlength=N * T).reshape(N, T) > 0
 
 hv.apply()
+apply_print_sizes(hv, 20)
 fig = plt.figure(figsize=(20, 9.2))
-gs = gridspec.GridSpec(2, 6, figure=fig, hspace=0.26, wspace=0.75, left=0.04, right=0.99, top=0.95, bottom=0.12)
-bot = gridspec.GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[1, :], width_ratios=[0.0001, 0.78, 1.12, 1.12, 0.0001], wspace=0.5)
+gs = gridspec.GridSpec(2, 6, figure=fig, hspace=0.36, wspace=0.75, left=0.04, right=0.99, top=0.95, bottom=0.15)
+bot = gridspec.GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[1, :], width_ratios=[0.0001, 0.9, 1.0, 1.05, 0.0001], wspace=0.9)
 TITLES = []                                                             # (axes, text); placed per row below
 title = lambda ax, s: TITLES.append((ax, s))
 lab = dict(fontsize=hv.SIZES['annot'])
@@ -90,11 +92,11 @@ for s in range(T):
 ax.fill_between(hrs.index, hrs.values, step='post', color=NAVY, alpha=0.85, lw=0, zorder=2)
 ax.set_xlim(bounds[0], bounds[-1]); ax.set_ylim(0, hrs.max() * 1.05)
 mids = bounds[:-1] + (bounds[1:] - bounds[:-1]) / 2
-ax.set_xticks(mids); ax.set_xticklabels([str(s + 1) for s in range(T)], fontsize=hv.SIZES['annot'] - 2)
+ax.set_xticks(mids); ax.set_xticklabels([str(s + 1) for s in range(T)], fontsize=hv.SIZES['tick'])
 ax.tick_params(axis='x', length=0); ax.set_xlabel('t', **lab); ax.grid(axis='x', visible=False)
 top = ax.secondary_xaxis('top')
-top.xaxis.set_major_locator(mdates.DayLocator()); top.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
-top.tick_params(labelsize=hv.SIZES['annot'] - 4)
+top.xaxis.set_major_locator(mdates.DayLocator(interval=2)); top.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+top.tick_params(labelsize=hv.SIZES['tick'])
 ax.set_ylabel('actions per hour', **lab)
 ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f'{v / 1000:g}k' if v else '0'))
 title(ax, 'a) Activity and time steps')
@@ -108,7 +110,7 @@ first = np.array([np.flatnonzero(obs_unit[i])[0] for i in range(N)])
 last = np.array([np.flatnonzero(obs_unit[i])[-1] for i in range(N)])
 netall = Zc[np.arange(N), last] - Zc[np.arange(N), first]
 bg = rng.choice(np.flatnonzero(grp == 0), 80, replace=False)
-sub_b = gridspec.GridSpecFromSubplotSpec(2, 4, subplot_spec=gs[0, 3:6], wspace=0.08, hspace=0.12)
+sub_b = gridspec.GridSpecFromSubplotSpec(2, 4, subplot_spec=gs[0, 3:6], wspace=0.08, hspace=0.32)
 for k, g in enumerate(rounds):
     a_ = fig.add_subplot(sub_b[k // 4, k % 4])
     u = netall[g['members']].mean(0); e1 = u / np.linalg.norm(u)
@@ -126,7 +128,7 @@ for k, g in enumerate(rounds):
     a_.set_xticks([]); a_.set_yticks([]); a_.grid(False); a_.set_facecolor(hv.WASH)
     for sp in ('left', 'bottom'):
         a_.spines[sp].set_visible(False)
-    a_.set_xlabel(str(k + 1), fontsize=hv.SIZES['annot'] - 2, labelpad=2)
+    a_.set_xlabel(str(k + 1), fontsize=hv.SIZES['tick'], labelpad=2)
     if k == 0:
         title(a_, 'b) Positions over time')
 
@@ -143,12 +145,12 @@ for k, g in enumerate(rounds):
     n0 = len(g['members'])
     ax.add_patch(plt.Rectangle((s0 - 0.5, s0 - 0.5), n0, n0, fill=False, ec=PAL[k], lw=2.6))
     ticks.append(s0 + (n0 - 1) / 2); s0 += n0
-ax.set_xticks(ticks); ax.set_xticklabels([str(k + 1) for k in range(K)], fontsize=hv.SIZES['annot'] - 3)
-ax.set_yticks(ticks); ax.set_yticklabels([str(k + 1) for k in range(K)], fontsize=hv.SIZES['annot'] - 3)
+ax.set_xticks([])
+ax.set_yticks([])
 ax.tick_params(length=0); ax.grid(False)
-ax.set_xlabel('subnetwork', **lab); ax.set_ylabel('subnetwork', **lab)
+ax.set_xlabel('agents', **lab); ax.set_ylabel('agents', **lab)
 cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
-cb.set_label('normal score', **lab); cb.outline.set_visible(False); cb.ax.tick_params(labelsize=hv.SIZES['annot'] - 2)
+cb.outline.set_visible(False); cb.ax.tick_params(labelsize=hv.SIZES['tick'])
 title(ax, 'c) Repeated co-movement')
 
 # d) scan and permutation null for every round: the largest set score in the size band of the
@@ -162,7 +164,7 @@ for k, g in enumerate(rounds):
     for pc in vp['bodies']:
         pc.set_facecolor(C0); pc.set_edgecolor('none'); pc.set_alpha(0.8)
     ax.plot([NL[f'obs{k}'][b]] * 2, [k - 0.38, k + 0.38], color=PAL[k], lw=3.4, solid_capstyle='butt', zorder=3)
-ax.set_yticks(range(K)); ax.set_yticklabels([str(k + 1) for k in range(K)], fontsize=hv.SIZES['annot'] - 2)
+ax.set_yticks(range(K)); ax.set_yticklabels([str(k + 1) for k in range(K)], fontsize=hv.SIZES['tick'])
 ax.set_ylim(K - 0.5, -0.5)
 ax.set_ylabel('subnetwork', **lab); ax.set_xlabel('largest set score', **lab)
 title(ax, 'd) Scan and permutation null')
@@ -181,7 +183,7 @@ for k, g in enumerate(rounds):
         pc.set_facecolor(C0); pc.set_edgecolor('none'); pc.set_alpha(0.8)
     ax.scatter(z[loc], k + rng.uniform(-0.18, 0.18, len(loc)), s=30, color=PAL[k], edgecolors='white', linewidths=0.6, zorder=3)
     keep = np.setdiff1d(keep, g['members'])
-ax.set_yticks(range(K)); ax.set_yticklabels([str(k + 1) for k in range(K)], fontsize=hv.SIZES['annot'] - 2)
+ax.set_yticks(range(K)); ax.set_yticklabels([str(k + 1) for k in range(K)], fontsize=hv.SIZES['tick'])
 ax.set_ylim(K - 0.5, -0.5)
 ax.set_ylabel('subnetwork', **lab); ax.set_xlabel('agent score against $\\hat S$', **lab)
 title(ax, 'e) Membership')
@@ -197,18 +199,19 @@ for row in ('ab', 'cde'):
         fig.text(ax.get_position().x0, top + 0.008, s, ha='left', va='bottom', fontsize=hv.SIZES['subtitle'], color=hv.INK_TITLE)
 
 # legends
-dot = lambda c, l: Line2D([], [], color=c, ls='None', marker='o', ms=10, label=l)
+dot = lambda c, l: Line2D([], [], color=c, ls='None', marker='o', ms=14, label=l)
 h_ag = [dot(PAL[k], str(k + 1)) for k in range(K)] + [dot(C0, 'other agents')]
 h_st = [Line2D([], [], color=hv.INK_TITLE, lw=3.4, label='observed'), Patch(color=C0, label='permutation null')]
-kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False, handletextpad=0.6, columnspacing=1.4)
-legs = [fig.legend(handles=hh, title=tt, loc='upper left', ncol=len(hh), bbox_to_anchor=(0, 0.045), **kw)
+kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False, handlelength=1.4, handletextpad=0.4, columnspacing=0.9)
+Y = below_axes(fig)
+legs = [fig.legend(handles=hh, title=tt, loc='upper left', ncol=len(hh), bbox_to_anchor=(0, Y), **kw)
         for tt, hh in (('subnetwork', h_ag), ('statistic', h_st))]
 fig.canvas.draw()
 inv = fig.transFigure.inverted()
 widths = [np.ptp(inv.transform(l.get_window_extent())[:, 0]) for l in legs]
-x = 0.5 - (sum(widths) + 0.04) / 2
+x = 0.5 - (sum(widths) + 0.025) / 2
 for l, wd in zip(legs, widths):
-    l.set_bbox_to_anchor((x, 0.045), transform=fig.transFigure); x += wd + 0.04
+    l.set_bbox_to_anchor((x, Y), transform=fig.transFigure); x += wd + 0.025
 
 for ext in ('pdf', 'png'):
     fig.savefig(f'{OUT}.{ext}', dpi=200, bbox_inches='tight')

@@ -24,13 +24,14 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from pipeline.paths import RESULTS, ART, REPO
+from pipeline.figstyle import apply_print_sizes, below_axes  # noqa: E402
 sys.path.insert(0, os.path.join(REPO, 'scripts'))
 import hv_style as hv  # noqa: E402
 
 from sim_detection import BASE, SWEEPS  # noqa: E402
 PANELS = [('N', 'a) Number of agents (N)', 'N'),
-          ('m', 'b) Amount of content per agent (m)', 'm'),
-          ('S_size', 'c) Size of subnetwork (|S|)', '|S|'),
+          ('m', 'b) Content per agent (m)', 'm'),
+          ('S_size', 'c) Subnetwork size (|S|)', '|S|'),
           ('T', 'd) Timesteps (T)', 'T')]
 
 ROWS = [('precision', 'precision of $\\hat S$'), ('recall', 'recall of $\\hat S$')]
@@ -71,6 +72,7 @@ def main():
         df = df.assign(value=df.value.fillna('')).merge(o.assign(value=o.value.fillna(''))[key + ['oracle_precision', 'oracle_recall']],
                                                          on=key, how='left')
     hv.apply()
+    apply_print_sizes(hv, 19)
     rhos = sorted(df.rho.unique())
     cols = {r: hv.CMAP_BLUE(v) for r, v in zip(rhos, np.linspace(0.35, 1.0, len(rhos)))}
     fig, axes = plt.subplots(2, 4, figsize=(19, 8.4), sharey=True)
@@ -96,13 +98,13 @@ def main():
         axes[r, 0].set_ylabel(ylab, fontsize=hv.SIZES['annot'])
     axes = axes[0]
     from matplotlib.lines import Line2D
-    dot = lambda c, lab: Line2D([], [], color=c, ls='None', marker='o', ms=9, label=lab)
+    dot = lambda c, lab: Line2D([], [], color=c, ls='None', marker='o', ms=14, label=lab)
     h_rho = [dot(cols[r], f'ρ = {r:g}') for r in rhos]
     h_reg = [Line2D([], [], color='black', lw=3.4, label='scan (S unknown)'),
              Line2D([], [], color='black', lw=2.4, ls='--', label='oracle (S known)')]
     kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False)
     fig.tight_layout()
-    centered_legends(fig, [('pairwise agent correlation', h_rho), ('estimation regime', h_reg)], y=0.0, **kw)
+    centered_legends(fig, [('pairwise agent correlation', h_rho), ('estimation regime', h_reg)], y=below_axes(fig), **kw)
     name = 'vantablack_figure_sim_estimation' + ('' if a.stage == 'full' else f'_{a.stage}')
     for ext in ('png', 'pdf'):
         fig.savefig(os.path.join(ART, f'{name}.{ext}'), dpi=200, bbox_inches='tight')

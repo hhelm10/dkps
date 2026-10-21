@@ -35,6 +35,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(PROJ, 'scripts'))
 from pipeline.paths import REPO  # noqa: E402
+from pipeline.figstyle import apply_print_sizes, below_axes  # noqa: E402
 sys.path.insert(0, os.path.join(REPO, 'scripts'))
 import hv_style as hv  # noqa: E402
 from pipeline.simgen import SimConfig, generate  # noqa: E402
@@ -85,10 +86,12 @@ def boxes(a, lw):
 
 
 hv.apply()
-fig = plt.figure(figsize=(20, 9.6))
-gs = gridspec.GridSpec(2, 4, figure=fig, hspace=0.34, wspace=0.42, left=0.03, right=0.99, top=0.95, bottom=0.14)
-bot = gridspec.GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[1, :], width_ratios=[0.5, 1, 1, 1, 0.5], wspace=0.5)
-title = lambda ax, s: ax.set_title(s, loc='left', fontsize=hv.SIZES['subtitle'])
+apply_print_sizes(hv, 20)
+fig = plt.figure(figsize=(20, 8.8))
+gs = gridspec.GridSpec(2, 4, figure=fig, width_ratios=[1.3, 0.9, 0.92, 0.92], height_ratios=[1.22, 0.85], hspace=0.36, wspace=0.42, left=0.03, right=0.99, top=0.95, bottom=0.08)
+bot = gridspec.GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[1, :], width_ratios=[0.0001, 0.8, 1.0, 1.05, 0.0001], wspace=0.98)
+TITLES = []                                                             # (axes, text); placed per row below
+title = lambda ax, s: TITLES.append((ax, s))
 lab = dict(fontsize=hv.SIZES['annot'])
 CM = matplotlib.colors.LinearSegmentedColormap.from_list('ink', ['#ffffff', hv.EDGE, hv.INK_MUTE, hv.INK_TITLE])
 vq = 3.0
@@ -111,7 +114,7 @@ nx.draw_networkx_nodes(G, lay, nodelist=list(rest), ax=ax, node_color=C0, node_s
 for S, c in ((G1, C1), (G2, C2)):
     nx.draw_networkx_nodes(G, lay, nodelist=list(S), ax=ax, node_color=c, node_size=56, edgecolors='white', linewidths=0.7)
 ax.set_axis_off(); ax.margins(0.04)
-title(ax, 'a) Agents and their network')
+title(ax, 'a) Latent communication topology')
 
 # b) positions over time, centred per step, projected on the subnetworks' net displacements
 ax = fig.add_subplot(gs[0, 1])
@@ -145,7 +148,7 @@ for k, t in enumerate(STEPS):
     a.set_facecolor(hv.WASH)
 for a in axs:
     a.set_xlim(-1.08 * lim, 1.08 * lim); a.set_ylim(-1.08 * lim, 1.08 * lim); a.set_aspect('equal')
-title(axs[0], 'c) Increments at each step')
+title(axs[0], 'c) Movements')
 
 # d) per-step pair scores at the same steps
 sub = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=gs[0, 3], wspace=0.06, hspace=0.32)
@@ -156,7 +159,7 @@ for k, t in enumerate(STEPS):
     boxes(a, 3.2)
     a.set_xticks([]); a.set_yticks([]); a.grid(False)
     a.set_xlabel(f't = {t + 1}', **lab)
-title(axs[0], 'd) Pair scores at each step')
+title(axs[0], 'd) Pair scores')
 
 # e) repeated co-movement: pair majority statistic
 ax = fig.add_subplot(bot[0, 1])
@@ -167,7 +170,7 @@ boxes(ax, 4.6)
 ax.set_xticks([]); ax.set_yticks([]); ax.grid(False)
 ax.set_xlabel('agents', **lab); ax.set_ylabel('agents', **lab)
 cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
-cb.set_label('normal score', **lab); cb.outline.set_visible(False); cb.ax.tick_params(labelsize=hv.SIZES['annot'] - 2)
+cb.outline.set_visible(False); cb.ax.tick_params(labelsize=hv.SIZES['tick'])
 title(ax, 'e) Repeated co-movement')
 
 # f) scan and permutation null (first round, S_hat's band)
@@ -188,7 +191,7 @@ sub = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=bot[0, 3], hspace=0.12
 keep = np.arange(N)
 axs = []
 for r in range(2):
-    a = fig.add_subplot(sub[r, 0], sharex=axs[0] if axs else None); axs.append(a)
+    a = fig.add_subplot(sub[r, 0], sharex=axs[0] if axs else None, sharey=axs[0] if axs else None); axs.append(a)
     Qr = Q if r == 0 else tstep.step_scores(D[keep])
     loc = np.searchsorted(keep, rounds[r]['members'])
     z = tstep.member_z(Qr, loc, combine='sum')[0]
@@ -211,21 +214,32 @@ for r in range(2):
 axs[1].set_xlabel('agent score against $\\hat S$', **lab)
 title(axs[0], 'g) Membership')
 
+# panel titles: one height per row, just above the tallest element of the row
+fig.canvas.draw()
+rend = fig.canvas.get_renderer()
+inv = fig.transFigure.inverted()
+for row in ('abcd', 'efg'):
+    items = [(ax, s) for ax, s in TITLES if s[0] in row]
+    top = max(inv.transform(ax.get_tightbbox(rend).corners())[:, 1].max() for ax, _ in items)
+    for ax, s in items:
+        fig.text(ax.get_position().x0, top + 0.008, s, ha='left', va='bottom', fontsize=hv.SIZES['subtitle'], color=hv.INK_TITLE)
+
 # legends
-dot = lambda c, l: Line2D([], [], color=c, ls='None', marker='o', ms=10, label=l)
+dot = lambda c, l: Line2D([], [], color=c, ls='None', marker='o', ms=14, label=l)
 h_ag = [dot(C1, 'subnetwork 1'), dot(C2, 'subnetwork 2'), dot(C0, 'other agents')]
 h_st = [Line2D([], [], color=NAVY, lw=3.4, label='observed'),
         Patch(color=C0, label='permutation null'),
         Line2D([], [], color='black', lw=2.4, ls='--', label='two-groups model')]
-kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False)
-legs = [fig.legend(handles=hh, title=tt, loc='upper left', ncol=len(hh), bbox_to_anchor=(0, 0.06), **kw)
+kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False, handlelength=1.4, handletextpad=0.4, columnspacing=0.9)
+Y = below_axes(fig)
+legs = [fig.legend(handles=hh, title=tt, loc='upper left', ncol=len(hh), bbox_to_anchor=(0, Y), **kw)
         for tt, hh in (('agents', h_ag), ('statistic', h_st))]
 fig.canvas.draw()
 inv = fig.transFigure.inverted()
 widths = [np.ptp(inv.transform(l.get_window_extent())[:, 0]) for l in legs]
-x = 0.5 - (sum(widths) + 0.04) / 2
+x = 0.5 - (sum(widths) + 0.025) / 2
 for l, wd in zip(legs, widths):
-    l.set_bbox_to_anchor((x, 0.06), transform=fig.transFigure); x += wd + 0.04
+    l.set_bbox_to_anchor((x, Y), transform=fig.transFigure); x += wd + 0.025
 
 for ext in ('pdf', 'png'):
     fig.savefig(f'{OUT}.{ext}', dpi=200, bbox_inches='tight')

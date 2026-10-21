@@ -26,14 +26,15 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from pipeline.paths import RESULTS, ART, REPO
+from pipeline.figstyle import apply_print_sizes, below_axes  # noqa: E402
 sys.path.insert(0, os.path.join(REPO, 'scripts'))
 import hv_style as hv  # noqa: E402
 
 from sim_detection import BASE, SWEEPS, K_TOTAL  # noqa: E402
 
 PANELS = [('N', 'b) Number of agents (N)', 'N'),
-          ('m', 'c) Amount of content per agent (m)', 'm'),
-          ('S_size', 'd) Size of subnetwork (|S|)', '|S|'),
+          ('m', 'c) Content per agent (m)', 'm'),
+          ('S_size', 'd) Subnetwork size (|S|)', '|S|'),
           ('T', 'e) Timesteps (T)', 'T'),
           ('n_groups', 'f) Number of subnetworks (K)', 'K')]
 
@@ -69,6 +70,7 @@ def main():
     a = ap.parse_args()
     df = pd.read_csv(os.path.join(RESULTS, f'sim_detection_{a.stage}.csv'))
     hv.apply()
+    apply_print_sizes(hv, 17)
     rhos = sorted(r for r in df.rho.unique() if r > 0)
     cols = {r: hv.CMAP_BLUE(v) for r, v in zip(rhos, np.linspace(0.35, 1.0, len(rhos)))}
     gray = hv.ROLES['baseline_gray']['color']
@@ -118,13 +120,13 @@ def main():
         if multi:
             ax.set_ylabel('share of subnetworks recovered', fontsize=hv.SIZES['annot'])
 
-    dot = lambda c, lab: Line2D([], [], color=c, ls='None', marker='o', ms=9, label=lab)
+    dot = lambda c, lab: Line2D([], [], color=c, ls='None', marker='o', ms=14, label=lab)
     h_rho = [dot(gray, 'ρ = 0 (Type I error)')] + [dot(cols[r], f'ρ = {r:g}') for r in rhos]
     h_reg = [Line2D([], [], color='black', lw=3.4, label='scan (S unknown)'),
              Line2D([], [], color='black', lw=2.4, ls='--', label='oracle (S known)')]
     kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False)
     fig.tight_layout()
-    centered_legends(fig, [('pairwise agent correlation', h_rho), ('estimation regime', h_reg)], y=0.0, **kw)
+    centered_legends(fig, [('pairwise agent correlation', h_rho), ('estimation regime', h_reg)], y=below_axes(fig), **kw)
     name = 'vantablack_figure_sim_detection' + ('' if a.stage == 'full' else f'_{a.stage}')
     for ext in ('png', 'pdf'):
         fig.savefig(os.path.join(ART, f'{name}.{ext}'), dpi=200, bbox_inches='tight')
