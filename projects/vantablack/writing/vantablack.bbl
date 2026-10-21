@@ -1,4 +1,4 @@
-\begin{thebibliography}{49}
+\begin{thebibliography}{48}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -267,12 +267,6 @@ Sharpnack, J., Rinaldo, A., and Singh, A.
   scan statistic.
 \newblock \emph{IEEE Transactions on Signal Processing}, 64\penalty0
   (2):\penalty0 364--379, 2016.
-
-\bibitem[Shumailov et~al.(2024)Shumailov, Shumaylov, Zhao, Papernot, Anderson,
-  and Gal]{shumailov2024ai}
-Shumailov, I., Shumaylov, Z., Zhao, Y., Papernot, N., Anderson, R., and Gal, Y.
-\newblock {AI} models collapse when trained on recursively generated data.
-\newblock \emph{Nature}, 631:\penalty0 755--759, 2024.
 
 \bibitem[Silverman(1986)]{silverman1986density}
 Silverman, B.~W.
