@@ -249,7 +249,7 @@ When the null is rejected, let $S_0$ be the best set of the most significant ban
 To find several subnetworks we peel: test, estimate $\hat S$, set its members aside, and test the remaining agents again, stopping at the first round whose $p$-value exceeds $\alpha$. Each round is a level-$\alpha$ test of the null among the agents not yet set aside. A round whose estimate has a single member is not a subnetwork; that agent is set aside and peeling continues.
 
 \begin{algorithm}[t]
-\caption{Detecting colluding subnetworks from repeated co-movement}
+\caption{Detecting \& estimating colluding subnetworks}
 \label{alg:main}
 \begin{algorithmic}[1]
 \STATE {\bfseries Input:} responses of $N$ agents at $T$ time steps; a kernel $\Gamma$ between sets of responses; permutations $B$; level $\alpha$.
