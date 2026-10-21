@@ -1,4 +1,4 @@
-\begin{thebibliography}{48}
+\begin{thebibliography}{49}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -196,6 +196,12 @@ Motwani, S.~R. et~al.
 \newblock Open challenges in multi-agent security: Towards secure systems of
   interacting {AI} agents.
 \newblock \emph{arXiv preprint arXiv:2505.02077}, 2025.
+
+\bibitem[Nussbaum et~al.(2024)Nussbaum, Morris, Duderstadt, and
+  Mulyar]{nussbaum2024nomic}
+Nussbaum, Z., Morris, J.~X., Duderstadt, B., and Mulyar, A.
+\newblock Nomic embed: Training a reproducible long context text embedder.
+\newblock \emph{arXiv preprint arXiv:2402.01613}, 2024.
 
 \bibitem[{OpenAI}(2026)]{openai2026huggingface}
 {OpenAI}.
