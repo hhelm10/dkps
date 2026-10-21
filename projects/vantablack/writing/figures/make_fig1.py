@@ -1,118 +1,234 @@
-"""Figure 1 for the paper, in the vantablack setting.
-Latent system as in the one-pager (seed 7). Observation model: each agent acts only at irregular
-times (heterogeneous rates; S acts in coordinated bursts after onset); each action yields one noisy
-embedding; the agent's position is estimated from its actions in a trailing window; the topology
-is latent (only co-activity is observable).
-(a) agents and latent topology (solid = inferable from co-activity, dashed = not)
-(b) estimated perspective space at t0 (disc = estimate uncertainty; hollow = no recent action)
-(c) estimated perspective space at t > t0, with estimate trajectories
-(d) centered displacements of the estimates, S highlighted, scan's selected set outlined
+"""Figure 1: the whole method on one small synthetic swarm, every panel computed by the pipeline.
+
+Swarm: N = 50 agents, T = 6 steps, m = 20 responses per agent per step, two colluding subnetworks
+of 12 agents each, each with its own group process (rho = 0.5, pipeline/simgen.py, seed 3). The
+pipeline is pipeline/tstep.py as run in the simulations (B = 199 permutations). Subnetwork 1 is
+the one found in the first peeling round.
+  a  the agents and an illustrative communication network, which the observer does not see
+     (small-world graph; the members of each subnetwork are linked to each other)
+  b  positions over time (projected on the two subnetworks' net displacements)
+  c  increments at four steps (projected on the two subnetworks' mean increments at that step)
+  d  per-step pair scores q_ij^(t) at the same four steps (agents ordered by subnetwork)
+  e  repeated co-movement: the pair majority statistic
+  f  scan and permutation null, first round: largest set score in S_hat's size band, observed vs
+     the per-step shuffle
+  g  membership, first round: agents' scores against S_hat and the fitted two-groups model
+  h  peeling: global p-value of each round against alpha = 0.05
+
+    python writing/figures/make_fig1.py
 """
-import os, numpy as np, networkx as nx
-import matplotlib; matplotlib.use("Agg")
+import os
+import sys
+import warnings
+
+import numpy as np
+import networkx as nx
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib.lines import Line2D
-from matplotlib.patches import Circle, Ellipse
+from matplotlib.patches import Patch
+from scipy.stats import norm
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fig1_illustration')
-rng = np.random.default_rng(7)
-C_B, C_A = "#2a78d6", "#eb6834"
-INK, INK2, MUTED, GRID, AXIS, SURF = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7", "#ffffff"
-plt.rcParams.update({"font.size": 9, "axes.edgecolor": AXIS, "axes.labelcolor": INK2, "xtick.color": MUTED,
-                     "ytick.color": MUTED, "axes.spines.top": False, "axes.spines.right": False})
+HERE = os.path.dirname(os.path.abspath(__file__))
+PROJ = os.path.dirname(os.path.dirname(HERE))
+sys.path.insert(0, os.path.join(PROJ, 'scripts'))
+from pipeline.paths import REPO  # noqa: E402
+sys.path.insert(0, os.path.join(REPO, 'scripts'))
+import hv_style as hv  # noqa: E402
+from pipeline.simgen import SimConfig, generate  # noqa: E402
+from pipeline import tstep  # noqa: E402
 
-# ---- latent system
-N, T, T_STAR = 20, 100, 40
-S = np.array([3, 7, 11, 14, 18]); inS = np.zeros(N, bool); inS[S] = True; ben = np.where(~inS)[0]
-psi = np.zeros((T, N, 2)); psi[0] = rng.normal(0, 1.0, (N, 2))
-psi[0, S] = np.array([[-1.6, 0.4], [0.2, -1.5], [1.3, 0.9], [-0.4, 1.4], [0.9, -0.3]])
-drift = np.array([0.006, -0.003]); vdir = np.array([1.0, 0.55]) / np.hypot(1.0, 0.55)
-for t in range(1, T):
-    step = drift + rng.normal(0, 0.045, (N, 2))
-    if t >= T_STAR:
-        r = min(1.0, (t - T_STAR) / 30); cen = psi[t - 1, S].mean(0)
-        step[S] += 0.10 * r * (cen - psi[t - 1, S]) + 0.075 * r * vdir
-    psi[t] = psi[t - 1] + step
-G = nx.watts_strogatz_graph(N, 4, 0.25, seed=3)
-for i in S:
-    for j in S:
-        if i < j: G.add_edge(i, j)
-pos = nx.spring_layout(G, seed=11, k=0.55)
+warnings.filterwarnings('ignore')
+OUT = os.path.join(HERE, 'fig1_illustration')
+SEED, B, STEPS = 3, 199, (0, 1, 2, 3)
+C1, C2, C0 = hv.ROLES['focus']['color'], '#d08713', hv.ROLES['baseline_pale']['color']
+NAVY = hv.ROLES['anchor']['color']
 
-# ---- vantablack observation model
-orng = np.random.default_rng(11)
-rate = orng.uniform(0.08, 0.38, N); ACT_SD = 0.38; WIN = 8
-act = orng.random((T, N)) < rate[None, :]
-burst = (np.arange(T) >= T_STAR) & (orng.random(T) < 0.30); act[np.ix_(burst, S)] = True
-acts = [np.where(act[:, n])[0] for n in range(N)]
-emb = [psi[tt, n] + orng.normal(0, ACT_SD, (len(tt), 2)) for n, tt in enumerate(acts)]
-est = np.full((T, N, 2), np.nan); nobs = np.zeros((T, N), int)
-for n in range(N):
-    for t in range(T):
-        m = (acts[n] > t - WIN) & (acts[n] <= t); k = m.sum(); nobs[t, n] = k
-        if k: est[t, n] = emb[n][m].mean(0)
-t0, t1 = 20, 90
+# ---- pipeline, step by step (as tstep.run with peel)
+data = generate(SimConfig(N=50, T=6, m=20, S_size=12, n_groups=2, rho=0.5, seed=SEED))
+N, T = data['cfg']['N'], data['cfg']['T']
+G1, G2 = (np.sort(g) for g in data['groups'])
+R, _ = tstep.condition(data['U_obs'], data['X'], k=64)
+pos = tstep.positions(R, data['agent'], data['step'], N, T, seed=SEED)
+D = tstep.increments(pos)
+D, kf = tstep.remove_factors(D)
+d_eff = D.shape[1] * D.shape[2] - kf
+Q = tstep.step_scores(D)
+res = tstep.test(D, d_eff, B=B, seed=SEED, Q=Q)
+S_hat, b_hat, score = tstep.estimate_rank(Q, res)
+res.update(S_hat=S_hat, band_hat=b_hat, rank_score=score)
+rounds = tstep.peel_groups(D, d_eff, first=res, max_groups=5, B=B, seed=SEED, stat='rank')
+if len(set(rounds[0]['members'].tolist()) & set(G2.tolist())) > len(set(rounds[0]['members'].tolist()) & set(G1.tolist())):
+    G1, G2 = G2, G1                                                     # subnetwork 1 = found first
+print('rounds', [(g['p'], len(g['members']), len(set(g['members'].tolist()) & set(G1.tolist())),
+                  len(set(g['members'].tolist()) & set(G2.tolist()))) for g in rounds])
 
-fig = plt.figure(figsize=(6.8, 1.95))
-gs = gridspec.GridSpec(1, 6, figure=fig, wspace=0.08, width_ratios=[0.9, 0.08, 1, 0.9, 0.12, 1.0],
-                       left=0.035, right=0.995, top=0.86, bottom=0.2)
-ax_a = fig.add_subplot(gs[0, 0]); ax_b = fig.add_subplot(gs[0, 2]); ax_c = fig.add_subplot(gs[0, 3], sharey=ax_b); ax_d = fig.add_subplot(gs[0, 5])
-def title(ax, s): ax.set_title(s, loc='left', fontsize=8.5, fontweight='bold', pad=3)
+grp = np.zeros(N, int); grp[G1] = 1; grp[G2] = 2
+col = np.array([C0, C1, C2])[grp]
+rest = np.flatnonzero(grp == 0)
+order = np.r_[G1, G2, rest]
+draw = np.r_[rest, G1, G2]                                              # members on top
 
-# (a) latent topology; an edge is inferable if the pair acted on the same step >= 7 times
-seen = [(u, v) for u, v in G.edges if len(np.intersect1d(acts[u], acts[v])) >= 7]
-unseen = [e for e in G.edges if e not in seen]
-sS = [(u, v) for u, v in seen if inS[u] and inS[v]]; sO = [(u, v) for u, v in seen if not (inS[u] and inS[v])]
-nx.draw_networkx_edges(G, pos, edgelist=unseen, ax=ax_a, edge_color=GRID, width=0.7, style=(0, (2, 3)), alpha=0.8)
-nx.draw_networkx_edges(G, pos, edgelist=sO, ax=ax_a, edge_color=AXIS, width=1.0)
-nx.draw_networkx_edges(G, pos, edgelist=sS, ax=ax_a, edge_color=C_A, width=1.6, alpha=0.9)
-nx.draw_networkx_nodes(G, pos, nodelist=list(ben), ax=ax_a, node_color=C_B, node_size=38, edgecolors=SURF, linewidths=0.8)
-nx.draw_networkx_nodes(G, pos, nodelist=list(S), ax=ax_a, node_color=C_A, node_size=52, edgecolors=SURF, linewidths=0.8)
-ax_a.set_axis_off(); ax_a.margins(0.05); title(ax_a, '(a) agents, latent topology')
-ax_a.legend(handles=[Line2D([], [], marker='o', color=C_A, ls='', ms=5, label='$S$'),
-                     Line2D([], [], marker='o', color=C_B, ls='', ms=5, label='others'),
-                     Line2D([], [], color=AXIS, lw=1.0, label='inferable edge'),
-                     Line2D([], [], color=GRID, lw=0.7, ls=(0, (2, 3)), label='unobserved')],
-            loc='lower left', frameon=False, fontsize=6, handletextpad=0.3, borderaxespad=0.0, labelspacing=0.2)
 
-# (b), (c) estimated positions with uncertainty discs
-allp = np.concatenate([psi[t0], psi[t1]])
-xl = (allp[:, 0].min() - 0.45, allp[:, 0].max() + 0.45); yl = (allp[:, 1].min() - 0.45, allp[:, 1].max() + 0.45)
-def ps(ax, t, ttl, trails=False):
-    if trails:
-        for n in S: e = est[t0:t + 1, n]; ax.plot(e[:, 0], e[:, 1], color=C_A, lw=0.7, alpha=0.35, zorder=1, drawstyle='steps-post')
-        for n in ben: e = est[t0:t + 1, n]; ax.plot(e[:, 0], e[:, 1], color=C_B, lw=0.5, alpha=0.10, zorder=1, drawstyle='steps-post')
-    for n in range(N):
-        col = C_A if inS[n] else C_B; k = nobs[t, n]; sz = 30 if inS[n] else 22
-        if k == 0:
-            prev = est[:t + 1, n]; ok = ~np.isnan(prev[:, 0])
-            if ok.any(): p = prev[ok][-1]; ax.scatter(p[0], p[1], s=sz, facecolors='none', edgecolors=col, linewidths=0.9, zorder=3)
-            continue
-        p = est[t, n]; ax.add_patch(Circle(p, 1.3 * ACT_SD / np.sqrt(k), facecolor=col, alpha=0.13, edgecolor='none', zorder=2))
-        ax.scatter(p[0], p[1], s=sz, color=col, edgecolors=SURF, linewidths=0.6, zorder=4 if inS[n] else 3)
-    ax.set_xlim(*xl); ax.set_ylim(*yl); ax.grid(True, color=GRID, lw=0.5); ax.set_axisbelow(True); ax.tick_params(length=0, labelsize=7)
-    ax.set_xlabel(r'$\hat\psi$ dim. 1', labelpad=1); title(ax, ttl)
-ps(ax_b, t0, r'(b) estimates $\hat\psi$, $t_0$'); ax_b.set_ylabel(r'$\hat\psi$ dim. 2', labelpad=1)
-ps(ax_c, t1, r'(c) estimates $\hat\psi$, $t>t_0$', trails=True); plt.setp(ax_c.get_yticklabels(), visible=False)
+def basis(u, v):
+    """Orthonormal 2-D basis: u, then v with its u component removed."""
+    e1 = u / np.linalg.norm(u)
+    v = v - (v @ e1) * e1
+    return np.stack([e1, v / np.linalg.norm(v)], 1)
 
-# (d) centered displacements of the estimates (agents with no estimate at either time are omitted)
-have = ~np.isnan(est[t0, :, 0]) & ~np.isnan(est[t1, :, 0])
-D = est[t1] - est[t0]; D = D - np.nanmedian(D[have], axis=0)
-ax_d.axhline(0, color=AXIS, lw=0.7); ax_d.axvline(0, color=AXIS, lw=0.7)
-for n in ben:
-    if have[n]: ax_d.annotate('', xy=D[n], xytext=(0, 0), arrowprops=dict(arrowstyle='-', color=C_B, lw=0.6, alpha=0.35))
-for n in S:
-    if have[n]: ax_d.annotate('', xy=D[n], xytext=(0, 0), arrowprops=dict(arrowstyle='-', color=C_A, lw=0.8, alpha=0.6))
-bh = [n for n in ben if have[n]]; Sh = [n for n in S if have[n]]
-ax_d.scatter(D[bh, 0], D[bh, 1], s=22, color=C_B, edgecolors=SURF, linewidths=0.6, zorder=3)
-ax_d.scatter(D[Sh, 0], D[Sh, 1], s=30, color=C_A, edgecolors=SURF, linewidths=0.6, zorder=4)
-mu = D[Sh].mean(0); cov = np.cov(D[Sh].T) + 1e-6 * np.eye(2); w, V = np.linalg.eigh(cov); ang = np.degrees(np.arctan2(V[1, -1], V[0, -1]))
-ax_d.add_patch(Ellipse(mu, 2 * 2.0 * np.sqrt(w[-1]), 2 * 2.0 * np.sqrt(w[0]), angle=ang, fill=False, ls=(0, (3, 2)), lw=1.0, ec=INK2, zorder=5))
-ax_d.text(0.03, 0.97, r'dashed: $\hat S$', transform=ax_d.transAxes, ha='left', va='top', fontsize=7, color=INK2)
-lim = np.nanmax(np.abs(D[have])) * 1.25; ax_d.set_xlim(-lim, lim); ax_d.set_ylim(-lim, lim)
-ax_d.grid(True, color=GRID, lw=0.5); ax_d.set_axisbelow(True); ax_d.tick_params(length=0, labelsize=7)
-ax_d.set_xlabel(r'$\tilde\Delta$ dim. 1', labelpad=1); ax_d.set_ylabel(r'$\tilde\Delta$ dim. 2', labelpad=1)
-title(ax_d, r'(d) displacements $\tilde\Delta_i$, scan')
 
-fig.savefig(OUT + '.pdf'); fig.savefig(OUT + '.png', dpi=200); print('saved', OUT)
+def boxes(a, lw):
+    for s0, n0, c in ((0, len(G1), C1), (len(G1), len(G2), C2)):
+        a.add_patch(plt.Rectangle((s0 - 0.5, s0 - 0.5), n0, n0, fill=False, ec=c, lw=lw))
+
+
+hv.apply()
+fig = plt.figure(figsize=(20, 9.6))
+gs = gridspec.GridSpec(2, 4, figure=fig, hspace=0.34, wspace=0.42, left=0.03, right=0.99, top=0.95, bottom=0.14)
+title = lambda ax, s: ax.set_title(s, loc='left', fontsize=hv.SIZES['subtitle'])
+lab = dict(fontsize=hv.SIZES['annot'])
+CM = matplotlib.colors.LinearSegmentedColormap.from_list('ink', ['#ffffff', hv.EDGE, hv.INK_MUTE, hv.INK_TITLE])
+vq = 3.0
+
+# a) agents and an illustrative communication network
+ax = fig.add_subplot(gs[0, 0])
+G = nx.watts_strogatz_graph(N, 4, 0.2, seed=3)
+G = nx.relabel_nodes(G, dict(enumerate(np.random.default_rng(5).permutation(N))))
+for S in (G1, G2):
+    G.add_edges_from((int(i), int(j)) for k, i in enumerate(S) for j in S[k + 1:]
+                     if np.random.default_rng(int(i * N + j)).random() < 0.3)
+    G.add_edges_from((int(S[k]), int(S[k + 1])) for k in range(len(S) - 1))
+lay = nx.spring_layout(G, seed=11, k=0.18, iterations=200)
+within = lambda u, v: grp[u] > 0 and grp[u] == grp[v]
+nx.draw_networkx_edges(G, lay, edgelist=[e for e in G.edges if not within(*e)], ax=ax, edge_color=hv.EDGE, width=1.0)
+for g, c in ((1, C1), (2, C2)):
+    nx.draw_networkx_edges(G, lay, edgelist=[(u, v) for u, v in G.edges if within(u, v) and grp[u] == g], ax=ax,
+                           edge_color=c, width=1.8, alpha=0.9)
+nx.draw_networkx_nodes(G, lay, nodelist=list(rest), ax=ax, node_color=C0, node_size=34, edgecolors='white', linewidths=0.7)
+for S, c in ((G1, C1), (G2, C2)):
+    nx.draw_networkx_nodes(G, lay, nodelist=list(S), ax=ax, node_color=c, node_size=56, edgecolors='white', linewidths=0.7)
+ax.set_axis_off(); ax.margins(0.04)
+title(ax, 'a) Agents and their network')
+
+# b) positions over time, centred per step, projected on the subnetworks' net displacements
+ax = fig.add_subplot(gs[0, 1])
+Z = pos['Z'] - pos['Z'].mean(0, keepdims=True)
+Y = Z @ basis(Z[G1, -1].mean(0) - Z[G1, 0].mean(0), Z[G2, -1].mean(0) - Z[G2, 0].mean(0))
+for i in draw:
+    m = grp[i] > 0
+    ax.plot(Y[i, :, 0], Y[i, :, 1], color=col[i], lw=1.6 if m else 0.9, alpha=0.8 if m else 0.45, zorder=2 if m else 1)
+    ax.scatter(Y[i, -1, 0], Y[i, -1, 1], s=26 if m else 16, color=col[i], edgecolors='white', linewidths=0.6,
+               zorder=4 if m else 3)
+ax.set_xticks([]); ax.set_yticks([])
+ax.set_xlabel('projection 1', **lab); ax.set_ylabel('projection 2', **lab)
+title(ax, 'b) Positions over time')
+
+# c) increments at four steps
+sub = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=gs[0, 2], wspace=0.06, hspace=0.32)
+lim = 0
+axs = []
+for k, t in enumerate(STEPS):
+    a = fig.add_subplot(sub[k // 2, k % 2]); axs.append(a)
+    V = D[:, t] @ basis(D[G1, t].mean(0), D[G2, t].mean(0))
+    for i in draw:
+        m = grp[i] > 0
+        a.annotate('', xy=V[i], xytext=(0, 0), arrowprops=dict(arrowstyle='-|>', color=col[i], lw=1.2 if m else 0.8,
+                                                              alpha=0.95 if m else 0.6, mutation_scale=7))
+    lim = max(lim, np.abs(V).max())
+    a.set_xticks([]); a.set_yticks([]); a.grid(False)
+    a.set_xlabel(f't = {t + 1}', **lab)
+    for s in ('left', 'bottom'):
+        a.spines[s].set_visible(False)
+    a.set_facecolor(hv.WASH)
+for a in axs:
+    a.set_xlim(-1.08 * lim, 1.08 * lim); a.set_ylim(-1.08 * lim, 1.08 * lim); a.set_aspect('equal')
+title(axs[0], 'c) Increments at each step')
+
+# d) per-step pair scores at the same steps
+sub = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=gs[0, 3], wspace=0.06, hspace=0.32)
+axs = []
+for k, t in enumerate(STEPS):
+    a = fig.add_subplot(sub[k // 2, k % 2]); axs.append(a)
+    a.imshow(Q[t][np.ix_(order, order)].astype(float), cmap=CM, vmin=-vq, vmax=vq, interpolation='nearest')
+    boxes(a, 1.4)
+    a.set_xticks([]); a.set_yticks([]); a.grid(False)
+    a.set_xlabel(f't = {t + 1}', **lab)
+title(axs[0], 'd) Pair scores at each step')
+
+# e) repeated co-movement: pair majority statistic
+ax = fig.add_subplot(gs[1, 0])
+Zp = tstep.pair_scores(Q).astype(float)
+Zp[~np.isfinite(Zp)] = np.nan
+im = ax.imshow(Zp[np.ix_(order, order)], cmap=CM, vmin=-vq, vmax=vq, interpolation='nearest')
+boxes(ax, 2.2)
+ax.set_xticks([]); ax.set_yticks([]); ax.grid(False)
+ax.set_xlabel('agents', **lab); ax.set_ylabel('agents', **lab)
+cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
+cb.set_label('normal score', **lab); cb.outline.set_visible(False); cb.ax.tick_params(labelsize=hv.SIZES['annot'] - 2)
+title(ax, 'e) Repeated co-movement')
+
+# f) scan and permutation null (first round, S_hat's band)
+ax = fig.add_subplot(gs[1, 1])
+b = rounds[0]['band']
+null = res['nulls'][:, b]
+null = null[np.isfinite(null)]
+obs = res['obs'][b]
+bins = np.linspace(min(null.min(), obs) - 0.3, max(null.max(), obs) + 0.3, 36)
+ax.hist(null, bins=bins, color=C0, edgecolor='white', lw=0.6)
+ax.axvline(obs, color=NAVY, lw=3.4)
+ax.set_xlabel('largest set score', **lab); ax.set_ylabel('permutations', **lab)
+title(ax, 'f) Scan and permutation null')
+
+# g) membership: agents' scores against S_hat, two-groups model
+ax = fig.add_subplot(gs[1, 2])
+z = tstep.member_z(Q, rounds[0]['members'], combine='sum')[0]
+w = tstep.two_groups(z)
+pi = w.mean(); mu1 = (w * z).sum() / w.sum(); mu0 = ((1 - w) * z).sum() / (1 - w).sum()
+sd = np.sqrt((w * (z - mu1) ** 2 + (1 - w) * (z - mu0) ** 2).mean())
+bins = np.linspace(z.min() - 0.5, z.max() + 0.5, 34)
+ax.hist([z[grp == 0], z[grp == 2], z[grp == 1]], bins=bins, stacked=True, color=[C0, C2, C1], edgecolor='white', lw=0.6)
+xx = np.linspace(bins[0], bins[-1], 400)
+h = (bins[1] - bins[0]) * N
+ax.plot(xx, h * (1 - pi) * norm.pdf(xx, mu0, sd), color='black', ls='--', lw=2.4)
+ax.plot(xx, h * pi * norm.pdf(xx, mu1, sd), color='black', ls='--', lw=2.4)
+thr = xx[np.argmax(pi * norm.pdf(xx, mu1, sd) > (1 - pi) * norm.pdf(xx, mu0, sd))]
+ax.axvline(thr, color=hv.REFLINE, ls=':', lw=1.2)
+ax.set_xlabel('agent score against $\\hat S$', **lab); ax.set_ylabel('agents', **lab)
+title(ax, 'g) Membership')
+
+# h) peeling
+ax = fig.add_subplot(gs[1, 3])
+for r, g in enumerate(rounds, 1):
+    mem = set(g['members'].tolist())
+    n1, n2 = len(mem & set(G1.tolist())), len(mem & set(G2.tolist()))
+    c = C0 if g['p'] > 0.05 or not (n1 or n2) else C1 if n1 >= n2 else C2
+    ax.plot([r, r], [1, g['p']], color=c, lw=3.4, solid_capstyle='butt')
+    ax.scatter(r, g['p'], s=90, color=c, edgecolors='white', linewidths=0.8, zorder=3)
+ax.axhline(0.05, color=hv.REFLINE, ls=':', lw=1.2)
+ax.set_yscale('log'); ax.set_ylim(1.3, 1.0 / (B + 1) / 1.6)
+yt = [0.005, 0.01, 0.05, 0.2, 1]; ax.set_yticks(yt); ax.set_yticklabels([f'{v:g}' for v in yt]); ax.minorticks_off()
+ax.set_xlim(0.4, len(rounds) + 0.6); ax.set_xticks(range(1, len(rounds) + 1))
+ax.set_xlabel('round', **lab); ax.set_ylabel('p', **lab)
+title(ax, 'h) Peeling')
+
+# legends
+dot = lambda c, l: Line2D([], [], color=c, ls='None', marker='o', ms=10, label=l)
+h_ag = [dot(C1, 'subnetwork 1'), dot(C2, 'subnetwork 2'), dot(C0, 'other agents')]
+h_st = [Line2D([], [], color=NAVY, lw=3.4, label='observed'),
+        Patch(color=C0, label='permutation null'),
+        Line2D([], [], color='black', lw=2.4, ls='--', label='two-groups model')]
+kw = dict(fontsize=hv.SIZES['annot'], title_fontsize=hv.SIZES['annot'], frameon=False)
+legs = [fig.legend(handles=hh, title=tt, loc='upper left', ncol=len(hh), bbox_to_anchor=(0, 0.06), **kw)
+        for tt, hh in (('agents', h_ag), ('statistic', h_st))]
+fig.canvas.draw()
+inv = fig.transFigure.inverted()
+widths = [np.ptp(inv.transform(l.get_window_extent())[:, 0]) for l in legs]
+x = 0.5 - (sum(widths) + 0.04) / 2
+for l, wd in zip(legs, widths):
+    l.set_bbox_to_anchor((x, 0.06), transform=fig.transFigure); x += wd + 0.04
+
+for ext in ('pdf', 'png'):
+    fig.savefig(f'{OUT}.{ext}', dpi=200, bbox_inches='tight')
+print('saved', OUT)

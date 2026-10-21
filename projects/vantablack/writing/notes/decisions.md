@@ -285,3 +285,16 @@ These are documented in `methods.md`.
   0.81). N = 1,000: power 0.12 / 0.58 / 1.00, Type I 0.06. K = 2 / 3 / 6 / 10 at rho = 0.5:
   recovered 1.00 / 1.00 / 0.88 / 0.30 (known S >= 0.99). 20-replicate results kept as
   sim_detection_pilot_v7_20reps.csv.
+
+- **2026-10-21 — Kernels are inputs; PKPS is a particular case.** User: "i'd prefer to just use a
+  query kernel and a response kernel as inputs. pkps is a particular case." Algorithm 1 takes k_Q
+  and k_X; Section 4.1 defines the reference as the k_Q-weighted mean of phi(x) (k_X's feature map)
+  and positions as (kernel) principal components of unit means. Kernels used in all experiments
+  (unchanged code): linear k_X; k_Q Gaussian on the k = 64 nearest observed queries, h = median
+  nearest-neighbour distance. Why not a standard global bandwidth (checked on the simulations,
+  50-d queries, 80,000 responses): the median heuristic gives ~79,000 effective neighbours (the
+  reference is the global mean), Scott/Silverman give 1 (the response itself; residual ~0); same
+  after PCA of the queries to 20 dims. Leave-one-out prediction error of a k-NN mean is flat for
+  k in 32-128 in four simulation settings (best 64 at the base cell, 32 elsewhere); the Gaussian
+  weights inside the 64 neighbours add nothing (225.5 vs 225.7). The best global Gaussian
+  bandwidth by CV (0.25-0.3 x nn distance) is knife-edged and worse (233).

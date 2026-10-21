@@ -727,6 +727,8 @@ def balls_rank(Q, Zp, sizes=(5, 10, 20, 40, 80), top=50, rounds=3, chunk=64):
     a size at once). Returns [(frozenset, label)] and the balls' scores."""
     N, L = len(Zp), Q.shape[0]
     sizes = [s for s in sizes if s <= max(3, N // 4)]
+    if not sizes:                                                       # fewer than 20 agents: no balls
+        return [], np.array([]), []
     smax = max(sizes)
     nb = np.argpartition(-Zp, smax - 1, axis=1)[:, :smax - 1]
     nb = np.take_along_axis(nb, np.argsort(-np.take_along_axis(Zp, nb, axis=1), axis=1), axis=1)
