@@ -515,12 +515,14 @@ def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers
 def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=199, seed=0,
                   workers=1, n_factors='auto', per_step=None, center=True, known_S=None, peel=0,
                   two_signed_alpha=None, weight=None, min_move=None, split=False, gpu_slot=None,
-                  stat='rank'):
+                  stat='rank', keep_arrays=False):
     """Steps 2-7 from conditioned responses R (one row per response; agent in [0, N), step in
     [0, T)). Returns the scan result plus the factor count, dimensions, membership estimate
     and the agent ranking score; peel > 0 adds up to that many peeled groups (peel_groups).
     split=True adds step 8: S_hat's linked-pair components ('components'; with peel, also per
-    peeled group and over the whole cohort). stat: 'rank' or 'cosine' (module docstring)."""
+    peeled group and over the whole cohort). stat: 'rank' or 'cosine' (module docstring).
+    keep_arrays=True also returns the positions ('positions', N x T x d) and the increments after
+    factor removal ('D')."""
     import contextlib
     pos = positions(R, agent, step, N, T, d=d, seed=seed)
     D = increments(pos, mode=mode, per_step=per_step, center=center, weight=weight, min_move=min_move)
@@ -533,6 +535,8 @@ def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=
     res.update(n_factors=kf, d_eff=d_eff, d=pos['d'], explained=pos['explained'],
                S_hat=S_hat, band_hat=b_hat, rank_score=score, reliability_fit=pos.get('reliability_fit'), n_static=pos.get('n_static'),
                n_missing=int((np.linalg.norm(D, axis=2) == 0).sum()))
+    if keep_arrays:
+        res.update(positions=np.asarray(pos['Z'], np.float32), D=np.asarray(D, np.float32))
     if peel:
         res['groups'] = peel_groups(D, d_eff, first=res, max_groups=peel, B=B, kind=kind, seed=seed,
                                     workers=workers, stat=stat)
@@ -620,6 +624,8 @@ def peel_groups(D, d_eff, first=None, alpha=0.05, max_groups=10, B=199, kind='sh
         if Q is not None and len(S) >= 2:
             score = member_z(Q, S, combine='sum')[0]                      # against the final S_hat
         out.append(dict(p=res['p'], p_band=np.asarray(res['p_band']), obs=np.asarray(res['obs']),
+                        nulls=np.asarray(res['nulls']), tested=keep.copy(),
+                        score_all=None if score is None else np.asarray(score),
                         band=b, members=keep[S], n_tested=len(keep), subnetwork=len(S) >= 2,
                         member_score=np.asarray(score)[S] if score is not None and len(S) else np.array([]),
                         best=[None if x is None else keep[sorted(x)] for x in res['best']]))
@@ -834,20 +840,21 @@ def member_z(Q, S, combine='majority'):
     return z, None
 
 
-def two_groups(z, iters=500):
+def two_groups(z, iters=500, params=False):
     """Two-groups model (Efron 2004, empirical null): z ~ (1 - pi) N(mu0, s^2) + pi N(mu1, s^2),
     mu1 > mu0, fitted by EM. The null component is estimated, not fixed at N(0, 1): members take
     the top ranks at every step, which pushes the other agents' scores down. The two components
     share one variance, so the posterior probability of membership increases with z (with
     separate variances a wider member component also claims the far left tail). Returns each
-    agent's posterior probability of membership (0 where z is not finite)."""
+    agent's posterior probability of membership (0 where z is not finite); params=True also returns
+    the fit (pi, mu0, mu1, sd) and the score at which the posterior is 1/2."""
     from scipy.stats import norm
     z = np.asarray(z, float)
     ok = np.isfinite(z)
     x = z[ok]
     w_out = np.zeros(len(z))
     if len(x) < 10:
-        return w_out
+        return (w_out, None) if params else w_out
     mu0, sd = np.median(x), max(np.std(x), 1e-6)
     pi, mu1 = 0.05, max(np.quantile(x, 0.98), mu0 + sd)
     for _ in range(iters):
@@ -864,6 +871,9 @@ def two_groups(z, iters=500):
         if done:
             break
     w_out[ok] = w
+    if params:
+        thr = (mu0 + mu1) / 2 + sd ** 2 * np.log((1 - pi) / max(pi, 1e-12)) / max(mu1 - mu0, 1e-12)
+        return w_out, dict(pi=float(pi), mu0=float(mu0), mu1=float(mu1), sd=float(sd), thr=float(thr))
     return w_out
 
 

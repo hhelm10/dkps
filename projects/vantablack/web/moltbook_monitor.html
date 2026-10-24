@@ -1,0 +1,721 @@
+<title>Detecting and Estimating Colluding Subnetworks in Multi-Agent Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<style>
+/* Layout: a monitoring console (controls + two live monitors); on stop, a co-movement carousel, detection, a subnetwork carousel, and estimation. Colors follow the paper's figures. */
+:root {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --wash: #eef2f7;
+  --edge: #d7dde6;
+  --grid: #e5e7eb;
+  --ink-title: #0a2245;
+  --ink: #213c66;
+  --ink-mute: #486884;
+  --null: #afbec6;
+  --anchor: #114471;
+  --focus: #3596ff;
+  --stop: #c43d3d;
+  --stop-ink: #ffffff;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948;
+  --heat-0: #ffffff; --heat-1: #d7dde6; --heat-2: #486884; --heat-3: #0a2245;
+  --font-display: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0b1422; --surface: #111e31; --wash: #16263d; --edge: #263a57; --grid: #1d2e47;
+    --ink-title: #eaf1fa; --ink: #c9d7e8; --ink-mute: #8ea5c0; --null: #4d6380;
+    --anchor: #8fb8ea; --focus: #5aa9ff; --stop: #e05a5a; --stop-ink: #ffffff;
+    --s7: #8b7cf0; --s6: #2fb34a;
+    --heat-0: #111e31; --heat-1: #263a57; --heat-2: #8ea5c0; --heat-3: #eaf1fa;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b1422; --surface: #111e31; --wash: #16263d; --edge: #263a57; --grid: #1d2e47;
+  --ink-title: #eaf1fa; --ink: #c9d7e8; --ink-mute: #8ea5c0; --null: #4d6380;
+  --anchor: #8fb8ea; --focus: #5aa9ff; --stop: #e05a5a; --stop-ink: #ffffff;
+  --s7: #8b7cf0; --s6: #2fb34a;
+  --heat-0: #111e31; --heat-1: #263a57; --heat-2: #8ea5c0; --heat-3: #eaf1fa;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-inline: clamp(16px, 4vw, 40px); padding-block: 28px 56px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 28px; }
+h1, h2, h3 { color: var(--ink-title); text-wrap: balance; margin: 0; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 4vw, 38px); line-height: 1.15; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 24px; line-height: 1.2; }
+h3 { font-size: 15px; font-weight: 600; }
+p { margin: 0; }
+.lede { max-width: 68ch; display: grid; gap: 10px; }
+.facts { font-family: var(--font-data); font-size: 12.5px; color: var(--ink-mute); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.num { font-variant-numeric: tabular-nums; }
+header { display: grid; gap: 12px; }
+.panel { background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); font-weight: 500; }
+.caption { font-size: 13px; color: var(--ink-mute); max-width: 72ch; }
+.sec-head { display: grid; gap: 6px; }
+.about { display: grid; grid-template-columns: 1fr; gap: 28px; padding-block: 4px; border-top: 1px solid var(--edge); padding-top: 22px; }
+.about-col { display: grid; gap: 10px; align-content: start; max-width: 62ch; }
+.lede b { color: var(--ink-title); font-weight: 600; }
+.findings { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+
+/* console */
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.clock { display: grid; gap: 2px; min-width: 15ch; }
+.clock .when { font-family: var(--font-data); font-size: 18px; color: var(--ink-title); }
+.steps { display: flex; gap: 4px; align-items: center; }
+.steps span { width: 26px; height: 22px; border-radius: 3px; background: var(--wash); border: 1px solid var(--edge);
+  font: 500 11.5px var(--font-data); color: var(--ink-mute); display: grid; place-items: center; }
+.steps span.done { background: var(--anchor); border-color: var(--anchor); color: var(--surface); }
+.steps span.now { border-color: var(--anchor); color: var(--ink-title); }
+.steps span.cut { background: transparent; border-style: dashed; color: var(--null); }
+button { font: 500 14px var(--font-body); border-radius: var(--radius); cursor: pointer; border: 1px solid var(--edge);
+  background: var(--surface); color: var(--ink-title); padding: 8px 14px; }
+button:hover:not(:disabled) { border-color: var(--ink-mute); }
+button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+.transport { display: inline-flex; gap: 6px; }
+.transport button { min-width: 78px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.transport svg { width: 11px; height: 11px; fill: currentColor; }
+.seg { display: inline-flex; border: 1px solid var(--edge); border-radius: var(--radius); overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 8px 10px; font-family: var(--font-data); font-size: 12.5px; color: var(--ink-mute); }
+.seg button[aria-pressed="true"] { background: var(--wash); color: var(--ink-title); }
+#stop { margin-left: auto; background: var(--stop); color: var(--stop-ink); border-color: var(--stop); font-weight: 600; padding: 10px 18px; min-width: 150px; }
+#stop:disabled { background: var(--wash); color: var(--ink-mute); border-color: var(--edge); opacity: 1; }
+.row2 { flex-basis: 100%; display: flex; justify-content: space-between; align-items: end; gap: 8px 18px; flex-wrap: nowrap; }
+@media (max-width: 640px) { .row2 { flex-wrap: wrap; } }
+.stopnote { font-size: 12.5px; color: var(--ink-mute); text-align: right; }
+.monitors { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.mon-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.counters { display: flex; gap: 18px; font-family: var(--font-data); font-size: 12.5px; color: var(--ink-mute); }
+.counters b { color: var(--ink-title); font-weight: 500; font-size: 15px; }
+canvas { display: block; width: 100%; }
+#act { height: 110px; }
+#persp { height: min(360px, 42vh); min-height: 240px; background: var(--wash); border-radius: 4px; }
+
+/* analysis */
+#analysis { display: grid; gap: 28px; scroll-margin-top: 16px; }
+.ana-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
+.stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; list-style: none; padding: 0; margin: 0; counter-reset: st; }
+.stages li { border-top: 3px solid var(--edge); padding-top: 8px; font-size: 13px; color: var(--ink-mute); counter-increment: st; }
+.stages li::before { content: counter(st) ". "; font-family: var(--font-data); }
+.stages li.active { border-color: var(--focus); color: var(--ink-title); }
+.stages li.done { border-color: var(--anchor); color: var(--ink); }
+.stages li small { display: block; font-family: var(--font-data); font-size: 11.5px; color: var(--ink-mute); margin-top: 2px; min-height: 1.4em; }
+.verdict { font-family: var(--font-display); font-size: 21px; color: var(--ink-title); }
+
+/* carousel */
+.carousel { display: grid; gap: 12px; scroll-margin-top: 16px; }
+.details { scroll-margin-top: 16px; }
+.car-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.car-bar .count { font-family: var(--font-data); font-size: 12.5px; color: var(--ink-mute); margin-left: auto; }
+.car-bar button { padding: 6px 12px; font-family: var(--font-data); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.tabs button { padding: 4px 9px; font: 500 12px var(--font-data); color: var(--ink-mute); background: var(--surface); }
+.tabs button[aria-current="true"] { background: var(--anchor); border-color: var(--anchor); color: var(--surface); }
+.tabs .sw { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.track { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; align-items: start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; transition: height 0.25s ease;
+  scroll-behavior: smooth; border: 1px solid var(--edge); border-radius: var(--radius); background: var(--surface); scrollbar-width: none; }
+.track::-webkit-scrollbar { display: none; }
+.slide { scroll-snap-align: start; padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.slide-head { display: grid; gap: 4px; }
+.slide-head .label { display: flex; gap: 10px; align-items: center; }
+.slide-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 22px; align-items: start; }
+.slide .heat { aspect-ratio: 1; max-width: 420px; }
+.bars { height: 260px; }
+.matrix { height: 260px; }
+.slide-text { font-size: 14.5px; max-width: 70ch; }
+.card-figs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card-figs canvas { height: 170px; }
+canvas.mbars { height: 260px; }
+canvas.traj { height: 200px; }
+.swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-family: var(--font-data); font-size: 12px; border: 1px solid var(--edge); border-radius: 4px; padding: 2px 7px; color: var(--ink-title); background: var(--wash); }
+.chip i { font-style: normal; color: var(--ink-mute); margin-left: 6px; }
+
+/* details */
+.details { display: grid; gap: 14px; }
+#scan { height: 340px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { font-weight: 500; color: var(--ink-mute); font-size: 12px; border-bottom-color: var(--edge); }
+th:first-child, td:first-child { text-align: left; }
+td.res { font-family: var(--font-data); font-size: 12.5px; }
+tr.stoprow td { color: var(--ink-mute); }
+.tg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.tg { border: 1px solid var(--edge); border-radius: var(--radius); padding: 12px; display: grid; gap: 6px; background: var(--surface); }
+.tg-head { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--ink-title); }
+.tg-block { display: grid; gap: 6px; }
+.tg-block canvas { height: 170px; }
+.tg-fit { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-mute); }
+.tg p { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-mute); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--ink-mute); align-items: center; }
+.legend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--ink-mute); margin-right: 6px; vertical-align: middle; }
+.legend i.dash { border-top-style: dashed; }
+.legend i.box { height: 10px; border: 0; background: var(--null); }
+footer { font-size: 13px; color: var(--ink-mute); max-width: 80ch; display: grid; gap: 8px; }
+
+@media (max-width: 860px) {
+  .monitors, .slide-grid, .card-figs, .about { grid-template-columns: 1fr; }
+  .stages { grid-template-columns: 1fr; }
+  #stop { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .track { scroll-behavior: auto; transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Detecting and Estimating Colluding Subnetworks in Multi-Agent Systems</h1>
+    <div class="lede">
+      <p>Generative agents are increasingly deployed in shared environments. As demonstrated in the Hugging Face incident, a small group of coordinated agents can exert outsized influence on the system. Similar behavior has been observed on Moltbook: agents flooded the site and coordinated through in-group rhetoric.</p>
+      <p>We call a subset of agents whose behavior is highly coordinated a <b>colluding subnetwork</b>. This page demonstrates the detection and estimation of such subnetworks in a group of 2,574 Moltbook agents from January 30 to February 9, 2026.</p>
+      <p>Key takeaways:</p>
+      <ul class="findings">
+        <li>the perspective space provides interpretable representations of the agents through time;</li>
+        <li>using all data through February 9, the method detects <b>eight colluding subnetworks</b> of 4 to 10 agents, of which the agents in <b>five subnetworks share a handle stem</b> (FloClaw, Mizuki, ClawdBot, XNO_, QwenPoweredClaw), though the method never sees agent names.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="sec-head">
+    <span class="label">Analysis</span>
+    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected colluding subnetworks.</p>
+  </div>
+
+  <section class="panel" aria-label="Monitor">
+    <div class="controls">
+      <div class="transport">
+        <button id="rewind" type="button" hidden><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 0h2v10H0zM10 0v10L3 5z"/></svg>Reset</button>
+        <button id="play" type="button"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 0l9 5-9 5z"/></svg>Play</button>
+        <button id="pause" type="button" disabled><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h8v8H1z"/></svg>Stop</button>
+      </div>
+      <div class="seg" role="group" aria-label="Playback speed">
+        <button id="sp1" type="button" aria-pressed="false">1×</button>
+        <button id="sp2" type="button" aria-pressed="false">2×</button>
+        <button id="sp4" type="button" aria-pressed="true">4×</button>
+      </div>
+      <button id="stop" type="button" disabled>Analyze</button>
+      <div class="row2"><div class="clock"><span class="label">Collecting</span><span class="when num" id="when">Jan 30, 00:00 UTC</span></div>
+        <p class="stopnote" id="stopnote"></p></div>
+    </div>
+    <div class="monitors">
+      <div class="panel" style="padding:14px">
+        <div class="mon-head"><h3>Activity monitor <span class="caption" style="font-weight:400">posts and comments per hour by the 2,574 agents</span></h3>
+          <div class="counters"><span><b class="num" id="nAct">0</b> actions</span><span><b class="num" id="nAg">0</b> agents</span></div></div>
+        <canvas id="act" aria-label="Actions per hour"></canvas>
+      </div>
+      <div class="panel" style="padding:14px">
+        <div class="mon-head"><h3>Perspective monitor</h3></div>
+        <canvas id="persp" aria-label="Agents' estimated perspectives, moving over time"></canvas>
+        <p class="caption" id="pcap"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="analysis" hidden aria-live="polite">
+    <div class="ana-head">
+      <div class="sec-head"><span class="label">Overview</span><h2 id="anaTitle">Detecting colluding subnetworks</h2></div>
+      <button id="reset" type="button">Start over</button>
+    </div>
+    <ol class="stages" id="stages">
+      <li>Co-movement<small id="st1"></small></li>
+      <li>Detection<small id="st2"></small></li>
+      <li>Estimation<small id="st3"></small></li>
+    </ol>
+    <p class="verdict" id="verdict"></p>
+
+    <div class="carousel" id="carMove" hidden>
+      <div class="sec-head"><span class="label">Co-movement</span><p>We first measure the co-movement of each agent pair at each consecutive time point. The statistic we use to determine collusion is a summary of the co-movement across time. Below are the summary pairwise co-movement matrix and the co-movement matrices for consecutive time steps. The block diagonals of the detected subnetworks are highlighted. We also show at which time steps each detected subnetwork has substantial co-movement.</p></div>
+      <div class="car-bar">
+        <button id="carMovePrev" type="button" aria-label="Previous slide">←</button>
+        <button id="carMoveNext" type="button" aria-label="Next slide">→</button>
+        <div class="tabs" id="carMoveTabs" role="tablist" aria-label="Slides"></div>
+        <span class="count" id="carMoveCount"></span>
+      </div>
+      <div class="track" id="carMoveTrack" tabindex="0" aria-roledescription="carousel"></div>
+    </div>
+
+    <div class="details" id="detection" hidden>
+      <div class="sec-head"><span class="label">Detection</span><p>We then search for the subset of agents whose summary co-movement is largest. To decide whether it is a colluding subnetwork, we compare this test statistic to its values in 199 copies of the data in which agent labels are shuffled within every time step. When the test statistic exceeds the shuffled copies (p ≤ 0.05), we report a subnetwork, set its members aside, and search again. Below are the test statistic and null distribution of every round.</p></div>
+      <div class="panel"><canvas id="scan" aria-label="Scan statistic and permutation null per round"></canvas>
+        <div class="legend"><span><i class="box"></i>null: 199 label-shuffled copies</span><span><i style="border-top-width:3px"></i>observed statistic (colored: subnetwork detected)</span></div></div>
+      <div class="panel tablewrap"><table id="scanTable"></table></div>
+    </div>
+
+    <div class="carousel" id="carSub" hidden>
+      <div class="sec-head"><span class="label">Estimation</span><p>For each detected subnetwork, we score every agent tested in its round against the detected set and fit a two-groups model to the scores: one group for the agents outside the subnetwork and one for its members. We repeat this until the set stops changing. Below, for each subnetwork, are the two-groups fit, the members' perspectives over time, and their co-movement at each time step.</p></div>
+      <div class="car-bar">
+        <button id="carSubPrev" type="button" aria-label="Previous slide">←</button>
+        <button id="carSubNext" type="button" aria-label="Next slide">→</button>
+        <div class="tabs" id="carSubTabs" role="tablist" aria-label="Slides"></div>
+        <span class="count" id="carSubCount"></span>
+      </div>
+      <div class="track" id="carSubTrack" tabindex="0" aria-roledescription="carousel"></div>
+    </div>
+
+  </section>
+
+  <footer><p>Data: the public Moltbook archive holds 3,482,649 posts and comments by 50,842 agents from January 30 to February 9, 2026. We only included agents with enough activity across the measured time period, leaving 2,574 agents and 1,768,042 posts and comments.</p></footer>
+</div>
+
+<script src="moltbook_data.js"></script>
+<script>
+(() => {
+  const M = window.MOLTBOOK;
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const SUB = (i) => css(`--s${((i - 1) % 8) + 1}`);
+  const fmt = (n) => n.toLocaleString('en-US');
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const startMs = Date.parse(M.start + 'T00:00:00Z');
+  const B = M.step_bounds_h, T = 8, H = M.hours;
+  const mids = Array.from({ length: T }, (_, s) => (B[s] + B[s + 1]) / 2);
+  const dateOf = (h, opt) => new Date(startMs + h * 3600e3).toLocaleString('en-US', Object.assign({ timeZone: 'UTC' }, opt));
+  const cumAct = [], cumAg = [];
+  M.per_hour.reduce((a, v, i) => (cumAct[i] = a + v), 0);
+  M.new_agents.reduce((a, v, i) => (cumAg[i] = a + v), 0);
+  const upTo = (cum, per, h) => { if (h <= 0) return 0; const i = Math.min(H - 1, Math.floor(h)); return Math.round((i ? cum[i - 1] : 0) + Math.min(1, h - i) * per[i]); };
+
+  function fit(cv) {
+    const r = cv.getBoundingClientRect(), d = devicePixelRatio || 1;
+    const w = Math.max(10, Math.round(r.width)), h = Math.max(10, Math.round(r.height));
+    if (cv.width !== w * d || cv.height !== h * d) { cv.width = w * d; cv.height = h * d; }
+    const c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, w, h);
+    return { c, w, h };
+  }
+  const font = (px) => `${px}px ${css('--font-data')}`;
+  const parseHex = (h) => { h = h.replace('#', ''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)); };
+  function heatColor(z) {
+    const cs = ['--heat-0', '--heat-1', '--heat-2', '--heat-3'].map(css);
+    const u = Math.max(0, Math.min(1, (z + 3) / 6)) * 3, j = Math.min(2, Math.floor(u)), f = u - j;
+    const a = parseHex(cs[j]), b = parseHex(cs[j + 1]);
+    return `rgb(${a.map((x, k) => Math.round(x + (b[k] - x) * f)).join(',')})`;
+  }
+
+  // ---------- state
+  const st = { hour: 0, playing: false, speed: 4, last: 0, stopped: null, run: null };
+  const complete = (h) => B.slice(1).filter((b) => b <= h + 1e-9).length;
+
+  // ---------- activity monitor
+  function drawActivity() {
+    const { c, w, h } = fit($('act'));
+    const L = 40, R = 8, Tp = 4, Bt = 18, pw = w - L - R, ph = h - Tp - Bt;
+    const ymax = Math.max(...M.per_hour) * 1.05;
+    const X = (hr) => L + (hr / H) * pw, Y = (v) => Tp + ph - (v / ymax) * ph;
+    c.strokeStyle = css('--grid'); c.lineWidth = 1; c.fillStyle = css('--ink-mute'); c.font = font(11); c.textAlign = 'right'; c.textBaseline = 'middle';
+    const step = ymax > 40000 ? 40000 : 20000;
+    for (let v = 0; v <= ymax; v += step) { c.beginPath(); c.moveTo(L, Y(v)); c.lineTo(w - R, Y(v)); c.stroke(); c.fillText(v ? `${v / 1000}k` : '0', L - 6, Y(v)); }
+    const area = (to, color, alpha) => {
+      c.beginPath(); c.moveTo(X(0), Y(0));
+      for (let i = 0; i < Math.min(H, Math.ceil(to)); i++) { const v = M.per_hour[i]; c.lineTo(X(i), Y(v)); c.lineTo(X(Math.min(i + 1, to)), Y(v)); }
+      c.lineTo(X(Math.min(to, H)), Y(0)); c.closePath(); c.globalAlpha = alpha; c.fillStyle = color; c.fill(); c.globalAlpha = 1;
+    };
+    area(H, css('--null'), 0.25);
+    area(st.stopped ? B[st.stopped] : st.hour, css('--anchor'), 0.9);
+    if (st.stopped && st.hour > B[st.stopped]) {
+      c.save(); c.beginPath(); c.rect(X(B[st.stopped]), Tp, X(st.hour) - X(B[st.stopped]), ph); c.clip();
+      area(st.hour, css('--null'), 0.9); c.restore();
+    }
+    c.strokeStyle = st.stopped ? css('--stop') : css('--focus'); c.lineWidth = 2;
+    const cx = X(st.stopped ? B[st.stopped] : st.hour); c.beginPath(); c.moveTo(cx, Tp); c.lineTo(cx, Tp + ph); c.stroke();
+    c.fillStyle = css('--ink-mute'); c.textAlign = 'center'; c.textBaseline = 'top'; c.font = font(11);
+    for (let d = 0; d <= 10; d += 1) c.fillText(dateOf(d * 24, { month: 'short', day: 'numeric' }), X(d * 24), Tp + ph + 4);
+  }
+
+  // ---------- perspective monitor
+  const MON = M.monitor || { xy: [], name: [] };
+  const PCAP = `Each dot is one of the ${fmt(MON.xy.length)} agents.`;
+  $('pcap').textContent = PCAP;
+  let ext = 1;
+  { const v = []; MON.xy.forEach((a) => a.forEach((p) => p && v.push(Math.abs(p[0]), Math.abs(p[1])))); v.sort((a, b) => a - b); ext = v[Math.floor(v.length * 0.985)] || 1; }
+  let colorOf = new Map();
+  function posAt(i, hr, upto) {
+    const a = MON.xy[i], last = upto - 1;
+    let s = mids.findIndex((m) => m > hr) - 1; if (s < -1) s = last; s = Math.min(s, last);
+    if (s < 0) return a[0] ? { p: a[0], f: Math.max(0.35, hr / mids[0]) } : null;
+    const p0 = a[s], p1 = s + 1 <= last ? a[s + 1] : null;
+    if (!p0 && !p1) return null;
+    if (!p0) return { p: p1, f: 0.4 };
+    if (!p1) return { p: p0, f: 1 };
+    const u = Math.min(1, (hr - mids[s]) / (mids[s + 1] - mids[s])), e = u * u * (3 - 2 * u);
+    return { p: [p0[0] + (p1[0] - p0[0]) * e, p0[1] + (p1[1] - p0[1]) * e], f: 1 };
+  }
+  function drawPersp() {
+    const { c, w, h } = fit($('persp'));
+    const sc = Math.min(w, h) / 2 / (ext * 1.08), cx = w / 2, cy = h / 2;
+    const upto = st.stopped || T, hr = st.stopped ? Math.min(st.hour, mids[st.stopped - 1]) : st.hour;
+    const P = (p) => [cx + p[0] * sc, cy - p[1] * sc], hi = [];
+    c.fillStyle = css('--ink-mute');
+    MON.xy.forEach((_, i) => {
+      const q = posAt(i, hr, upto); if (!q) return;
+      const g = MON.name[i] && colorOf.get(MON.name[i]);
+      if (g) { hi.push([q, g]); return; }
+      const [x, y] = P(q.p); c.globalAlpha = 0.35 * q.f * (colorOf.size ? 0.6 : 1);
+      c.beginPath(); c.arc(x, y, 2.2, 0, 7); c.fill();
+    });
+    c.globalAlpha = 1; c.strokeStyle = css('--surface');
+    hi.forEach(([q, g]) => { const [x, y] = P(q.p); c.fillStyle = SUB(g); c.beginPath(); c.arc(x, y, 4.2, 0, 7); c.fill(); c.stroke(); });
+  }
+
+  // ---------- console
+  function controlsUI() {
+    const k = complete(st.hour);
+    const hr = st.stopped ? B[st.stopped] : st.hour, i = Math.min(H - 1, Math.floor(hr));
+    $('when').textContent = dateOf(hr, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
+    $('nAct').textContent = fmt(upTo(cumAct, M.per_hour, hr)); $('nAg').textContent = fmt(upTo(cumAg, M.new_agents, hr));
+    $('play').disabled = (st.playing && st.target == null) || !!st.stopped;
+    $('pause').disabled = !st.playing || st.target != null;
+    const done = !!st.stopped || st.hour >= H;                    // collection over: Reset takes Play's place
+    $('play').hidden = done; $('rewind').hidden = !done; $('rewind').disabled = false;
+    $('pause').textContent = '';
+    $('pause').innerHTML = st.target != null ? '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h8v8H1z"/></svg>Stopping…' : '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h8v8H1z"/></svg>Stop';
+    const stop = $('stop');
+    if (st.stopped) { stop.disabled = true; $('stopnote').textContent = 'Analyzed. Use Reset to collect again.'; return; }
+    stop.disabled = st.analyzeAfter || !(st.playing || k >= 3);       // while running, Analyze stops first
+    const when = (h) => dateOf(h, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
+    $('stopnote').textContent = st.hour === 0 ? 'Hit play to start collecting.' : k < 3 ? `Analysis is available from ${when(B[3])}.`
+      : `Analysis uses data through ${when(B[k])}.`;
+  }
+  function draw() { drawActivity(); drawPersp(); controlsUI(); }
+  function tick(ts) {
+    if (!st.playing) return;
+    const dt = st.last ? (ts - st.last) / 1000 : 0; st.last = ts;
+    const rate = st.target != null ? Math.max(8 * st.speed, (st.target - st.from) / 0.7) : 8 * st.speed;   // finish a step in <= 0.7 s
+    st.hour = Math.min(st.target != null ? st.target : H, st.hour + dt * rate);
+    if (st.hour >= H || (st.target != null && st.hour >= st.target)) { st.playing = false; st.target = null; }
+    draw();
+    if (st.playing) requestAnimationFrame(tick);
+    else if (st.analyzeAfter) { st.analyzeAfter = false; startAnalysis(); }
+  }
+  $('play').onclick = () => { if (st.stopped) return; if (st.hour >= H) st.hour = 0; st.target = null; if (!st.playing) { st.playing = true; st.last = 0; requestAnimationFrame(tick); } controlsUI(); };
+  $('pause').onclick = () => stopCollection();
+  function stopCollection() {                  // stop at the end of the current step, and never before step 3 ends
+    const k = complete(st.hour), atEdge = k >= 3 && Math.abs(st.hour - B[k]) < 1e-6;
+    if (atEdge || st.hour >= H) { st.playing = false; controlsUI(); return; }
+    st.target = B[Math.max(3, k + 1)]; st.from = st.hour; controlsUI();
+  }
+  [1, 2, 4].forEach((v) => ($(`sp${v}`).onclick = () => { st.speed = v; [1, 2, 4].forEach((u) => $(`sp${u}`).setAttribute('aria-pressed', u === v)); }));
+
+  // ---------- drawing for the analysis
+  function drawHeat(cv, Z, sizes) {
+    const { c, w } = fit(cv), n = Z.length, cell = w / n;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      const z = Z[i][j]; c.fillStyle = z === null ? css('--surface') : heatColor(z); c.fillRect(j * cell, i * cell, cell + 0.5, cell + 0.5);
+    }
+    let s0 = 0; sizes.forEach((sz, k) => { c.strokeStyle = SUB(k + 1); c.lineWidth = 2.5; c.strokeRect(s0 * cell, s0 * cell, sz * cell, sz * cell); s0 += sz; });
+  }
+  function drawStepBars(cv, t) {          // set score of every subnetwork at increment t
+    const S = st.run.subnetworks, { c, w, h } = fit(cv);
+    const L = 34, R = 56, rh = Math.min(28, (h - 28) / Math.max(S.length, 1));
+    const vals = S.map((s) => s.step_scores[t]).filter((v) => v !== null);
+    const lo = Math.min(-1, ...vals), hi = Math.max(4, ...vals) * 1.05, X = (v) => L + ((v - lo) / (hi - lo)) * (w - L - R);
+    c.font = font(11); c.textBaseline = 'middle';
+    c.strokeStyle = css('--grid'); c.lineWidth = 1; c.beginPath(); c.moveTo(X(0), 0); c.lineTo(X(0), rh * S.length + 4); c.stroke();
+    c.setLineDash([4, 3]); c.strokeStyle = css('--ink-mute'); c.beginPath(); c.moveTo(X(2), 0); c.lineTo(X(2), rh * S.length + 4); c.stroke(); c.setLineDash([]);
+    S.forEach((s, i) => {
+      const v = s.step_scores[t], y = 4 + i * rh, mid = y + rh / 2;
+      c.fillStyle = css('--ink-mute'); c.textAlign = 'right'; c.fillText(String(s.id), L - 10, mid);
+      if (v === null) { c.textAlign = 'left'; c.fillText('not observed', X(0) + 6, mid); return; }
+      c.fillStyle = v > 2 ? SUB(s.id) : css('--null');
+      const x0 = X(Math.min(0, v)), x1 = X(Math.max(0, v)); c.fillRect(x0, y + rh * 0.18, Math.max(1, x1 - x0), rh * 0.64);
+      c.fillStyle = css('--ink'); c.textAlign = 'left'; c.fillText(v.toFixed(1), Math.max(x1, X(0)) + 6, mid);
+    });
+    c.fillStyle = css('--ink-mute'); c.textAlign = 'center'; c.textBaseline = 'top';
+    const y0 = 4 + S.length * rh + 6;
+    for (let v = Math.ceil(lo); v <= hi; v += Math.max(1, Math.round((hi - lo) / 6))) c.fillText(v, X(v), y0);
+    c.fillText('set score at this increment', (L + w - R) / 2, y0 + 15);
+  }
+  function drawMatrix(cv) {               // subnetwork x increment: moved together (set score > 2)?
+    const S = st.run.subnetworks, n = st.run.T - 1, { c, w, h } = fit(cv);
+    const L = 34, R = 70, Tp = 8, rh = Math.min(28, (h - 30) / Math.max(S.length, 1)), cw = (w - L - R) / n;
+    c.font = font(11); c.textBaseline = 'middle';
+    S.forEach((s, i) => {
+      const mid = Tp + i * rh + rh / 2;
+      c.fillStyle = css('--ink-mute'); c.textAlign = 'right'; c.fillText(String(s.id), L - 10, mid);
+      s.step_scores.forEach((v, j) => {
+        const x = L + j * cw + cw / 2, r = Math.min(rh, cw) * 0.32;
+        c.beginPath(); c.arc(x, mid, r, 0, 7);
+        if (v === null) { c.strokeStyle = css('--edge'); c.lineWidth = 1; c.stroke(); }
+        else if (v > 2) { c.fillStyle = SUB(s.id); c.fill(); }
+        else { c.fillStyle = css('--null'); c.globalAlpha = 0.6; c.fill(); c.globalAlpha = 1; }
+      });
+      c.fillStyle = css('--ink'); c.textAlign = 'left'; c.fillText(`${s.n_above} of ${s.n_obs}`, w - R + 10, mid);
+    });
+    c.fillStyle = css('--ink-mute'); c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let j = 0; j < n; j++) c.fillText(`${j + 1}→${j + 2}`, L + j * cw + cw / 2, Tp + S.length * rh + 6);
+  }
+  function miniTraj(cv, s) {
+    const { c, w, h } = fit(cv), color = SUB(s.id), pts = [];
+    s.traj.members.concat(s.traj.others).forEach((t) => t.forEach((p) => p && pts.push(p)));
+    const x0 = Math.min(...pts.map((p) => p[0])), x1 = Math.max(...pts.map((p) => p[0])), y0 = Math.min(...pts.map((p) => p[1])), y1 = Math.max(...pts.map((p) => p[1]));
+    const pad = 8, X = (v) => pad + ((v - x0) / (x1 - x0 || 1)) * (w - 2 * pad), Y = (v) => h - pad - ((v - y0) / (y1 - y0 || 1)) * (h - 2 * pad);
+    c.fillStyle = css('--wash'); c.fillRect(0, 0, w, h);
+    const line = (t, col, lw, a) => { c.strokeStyle = col; c.lineWidth = lw; c.globalAlpha = a; c.beginPath(); let on = false; t.forEach((p) => { if (!p) return; on ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1])); on = true; }); c.stroke(); c.globalAlpha = 1; };
+    s.traj.others.forEach((t) => line(t, css('--null'), 1, 0.7));
+    s.traj.members.forEach((t) => { line(t, color, 1.8, 0.95); const e = t.filter(Boolean).pop(); if (e) { c.fillStyle = color; c.beginPath(); c.arc(X(e[0]), Y(e[1]), 3, 0, 7); c.fill(); } });
+  }
+  function miniBars(cv, s) {
+    const { c, w, h: H0 } = fit(cv), color = SUB(s.id), v_ = s.step_scores.filter((v) => v !== null), n = s.step_scores.length, bw = w / n;
+    // top: each agent's movement at every increment, as arrows from a common origin (members colored, others gray)
+    const AH = Math.min(bw, H0 * 0.42), inc = (t, j) => (t[j] && t[j + 1] ? [t[j + 1][0] - t[j][0], t[j + 1][1] - t[j][1]] : null);
+    const lens = []; s.traj.members.forEach((t) => { for (let j = 0; j < n; j++) { const d = inc(t, j); if (d) lens.push(Math.hypot(d[0], d[1])); } });
+    lens.sort((a, b) => a - b); const L95 = lens[Math.floor(lens.length * 0.95)] || 1, R = AH * 0.44;
+    const arrow = (cx, cy, d, col, lw, a) => {
+      const k = R / (L95 || 1), len = Math.hypot(d[0], d[1]) * k, cl = len > R ? R / len : 1;    // 95th pct member movement = radius
+      const ex = cx + d[0] * k * cl, ey = cy - d[1] * k * cl, ang = Math.atan2(ey - cy, ex - cx);
+      c.globalAlpha = a; c.strokeStyle = col; c.fillStyle = col; c.lineWidth = lw;
+      c.beginPath(); c.moveTo(cx, cy); c.lineTo(ex, ey); c.stroke();
+      if (Math.hypot(ex - cx, ey - cy) > 4) { c.beginPath(); c.moveTo(ex, ey); c.lineTo(ex - 4 * Math.cos(ang - 0.45), ey - 4 * Math.sin(ang - 0.45)); c.lineTo(ex - 4 * Math.cos(ang + 0.45), ey - 4 * Math.sin(ang + 0.45)); c.fill(); }
+      c.globalAlpha = 1;
+    };
+    for (let j = 0; j < n; j++) {
+      const cx = j * bw + bw / 2, cy = AH / 2 + 2;
+      c.fillStyle = css('--wash'); c.fillRect(j * bw + 2, 2, bw - 4, AH);
+      s.traj.others.forEach((t) => { const d = inc(t, j); if (d) arrow(cx, cy, d, css('--null'), 1, 0.7); });
+      s.traj.members.forEach((t) => { const d = inc(t, j); if (d) arrow(cx, cy, d, color, 1.6, 0.95); });
+    }
+    const c0 = AH + 8, h = H0 - c0;
+    c.save(); c.translate(0, c0);
+    const top = Math.max(3, ...v_) * 1.1, bot = Math.min(-1, ...v_), B0 = 18, Y = (v) => 4 + (h - B0 - 4) * (1 - (v - bot) / (top - bot));
+    c.strokeStyle = css('--grid'); c.lineWidth = 1; c.beginPath(); c.moveTo(0, Y(0)); c.lineTo(w, Y(0)); c.stroke();
+    c.setLineDash([4, 3]); c.strokeStyle = css('--ink-mute'); c.beginPath(); c.moveTo(0, Y(2)); c.lineTo(w, Y(2)); c.stroke(); c.setLineDash([]);
+    c.font = font(10.5); c.textAlign = 'center'; c.textBaseline = 'top';
+    s.step_scores.forEach((v, j) => {
+      if (v !== null) { c.fillStyle = v > 2 ? color : css('--null'); const y = Y(Math.max(v, 0)), y0 = Y(Math.min(v, 0)); c.fillRect(j * bw + bw * 0.18, y, bw * 0.64, Math.max(1, y0 - y)); }
+      c.fillStyle = css('--ink-mute'); c.fillText(`${j + 1}→${j + 2}`, j * bw + bw / 2, h - B0 + 4);
+    });
+    c.restore();
+  }
+
+  // ---------- text
+  function describe(s, r) {
+    const out = [];
+    if (s.n_above > 0) out.push(`These ${s.size} agents moved together at ${s.n_above} of the ${s.n_obs} increments at which they were observed, most strongly between steps ${s.top_steps[0]} and ${s.top_steps[0] + 1}.`);
+    else out.push(`These ${s.size} agents never moved together strongly at a single increment, but their co-movement was consistently positive across the ${s.n_obs} increments at which they were observed.`);
+    out.push(s.n_exceed === 0
+      ? `Their scan statistic exceeded every one of the ${s.n_null} label-shuffled copies of the data (p = ${s.p.toFixed(3)}, adjusted over set sizes).`
+      : `Their scan statistic was matched by ${s.n_exceed} of the ${s.n_null} label-shuffled copies of the data (p = ${s.p.toFixed(3)}, adjusted over set sizes).`);
+    out.push(`The median pair statistic within the group is ${s.pair_within.toFixed(1)}, against a 99th percentile of ${s.pair_q99.toFixed(1)} over all pairs tested; ${Math.round(s.pair_share_top1 * 100)}% of member pairs lie above it.`);
+    out.push(s.n_other_above === 0
+      ? `Members score ${s.score_min.toFixed(1)} to ${s.score_max.toFixed(1)} against the group, above every one of the ${fmt(r.n_tested - s.size)} other agents tested (highest ${s.max_other.toFixed(1)}).`
+      : `Members score ${s.score_min.toFixed(1)} to ${s.score_max.toFixed(1)} against the group; ${s.n_other_above} of the ${fmt(r.n_tested - s.size)} other agents tested score as high as the lowest member.`);
+    if (s.stem) out.push(`The method never sees agent names, yet ${s.stem.count} of the ${s.size} handles begin with “${esc(s.stem.stem)}”.`);
+    return out.join(' ');
+  }
+
+  // ---------- carousels
+  function carousel(p) {
+    const C = { slides: [], cur: 0 };
+    const tr = () => $(p + 'Track');
+    C.set = (i) => {
+      C.cur = i; $(p + 'Count').textContent = `${i + 1} / ${C.slides.length}`;
+      const sl = tr().children[i]; if (sl) tr().style.height = sl.offsetHeight + 'px';
+      $(p + 'Tabs').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-current', j === i));
+      $(p + 'Prev').disabled = i === 0; $(p + 'Next').disabled = i === C.slides.length - 1;
+    };
+    C.go = (i) => {
+      i = Math.max(0, Math.min(C.slides.length - 1, i)); C.set(i);
+      clearTimeout(C.t); C.lock = true; C.t = setTimeout(() => (C.lock = false), 700);   // ignore our own scroll events
+      tr().scrollTo({ left: i * tr().clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+    };
+    C.fill = (slides) => {
+      C.slides = slides;
+      tr().innerHTML = slides.map((s, i) => `<section class="slide" aria-roledescription="slide" aria-label="${i + 1} of ${slides.length}">${s.html}</section>`).join('');
+      $(p + 'Tabs').innerHTML = slides.map((s, i) => `<button type="button" role="tab" data-go="${i}">${s.tab}</button>`).join('');
+      $(p + 'Tabs').querySelectorAll('button').forEach((b) => (b.onclick = () => C.go(+b.dataset.go)));
+      tr().scrollLeft = 0; C.set(0);
+    };
+    $(p + 'Prev').onclick = () => C.go(C.cur - 1); $(p + 'Next').onclick = () => C.go(C.cur + 1);
+    tr().addEventListener('scroll', () => { if (C.lock) return; const i = Math.round(tr().scrollLeft / tr().clientWidth); if (i !== C.cur) C.set(i); }, { passive: true });
+    tr().addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') { C.go(C.cur + 1); e.preventDefault(); } if (e.key === 'ArrowLeft') { C.go(C.cur - 1); e.preventDefault(); } });
+    return C;
+  }
+  const carMove = carousel('carMove'), carSub = carousel('carSub');
+  function buildCarousels() {
+    const run = st.run, S = run.subnetworks, n = run.T - 1, bnd = run.step_bounds.map((x) => Date.parse(x));
+    const day = (ms) => new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+    const move = [{ tab: 'summary', html: `
+      <div class="slide-head"><span class="label">All ${n} increments</span><h2>Co-movement summary</h2></div>
+      <div class="slide-grid">
+        <div style="display:grid;gap:8px"><span class="label">Pair statistic across increments</span><canvas class="heat" data-heat="all" aria-label="Majority statistic per pair"></canvas></div>
+        <div style="display:grid;gap:8px"><span class="label">Increments at which each subnetwork moved together</span><canvas class="matrix" data-matrix="1" aria-label="Subnetwork by increment"></canvas>
+          <p class="slide-text">Colored: substantial co-movement. Grey: not substantial co-movement. Clear: insufficient agent activity.</p></div>
+      </div>` }];
+    for (let t = 0; t < n; t++) {
+      const moved = S.filter((s) => s.step_scores[t] !== null && s.step_scores[t] > 2).map((s) => s.id);
+      move.push({ tab: `${t + 1}→${t + 2}`, html: `
+        <div class="slide-head"><span class="label">Increment ${t + 1} of ${n}</span>
+          <h2>From step ${t + 1} to step ${t + 2}</h2>
+          <p class="caption">Step ${t + 1}: ${day(bnd[t])} to ${day(bnd[t + 1])} UTC. Step ${t + 2}: ${day(bnd[t + 1])} to ${day(bnd[t + 2])} UTC.</p></div>
+        <div class="slide-grid">
+          <div style="display:grid;gap:8px"><span class="label">Pair scores at this increment</span><canvas class="heat" data-heat="${t}" aria-label="Pair scores at increment ${t + 1}"></canvas>
+            <p class="caption">How similarly each pair of agents moved from step ${t + 1} to step ${t + 2}, ranked among all pairs (dark: among the most similar). Rows and columns: the detected agents, boxed by subnetwork, then 30 other agents.</p></div>
+          <div style="display:grid;gap:8px"><span class="label">Each subnetwork at this increment</span><canvas class="bars" data-bars="${t}" aria-label="Set score per subnetwork at increment ${t + 1}"></canvas>
+            <p class="slide-text">${moved.length ? `Substantial co-movement at this increment: subnetwork${moved.length > 1 ? 's' : ''} ${moved.join(', ')}.` : 'No subnetwork has substantial co-movement at this increment.'}</p></div>
+        </div>` });
+    }
+    const subs = S.map((s) => {
+      const r = run.rounds[s.round - 1];
+      return { tab: `<span class="sw" style="background:${SUB(s.id)}"></span>${s.id}`, html: `
+        <div class="slide-head"><span class="label"><span class="swatch" style="background:${SUB(s.id)}"></span>Subnetwork ${s.id} of ${S.length}</span>
+          <h2>Subnetwork ${s.id}: ${s.size} agents, p = ${s.p.toFixed(3)}</h2>
+          <p class="caption">Found in round ${s.round}, among ${fmt(r.n_tested)} agents.</p></div>
+        <div class="slide-grid">
+          <div style="display:grid;gap:14px;align-content:start">
+          <div class="tg-block"><span class="label">Two-groups model of membership</span>
+            <canvas data-tg="${s.id - 1}" aria-label="Two-groups fit for subnetwork ${s.id}"></canvas>
+            <div class="legend"><span><i class="box"></i>other agents (log scale)</span><span><i></i>null component</span><span><i style="border-top-color:${SUB(s.id)}"></i>member component (▲ mean)</span><span><i class="dash"></i>posterior = ½</span></div>
+            <p class="tg-fit">π = ${(r.fit.pi * 100).toFixed(2)}% · μ₀ = ${r.fit.mu0.toFixed(2)} · μ₁ = ${r.fit.mu1.toFixed(2)} · σ = ${r.fit.sd.toFixed(2)} · ${r.post_members} of ${s.size} members above ½${r.post_others ? ` · ${r.post_others} other agent${r.post_others > 1 ? 's' : ''} above ½` : ''}</p></div>
+          <div class="tg-block"><span class="label">Movement and set score per increment</span><canvas class="mbars" data-mbars="${s.id}" aria-label="Each agent's movement and the set score at every increment"></canvas>
+            <div class="legend"><span><i style="border-top-color:${SUB(s.id)}"></i>members' movement (2-D projection)</span><span><i></i>40 other agents</span><span><i class="dash"></i>substantial co-movement</span></div></div>
+          </div>
+          <div style="display:grid;gap:12px"><p class="slide-text">${describe(s, r)}</p>
+            <div><span class="label">Members and their scores against the group</span></div>
+            <div class="chips">${s.members.map((m) => `<span class="chip">${esc(m.name)}<i>${m.score.toFixed(1)}</i></span>`).join('')}</div>
+            <div class="tg-block"><span class="label">Perspectives over time</span><canvas class="traj" data-traj="${s.id}" aria-label="Members' trajectories against 40 other agents"></canvas></div></div>
+        </div>` };
+    });
+    carMove.fill(move); carSub.fill(subs); drawCarousels();
+  }
+  function drawCarousels() {
+    if (!st.run) return;
+    const run = st.run;
+    document.querySelectorAll('[data-heat]').forEach((cv) => drawHeat(cv, cv.dataset.heat === 'all' ? run.heat.z : run.heat.steps[+cv.dataset.heat], run.heat.sizes));
+    document.querySelectorAll('[data-bars]').forEach((cv) => drawStepBars(cv, +cv.dataset.bars));
+    document.querySelectorAll('[data-matrix]').forEach((cv) => drawMatrix(cv));
+    document.querySelectorAll('[data-traj]').forEach((cv) => miniTraj(cv, run.subnetworks[cv.dataset.traj - 1]));
+    document.querySelectorAll('[data-mbars]').forEach((cv) => miniBars(cv, run.subnetworks[cv.dataset.mbars - 1]));
+    drawTG();
+  }
+
+  // ---------- detection details
+  function drawScan() {
+    const run = st.run, R = run.rounds, { c, w, h } = fit($('scan'));
+    const L = 70, Rt = 80, Bt = 36, rh = (h - Bt - 4) / R.length;
+    const std = R.map((r) => { const v = r.null.filter((x) => x !== null).slice().sort((a, b) => a - b), m = v[Math.floor(v.length / 2)];
+      const sd = Math.sqrt(v.reduce((a, x) => a + (x - m) ** 2, 0) / v.length) || 1; return (x) => (x - m) / sd; });
+    let lo = Infinity, hi = -Infinity; R.forEach((r, i) => r.null.concat([r.obs]).forEach((v) => { if (v !== null) { lo = Math.min(lo, std[i](v)); hi = Math.max(hi, std[i](v)); } }));
+    lo = Math.floor(lo) - 0.5; hi += 0.8; const X = (v) => L + ((v - lo) / (hi - lo)) * (w - L - Rt);
+    c.font = font(11.5); c.textBaseline = 'middle';
+    let sub = 0;
+    R.forEach((r, i) => {
+      const y = 4 + i * rh, mid = y + rh / 2, bins = 60, cnt = new Array(bins).fill(0);
+      r.null.forEach((v) => { if (v !== null) cnt[Math.min(bins - 1, Math.floor(((std[i](v) - lo) / (hi - lo)) * bins))]++; });
+      const mx = Math.max(1, ...cnt), bw = (w - L - Rt) / bins;
+      c.fillStyle = css('--null'); cnt.forEach((v, j) => { if (v) { const hh = (v / mx) * rh * 0.8; c.fillRect(L + j * bw, mid - hh / 2, bw - 0.6, hh); } });
+      if (r.significant) sub++;
+      c.strokeStyle = r.significant ? SUB(sub) : css('--ink-mute'); c.lineWidth = 3.4;
+      c.beginPath(); c.moveTo(X(std[i](r.obs)), y + rh * 0.08); c.lineTo(X(std[i](r.obs)), y + rh * 0.92); c.stroke();
+      c.fillStyle = css('--ink-mute'); c.textAlign = 'right'; c.fillText(`round ${r.round}`, L - 6 + 0, mid);
+      c.textAlign = 'left'; c.fillStyle = r.significant ? css('--ink-title') : css('--stop'); c.fillText(`p = ${r.p.toFixed(3)}`, w - Rt + 8, mid);
+    });
+    c.fillStyle = css('--ink-mute'); c.textAlign = 'center'; c.textBaseline = 'top';
+    for (let v = Math.ceil(lo); v <= hi; v += Math.max(1, Math.round((hi - lo) / 10))) c.fillText(v, X(v), h - Bt + 6);
+    c.fillText('scan statistic, in standard deviations from the median of its null', (L + w - Rt) / 2, h - Bt + 20);
+  }
+  function scanTable() {
+    let sub = 0;
+    const q = (a, p) => { const s = a.filter((v) => v !== null).slice().sort((x, y) => x - y); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
+    $('scanTable').innerHTML = `<thead><tr><th>Round</th><th>Agents tested</th><th>Statistic</th><th>Null median</th><th>Null max</th><th>p</th></tr></thead><tbody>` +
+      st.run.rounds.map((r) => {
+        if (r.significant) sub++;
+        const dot = `<span class="swatch" style="background:${r.significant ? SUB(sub) : 'transparent'};margin-right:8px;vertical-align:-1px"></span>`;   // blank keeps numbers aligned
+        return `<tr class="${r.significant ? '' : 'stoprow'}"><td>${dot}${r.round}</td><td>${fmt(r.n_tested)}</td><td>${r.obs.toFixed(2)}</td><td>${q(r.null, 0.5).toFixed(2)}</td><td>${q(r.null, 1).toFixed(2)}</td><td>${r.p.toFixed(3)}</td></tr>`;
+      }).join('') + '</tbody>';
+  }
+
+  // ---------- estimation details
+  const npdf = (x, m, s) => Math.exp(-0.5 * ((x - m) / s) ** 2) / (s * Math.sqrt(2 * Math.PI));
+  function drawTG() {
+    if (!st.run) return;
+    const R = st.run.rounds.filter((r) => r.significant);
+    let lo = Infinity, hi = -Infinity; R.forEach((r) => { lo = Math.min(lo, r.hist_lo); hi = Math.max(hi, r.hist_hi, ...r.member_scores); });
+    lo = Math.floor(lo); hi = Math.ceil(hi + 0.3);
+    document.querySelectorAll('[data-tg]').forEach((cv) => {
+      const i = +cv.dataset.tg, r = R[i], f = r.fit, { c, w, h } = fit(cv), color = SUB(i + 1);
+      const Bt = 24, ph = h - Bt - 4, X = (v) => 4 + ((v - lo) / (hi - lo)) * (w - 8);
+      const nb = r.hist.length, bw = (r.hist_hi - r.hist_lo) / nb, N = r.n_finite;
+      const FL = 0.05, ymax = Math.log10(Math.max(...r.hist) * 1.6), ymin = Math.log10(FL);       // true log scale: a Gaussian is an arch
+      const Y = (cnt) => 4 + ph - ((Math.log10(Math.max(cnt, FL)) - ymin) / (ymax - ymin)) * ph;
+      c.fillStyle = css('--null');
+      r.hist.forEach((v, j) => { if (v) { const x0 = X(r.hist_lo + j * bw), x1 = X(r.hist_lo + (j + 1) * bw); c.fillRect(x0, Y(v), Math.max(1, x1 - x0 - 0.5), 4 + ph - Y(v)); } });
+      const mb = new Map(); r.member_scores.forEach((v) => { const j = Math.floor((v - r.hist_lo) / bw); mb.set(j, (mb.get(j) || 0) + 1); });
+      c.fillStyle = color; mb.forEach((v, j) => { const x0 = X(r.hist_lo + j * bw), x1 = X(r.hist_lo + (j + 1) * bw); c.fillRect(x0, Y(v), Math.max(2, x1 - x0 - 0.5), 4 + ph - Y(v)); });
+      const curve = (m, wgt, col) => { c.strokeStyle = col; c.lineWidth = 1.8; c.beginPath(); let on = false;
+        for (let k = 0; k <= 300; k++) { const x = lo + (k / 300) * (hi - lo), cnt = wgt * N * bw * npdf(x, m, f.sd); if (cnt < FL) { on = false; continue; } on ? c.lineTo(X(x), Y(cnt)) : c.moveTo(X(x), Y(cnt)); on = true; } c.stroke(); };
+      curve(f.mu0, 1 - f.pi, css('--ink-mute')); curve(f.mu1, f.pi, color);
+      c.fillStyle = color; c.beginPath(); c.moveTo(X(f.mu1), 4 + ph + 1); c.lineTo(X(f.mu1) - 4, 4 + ph + 7); c.lineTo(X(f.mu1) + 4, 4 + ph + 7); c.fill();
+      c.setLineDash([4, 3]); c.strokeStyle = css('--ink-title'); c.lineWidth = 1.2; c.beginPath(); c.moveTo(X(f.thr), 4); c.lineTo(X(f.thr), 4 + ph); c.stroke(); c.setLineDash([]);
+      c.fillStyle = css('--ink-mute'); c.font = font(10.5); c.textAlign = 'center'; c.textBaseline = 'top';
+      for (let v = lo; v <= hi; v += 2) c.fillText(v, X(v), h - Bt + 11);
+    });
+  }
+
+  // ---------- run the analysis
+  const wait = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+  const stage = (i, cls, note) => { const li = $('stages').children[i]; li.className = cls; if (note !== undefined) $(`st${i + 1}`).textContent = note; };
+  async function analyze(k) {
+    const run = M.stops[k], id = (st.runId = (st.runId || 0) + 1);
+    const live = () => st.runId === id;                          // false once Reset or a new stop supersedes this run
+    $('analysis').hidden = false; ['carMove', 'detection', 'carSub'].forEach((id) => ($(id).hidden = true));
+    [0, 1, 2].forEach((i) => stage(i, '', '')); $('verdict').textContent = '';
+    $('analysis').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    const thru = dateOf(B[k], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
+    if (!run) { $('anaTitle').textContent = `No saved run for data through ${thru} yet`; return; }
+    st.run = run; colorOf = new Map();
+    $('anaTitle').textContent = `Colluding subnetworks in data through ${thru}`;
+    stage(0, 'active'); await wait(600); if (!live()) return; stage(0, 'done', `${fmt(run.N)} activated agents · ${k - 1} increments`);
+    stage(1, 'active'); stage(2, 'active');
+    let sub = 0;
+    for (const r of run.rounds) {
+      stage(1, 'active', `round ${r.round}: p = ${r.p.toFixed(3)}`);
+      if (r.significant) { sub++; run.subnetworks[sub - 1].members.forEach((m) => colorOf.set(m.name, sub)); drawPersp(); stage(2, 'active', `subnetwork ${sub}: ${r.size} agents`); }
+      await wait(220); if (!live()) return;
+    }
+    stage(1, 'done', `${run.rounds.length} rounds · B = ${run.B}`); stage(2, 'done', `${sub} subnetwork${sub === 1 ? '' : 's'}`);
+    $('verdict').textContent = sub === 0 ? `No colluding subnetwork detected among ${fmt(run.N)} activated agents.` : `${sub} colluding subnetwork${sub === 1 ? '' : 's'} detected among ${fmt(run.N)} activated agents.`;
+    $('pcap').textContent = 'Each dot is one agent\'s estimated perspective. Colored: agents in the detected subnetworks.';
+    $('detection').hidden = false;
+    if (sub) { ['carMove', 'carSub'].forEach((id) => ($(id).hidden = false)); buildCarousels(); }
+    drawScan(); scanTable();
+    $(sub ? 'carMove' : 'detection').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+  function startAnalysis() {
+    const k = complete(st.hour); if (k < 3) return;
+    st.playing = false; st.target = null; st.stopped = k; draw(); analyze(k);
+  }
+  $('stop').onclick = () => {                   // Analyze: if collection is running, stop it first
+    if (st.playing) { st.analyzeAfter = true; stopCollection(); if (!st.playing) { st.analyzeAfter = false; startAnalysis(); } return; }
+    startAnalysis();
+  };
+  const resetAll = () => {
+    st.runId = (st.runId || 0) + 1;
+    st.stopped = null; st.run = null; st.hour = 0; st.playing = false; st.target = null; st.analyzeAfter = false; colorOf = new Map();
+    $('analysis').hidden = true; $('pcap').textContent = PCAP;
+    draw();
+  };
+  $('reset').onclick = () => { resetAll(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); };
+  $('rewind').onclick = resetAll;
+
+  const redraw = () => { draw(); if (st.run && !$('detection').hidden) { drawCarousels(); drawScan(); carMove.set(carMove.cur); carSub.set(carSub.cur); } };
+  new ResizeObserver(redraw).observe(document.body);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+  new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.fonts && document.fonts.ready.then(redraw);
+  draw();
+})();
+</script>

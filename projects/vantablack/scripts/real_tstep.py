@@ -161,20 +161,42 @@ def main():
     ap.add_argument('--cohort-T', default=None,
                     help='comma-separated step counts: cohort = agents active in >= 75%% of the steps under '
                          'every one of these binnings')
+    ap.add_argument('--stop-step', type=int, default=None,
+                    help='stop data collection after this many of the T steps (web demo): steps keep the '
+                         'T-step binning of the window, later actions are dropped, and the cohort is the '
+                         'agents active in >= 75%% of the kept steps')
+    ap.add_argument('--cohort-tag', default=None,
+                    help="fix the cohort to an earlier run's agents (that run's tag), keeping those with at "
+                         'least one action in at least two of the kept steps (web demo: the same agents at '
+                         'every stopping point)')
     a = ap.parse_args()
+    if a.stop_step:
+        a.T_full, a.T = a.T, a.stop_step
+        a.min_steps = a.min_steps or int(np.ceil(0.75 * a.T))
     a.min_steps = a.min_steps or a.T
     data_tag = f'{a.start[5:]}_{a.end[5:]}_T{a.T}' + ('' if a.cond == 'all' else f'_cond{a.cond}') \
         + ('' if a.min_steps == a.T else f'_ms{a.min_steps}') \
         + ('' if a.embedder == 'nomic' else f'_emb-{a.embedder}') \
         + ('' if a.frac == 1.0 else f'_frac{a.frac:g}s{a.frac_seed}') \
-        + ('' if not a.cohort_T else f'_cT{a.cohort_T.replace(",", "-")}')
+        + ('' if not a.cohort_T else f'_cT{a.cohort_T.replace(",", "-")}') \
+        + ('' if not a.stop_step else f'_stop{a.stop_step}of{a.T_full}') \
+        + ('' if not a.cohort_tag else f'_coh-{a.cohort_tag}')
     tag = data_tag + ('' if a.d is None else f'_d{a.d}')
 
     if a.reuse:
         return scan(a, tag, **reuse(data_tag))
     acts, posts = load_window(a.start, a.end)
-    acts['step'], bounds = activity_steps(acts.t.values, a.T)
-    if a.cohort_T:                                    # agents kept under every binning (>= 75% of steps)
+    acts['step'], bounds = activity_steps(acts.t.values, a.T_full if a.stop_step else a.T)
+    if a.stop_step:                                   # collection stopped at the end of step stop_step
+        acts = acts[acts.step < a.stop_step].reset_index(drop=True)
+        bounds = bounds[:a.stop_step + 1]
+        log(f'stopped after step {a.stop_step} of {a.T_full}: {len(acts)} actions')
+    if a.cohort_tag:                                  # a fixed set of agents, active in >= 2 kept steps
+        fixed = set(pickle.load(open(os.path.join(DERIVED, 'real_tstep', f'{a.cohort_tag}.pkl'), 'rb'))['cohort'])
+        per = acts[acts.agent.isin(fixed)].groupby(['agent', 'step']).size().unstack(fill_value=0)
+        cohort = sorted(per.index[(per >= 1).sum(1) >= 2])
+        log(f'cohort fixed to {a.cohort_tag}: {len(cohort)} of {len(fixed)} agents active in >= 2 kept steps')
+    elif a.cohort_T:                                  # agents kept under every binning (>= 75% of steps)
         keep = None
         for Tb in [int(x) for x in a.cohort_T.split(',')]:
             sb, _ = activity_steps(acts.t.values, Tb)
@@ -277,7 +299,8 @@ def scan(a, tag, R, agent, step, cohort, base, share):
                               workers=a.workers, peel=a.peel,
                               two_signed_alpha=a.two_signed if a.two_signed >= 0 else None,
                               weight=None if a.weight == 'none' else a.weight,
-                              min_move=a.min_move if a.min_move >= 0 else None)
+                              min_move=a.min_move if a.min_move >= 0 else None,
+                              keep_arrays=bool(a.stop_step))
     log(f'scan done in {time.time() - t:.0f}s: p = {res["p"]:.3f}, bands {np.round(res["p_band"], 3).tolist()}, '
         f'd = {res["d"]}, factors removed {res["n_factors"]}, missing increments {res["n_missing"]} '
         f'(static {res["n_static"]})')
