@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from dkps.traces import make_openai_embed_fn
 from dkps.traces.leaderboard import _extract_query_id
-from dkps.unpaired_dkps import UnpairedDKPS
+from dkps.legacy import UnpairedDKPS
 
 HCFG = hashlib.sha1('openai/text-embedding-3-small|headtail8000'.encode()).hexdigest()[:8]
 

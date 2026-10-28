@@ -1,3 +1,6 @@
+.DS_Store
+*.npy
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -161,11 +164,19 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# dkps agentic-traces data & embedding cache
-data/
+# pixi environments
+.pixi
+*.egg-info
+
+# Shared local payloads (downloads, embedding parquets, caches) -- never tracked
+/data/*
+!/data/README.md
+
+# dkps agentic-traces data & embedding cache (root /data is covered above)
+projects/vantablack/data/
+projects/trubric/data/
 .dkps_cache/
 .dkps_cache_lb/
-.dkps_cache/
 notes/*.aux
 notes/*.log
 notes/*.out

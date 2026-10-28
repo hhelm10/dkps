@@ -1,0 +1,42 @@
+% iclr2025_conference.sty — compact ICLR-style formatting (drop-in approximation).
+% Replace with the official ICLR style file for the camera-ready if desired.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{iclr2025_conference}[2025/01/01 v1.0 ICLR-style formatting]
+
+\RequirePackage{geometry}
+\geometry{letterpaper, top=1in, bottom=1in, left=1.5in, right=1.5in}
+\RequirePackage{mathptmx}
+
+% line spacing
+\renewcommand{\baselinestretch}{1.0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ---- title block ----
+\newcommand{\@iclrtitle}{}
+\renewcommand{\title}[1]{\renewcommand{\@iclrtitle}{#1}}
+\newcommand{\@iclrauthor}{}
+\renewcommand{\author}[1]{\renewcommand{\@iclrauthor}{#1}}
+
+\renewcommand{\maketitle}{%
+  \begin{center}
+    {\Large\bfseries \@iclrtitle \par}
+    \vskip 1.0em
+    {\normalsize \@iclrauthor \par}
+  \end{center}
+  \vskip 1.0em
+}
+
+% ---- abstract ----
+\renewenvironment{abstract}{%
+  \centerline{\bfseries Abstract}
+  \vspace{0.5em}
+  \begin{quote}\small}{%
+  \end{quote}\vspace{0.5em}}
+
+% ---- section formatting (article defaults, slightly tightened) ----
+\pagestyle{plain}
+
+% convenience
+\newcommand{\Method}{PKPS}
+\endinput

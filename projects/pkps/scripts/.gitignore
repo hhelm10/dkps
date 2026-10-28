@@ -1,0 +1,30 @@
+# Raw / downloaded / extracted data (keep the prep code under data/, ignore the data itself)
+crfm-helm-public/
+data/*.tsv
+data/*.jl
+data/*-response.jl
+
+# Experiment outputs and intermediate caches
+results/
+results-*/
+plots/
+exports/
+
+# Large embeddings, archives, and backups (never shared)
+multi-embed/
+*.tar.gz
+*.bak/
+helm.bak/
+cleaned-rebuttal/
+
+# Generated figure artifacts (figure *source* lives in figures/*.py)
+figures/*.pdf
+figures/*.png
+*.ipynb
+
+# Generated tables
+tables/
+tables-*/
+
+# EEE datastore downloads
+data/eee/

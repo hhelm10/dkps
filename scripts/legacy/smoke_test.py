@@ -10,7 +10,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from dkps import DataKernelPerspectiveSpace
+from dkps.legacy import DataKernelPerspectiveSpace
 from dkps.traces import (load_langfuse_corpus, TraceEmbedder, hash_embed_fn,
                          build_dkps_input, combine_channel_distances)
 

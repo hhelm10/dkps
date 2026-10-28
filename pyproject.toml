@@ -1,0 +1,75 @@
+[project]
+authors = [
+    {name = "Hayden Helm", email = "hayden@helivan.io"},
+    {name = "bkj", email = "bkj.322@gmail.com"},
+]
+name = "dkps"
+description = "Perspective spaces for comparing black-box models from their cached responses (DKPS / PKPS)"
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["generative models", "embeddings", "benchmark prediction", "populations of models"]
+requires-python = ">=3.11,<3.13"   # window set by the pinned graspologic fork (its networkx floor needs 3.11; its cap excludes 3.13)
+version = "0.1.0"
+dependencies = [
+    "graspologic @ git+https://github.com/jataware/graspologic",
+    "jlai @ git+https://github.com/jataware/jlai",
+    "nltk>=3.9.1,<4",
+    "numpy>=1.26,<3",
+    "pandas>=2,<3",
+    "scipy>=1.11,<2",
+    "scikit-learn>=1.3,<2",
+    "httpx",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+# agentic-traces extension (dkps.traces), from the vantablack fork
+traces = ["sentence-transformers", "requests"]
+
+[project.urls]
+Homepage = "https://github.com/hhelm10/dkps"
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+
+[tool.pixi.pypi-dependencies]
+dkps = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+pip = ">=25.1.1,<26"
+tqdm = ">=4.67.1,<5"
+google-genai = ">=1.25.0,<2"
+rich = ">=14.0.0,<15"
+einops = ">=0.8.1,<0.9"
+sacrebleu = ">=2.5.1,<3"
+scipy = ">=1.16.0,<2"
+scikit-learn = ">=1.7.1,<2"
+networkx = ">=3.5,<4"
+pandas = ">=2.3.1,<3"
+beartype = ">=0.21.0,<0.22"
+matplotlib = ">=3.10.5,<4"
+google-cloud-sdk = { version = ">=537.0.0,<538", channel = "conda-forge" }
+jinja2 = ">=3.1.6,<4"
+litellm = ">=1.73.6,<1.82"
+openai = ">=2.14.0,<3"
+huggingface_hub = ">=1.2.3,<2"
+numba = ">=0.63.1,<0.64"
+pytest = ">=9.0.2,<10"
+
+# The built distribution ships only the package: projects/ (papers, experiments)
+# and data/ (local payloads) never end up in a wheel or sdist.
+[tool.hatch.build.targets.wheel]
+packages = ["dkps"]
+
+[tool.hatch.build.targets.sdist]
+include = ["dkps", "tests", "README.md", "LICENSE", "pyproject.toml"]
+
+[tool.hatch.metadata]
+allow-direct-references = true

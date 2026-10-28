@@ -33,7 +33,7 @@ from graspologic.embed import ClassicalMDS
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from dkps import DataKernelPerspectiveSpace
+from dkps.legacy import DataKernelPerspectiveSpace
 from dkps.traces import (load_langfuse_corpus, TraceEmbedder, build_dkps_input,
                          model_distance_matrix, combine_channel_distances, rms_scale)
 
