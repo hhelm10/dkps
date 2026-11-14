@@ -43,6 +43,10 @@ class SimConfig:
     m_sd: float = 0.0       # 0: every agent gives m responses per step. >0: n(agent, step) =
                             # 1 + Poisson(mu_n), mu_n = (m - 1) exp(m_sd z_n - m_sd^2 / 2), z_n ~ N(0, 1):
                             # unequal, agent-specific activity with at least one response per step
+    m_step_sd: float = 0.0  # >0 (with m_sd > 0): each agent's activity also varies from step to step,
+                            # mu_nt = mu_n exp(m_step_sd z_nt - m_step_sd^2 / 2)
+    m_time_sd: float = 0.0  # >0 (with m_sd > 0): platform-wide activity varies from step to step,
+                            # mu_nt *= exp(m_time_sd g_t - m_time_sd^2 / 2), common to all agents
     p: int = 100            # response embedding dimension
     dl: int = 10            # latent perspective dimension
     q: int = 50             # query space dimension
@@ -59,6 +63,8 @@ class SimConfig:
     S_size: int = 20        # colluders per group
     n_groups: int = 1       # number of colluding groups (disjoint, each with its own group process)
     rho: float = 0.0        # effect size: correlation of colluders' increments (0 = H0)
+    onset: int = 1          # first step whose increment carries the group process (1 = from the start);
+                            # before it, colluders move like everyone else
     # nuisance
     r: int = 0              # number of platform factors
     sigma_f: float = 0.0    # factor strength
@@ -115,13 +121,14 @@ def generate(cfg: SimConfig):
         innov = (rng.normal(size=(N, dl)) * sc_e) @ rot_e.T
         e = cfg.ar * e_prev + np.sqrt(1 - cfg.ar ** 2) * innov
         e_prev = e
-        own = np.where(inS, np.sqrt(1 - cfg.rho), 1.0)[:, None]
+        on = t >= cfg.onset
+        own = np.where(inS & on, np.sqrt(1 - cfg.rho), 1.0)[:, None]
         d = cfg.sigma_e * own * e * noise_scale[:, None]
         if cfg.r:
             d += cfg.sigma_f * B @ f[t]
         if cfg.niche_size:
             d[niche] += cfg.niche_sigma * fn[t]
-        for k, Gk in enumerate(groups):
+        for k, Gk in enumerate(groups if on else []):
             d[Gk] += cfg.sigma_e * np.sqrt(cfg.rho) * gk[k][t] * noise_scale[Gk, None]
         P[:, t] = P[:, t - 1] + d
     Zlat = eta[:, None, :] + P                                 # (N, T, dl)
@@ -136,7 +143,12 @@ def generate(cfg: SimConfig):
         cum = Pj.cumsum(1)
     if cfg.m_sd > 0:
         mu = (m - 1) * np.exp(cfg.m_sd * rng.normal(size=N) - cfg.m_sd ** 2 / 2)
-        counts = 1 + rng.poisson(mu[:, None], size=(N, T))
+        mu = np.broadcast_to(mu[:, None], (N, T))
+        if cfg.m_step_sd > 0:
+            mu = mu * np.exp(cfg.m_step_sd * rng.normal(size=(N, T)) - cfg.m_step_sd ** 2 / 2)
+        if cfg.m_time_sd > 0:
+            mu = mu * np.exp(cfg.m_time_sd * rng.normal(size=T) - cfg.m_time_sd ** 2 / 2)[None]
+        counts = 1 + rng.poisson(mu, size=(N, T))
     else:
         counts = np.full((N, T), m)
     agent = np.repeat(np.arange(N), counts.sum(1))

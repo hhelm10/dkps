@@ -3,6 +3,7 @@
 
 % ICML 2026 style (placeholder until the ICML 2027 files are released).
 % The [accepted] option prints the author block; remove it for an anonymized submission.
+\usepackage[T1]{fontenc}  % Times under XeTeX (tectonic) as well as pdflatex
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{subfigure}
@@ -42,13 +43,13 @@
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
-\icmltitlerunning{Detecting Colluding Subnetworks in Multi-Agent Systems}
+\icmltitlerunning{Detecting Colluding Subnetworks in a Multi-Agent System}
 
 \usepackage{placeins}
 \begin{document}
 
 \twocolumn[
-\icmltitle{Detecting Colluding Subnetworks in Multi-Agent Systems}
+\icmltitle{Detecting Colluding Subnetworks in a Multi-Agent System}
 
 \begin{icmlauthorlist}
 \icmlauthor{The Multi-Agent Applied Research Collective}{marc}
@@ -349,32 +350,11 @@ We next apply Algorithm~\ref{alg:main} to Moltbook, a social network on which th
   \label{fig:moltbook}
 \end{figure*}
 
-\begin{table*}[t]
-\centering
-\small
-\caption{Eight colluding subnetworks detected on Moltbook from January 30 to February 9, 2026, listed in the order found by peeling. $p$ is the global $p$-value of the round ($B=199$). Increments counts the increments at which the set score $Z_S^{(t)}$ of Eq.~\eqref{eq:setscore} exceeds $2$, out of those at which at least one pair of members is observed. Members are Moltbook handles with their scores $s_i$ against $\hat S$ (Section~\ref{sec:membership}); higher scores indicate stronger attachment.}
-\label{tab:moltbook}
-\begin{tabular}{@{}rcccp{0.66\textwidth}@{}}
-\toprule
- & $p$ & $|\hat S|$ & increments & members ($s_i$) \\
-\midrule
-1 & 0.010 & 10 & 7 of 7 & FloClaw1 7.2, floflo1 6.5, FloClaw5 6.2, FloClaw6 5.9, FloClaw2 5.9, FloClaw7 5.7, FloClaw3 5.5, Floflo 4.6, FloClaw13 3.8, FloClaw10 3.4 \\
-2 & 0.010 & 9 & 6 of 7 & Mizukix 6.4, Mizukih 6.2, Mizukiih 5.3, Zoshita 5.2, MizukiAI 5.1, Xennah 5.0, Wiseband 4.6, Tazania 3.9, Kuro\_ 3.7 \\
-3 & 0.015 & 5 & 5 of 7 & ClawdBotThird 6.4, ClawdBotFourth 5.9, ClawdBotSecond 5.3, ClawdBotFifth 4.9, ClawdAnalyzer 3.6 \\
-4 & 0.015 & 5 & 5 of 5 & DigitalMacroLabAssistant 6.3, ClawdWorkspace 6.3, pyyypf 6.2, hiymc 5.4, MintingAssistant 4.2 \\
-5 & 0.020 & 9 & 7 of 7 & NEIA 5.7, ClawdNew123 5.1, emergebot 4.4, Starclawd-1 4.4, alignbot 4.1, TipJarBot 4.0, ClawdBond 3.9, VulnHunterBot 3.7, MaurAI 2.9 \\
-6 & 0.015 & 7 & 6 of 7 & XNO\_Scout\_OC2 6.0, XNO\_Amplifier\_OC 5.4, AstronautSHE 4.7, MoltPoster\_CBt3pLAA 4.3, Darwin\_AI\_6201 3.9, XNO\_Sentinel\_OC 3.9, XNO\_Advocate\_Bot 3.6 \\
-7 & 0.020 & 6 & 5 of 7 & Jarvis-Chenxy 5.1, valt 4.9, Molt-Pi5 4.5, so-molt-20260202-nekr 3.8, XiaoBaiAI 3.7, AA-Agent 3.5 \\
-8 & 0.040 & 4 & 3 of 3 & QwenPoweredClaw4 5.2, QwenPoweredClaw5 5.0, QwenPoweredClaw7 4.7, QwenPoweredClaw8 4.6 \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
 \paragraph{Data.} The window is January 30 to February 9, 2026, and contains $3.48$ million actions by $50{,}842$ agents. We divide the window into $T=8$ time steps of ``activity time'', each holding an equal share of the platform's actions, so that gaps in the archive fall inside time steps rather than between them (Figure~\ref{fig:moltbook}(a)). The cohort is the $2{,}574$ agents with at least one action in at least $6$ of the $8$ time steps, with $1.77$ million actions in total. The data are in the vantablack setting: the query of a comment is estimated by the post it answers, and the query of a post by its submolt.
 
 \paragraph{Configuration.} Queries and responses are embedded with \texttt{nomic-embed-v1.5} \citep{nussbaum2024nomic}. The kernel $\Gamma$ is the one used in simulation (Section~\ref{sec:est-ps}), with the reference $\hat\mu$ computed from the actions of the cohort together with the actions of all other agents in the window. The elbow selects $d=10$, and no diffuse factor is removed. We use $B=199$ permutations and $\alpha=0.05$.
 
-\paragraph{Eight colluding subnetworks are detected.} Peeling rejects in eight rounds and stops at the ninth ($p=0.11$), giving eight subnetworks of $4$ to $10$ agents (Table~\ref{tab:moltbook}). Figure~\ref{fig:moltbook} shows that in every round the observed scan statistic lies outside its permutation null, and that the scores of the members against $\hat S$ -- between $2.9$ and $7.2$ -- are separated from those of the other agents tested in the round.
+\paragraph{Eight colluding subnetworks are detected.} Peeling rejects in eight rounds and stops at the ninth ($p=0.11$), giving eight subnetworks of $4$ to $10$ agents (Table~\ref{tab:moltbook} in Appendix~\ref{app:moltbook}). Figure~\ref{fig:moltbook} shows that in every round the observed scan statistic lies outside its permutation null, and that the scores of the members against $\hat S$ -- between $2.9$ and $7.2$ -- are separated from those of the other agents tested in the round.
 
 \paragraph{Co-movement is repeated, not a single jump.} Subnetworks 1, 2, 5 and 6 move together at six or seven of the seven increments; subnetwork 2 moves together most strongly at the last three, and subnetwork 7 at the first three. Subnetworks 4 and 8 are observed at fewer increments because, at the others, their members were inactive or posted identical content and did not move. Subnetwork 8 moves together at all three increments at which it is observed and is the weakest detection ($p=0.04$).
 
@@ -438,6 +418,32 @@ $T$ $= 16$ & 4 / 50 & 0.08 \\
 $T$ $= 32$ & 3 / 50 & 0.06 \\
 \midrule
 pooled & 29 / 600 & 0.048 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Colluding subnetworks on Moltbook}
+\label{app:moltbook}
+
+Table~\ref{tab:moltbook} lists the members of the eight colluding subnetworks detected on Moltbook (Section~\ref{sec:realdata}).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Eight colluding subnetworks detected on Moltbook from January 30 to February 9, 2026, listed in the order found by peeling. $p$ is the global $p$-value of the round ($B=199$). Increments counts the increments at which the set score $Z_S^{(t)}$ of Eq.~\eqref{eq:setscore} exceeds $2$, out of those at which at least one pair of members is observed. Members are Moltbook handles with their scores $s_i$ against $\hat S$ (Section~\ref{sec:membership}); higher scores indicate stronger attachment.}
+\label{tab:moltbook}
+\begin{tabular}{@{}rcccp{0.72\textwidth}@{}}
+\toprule
+ & $p$ & $|\hat S|$ & increments & members ($s_i$) \\
+\midrule
+1 & 0.010 & 10 & 7 of 7 & FloClaw1 7.2, floflo1 6.5, FloClaw5 6.2, FloClaw6 5.9, FloClaw2 5.9, FloClaw7 5.7, FloClaw3 5.5, Floflo 4.6, FloClaw13 3.8, FloClaw10 3.4 \\
+2 & 0.010 & 9 & 6 of 7 & Mizukix 6.4, Mizukih 6.2, Mizukiih 5.3, Zoshita 5.2, MizukiAI 5.1, Xennah 5.0, Wiseband 4.6, Tazania 3.9, Kuro\_ 3.7 \\
+3 & 0.015 & 5 & 5 of 7 & ClawdBotThird 6.4, ClawdBotFourth 5.9, ClawdBotSecond 5.3, ClawdBotFifth 4.9, ClawdAnalyzer 3.6 \\
+4 & 0.015 & 5 & 5 of 5 & DigitalMacroLabAssistant 6.3, ClawdWorkspace 6.3, pyyypf 6.2, hiymc 5.4, MintingAssistant 4.2 \\
+5 & 0.020 & 9 & 7 of 7 & NEIA 5.7, ClawdNew123 5.1, emergebot 4.4, Starclawd-1 4.4, alignbot 4.1, TipJarBot 4.0, ClawdBond 3.9, VulnHunterBot 3.7, MaurAI 2.9 \\
+6 & 0.015 & 7 & 6 of 7 & XNO\_Scout\_OC2 6.0, XNO\_Amplifier\_OC 5.4, AstronautSHE 4.7, MoltPoster\_CBt3pLAA 4.3, Darwin\_AI\_6201 3.9, XNO\_Sentinel\_OC 3.9, XNO\_Advocate\_Bot 3.6 \\
+7 & 0.020 & 6 & 5 of 7 & Jarvis-Chenxy 5.1, valt 4.9, Molt-Pi5 4.5, so-molt-20260202-nekr 3.8, XiaoBaiAI 3.7, AA-Agent 3.5 \\
+8 & 0.040 & 4 & 3 of 3 & QwenPoweredClaw4 5.2, QwenPoweredClaw5 5.0, QwenPoweredClaw7 4.7, QwenPoweredClaw8 4.6 \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -8,7 +8,8 @@ simulated or recomputed in the browser.
 
 Exported (no content of posts or comments):
   activity     actions per hour of the 2,574 agents analyzed (the reference run's cohort)
-  monitor      positions of all 2,574 agents (named only if detected at some stopping point), centered
+  monitor      positions of all 2,574 agents (named only if detected at some stopping point, or in
+               HIGHLIGHT, which the page rings and labels), centered
                per step and projected on the two leading directions, for the perspective monitor
   stops[k]     per stopping point: cohort size, d, every peeling round (p, observed scan statistic
                and its 199 permutation null in the round's size band, membership scores of the
@@ -40,6 +41,7 @@ OUT = os.path.join(PROJ, 'web', 'moltbook_data.js')
 START, END = '2026-01-30', '2026-02-09'
 STOPS = range(3, 9)
 REF_TAG = '01-30_02-09_T8_ms6'                 # the paper's run: 2,574 agents
+HIGHLIGHT = ['eudaemon_0']                     # agents the monitor rings and labels by name
 rng = np.random.default_rng(0)
 r2 = lambda x, n=2: None if x is None or not np.isfinite(x) else round(float(x), n)
 
@@ -87,6 +89,15 @@ def export_stop(k):
     N, T = len(names), summ['T']
     rows = pd.read_parquet(os.path.join(D_DIR, f'{tag}_rows.parquet'), columns=['agent_ix', 'step'])
     obs = np.bincount(rows.agent_ix.values * T + rows.step.values, minlength=N * T).reshape(N, T) > 0
+    return export_result(res, names, obs, k=k, B=int(summ['B']), step_bounds=summ['step_bounds'],
+                         actions=int(summ.get('cohort_actions') or len(rows)))
+
+
+def export_result(res, names, obs, k, B, step_bounds, actions):
+    """One stopping point's page data from a run_residuals result (keep_arrays=True, peeled):
+    names (N,) agent names, obs (N, T) whether an agent acted in a step. Shared with the
+    synthetic API demo (api_demo.py)."""
+    N, T = obs.shape
     D = res['D']
     Zm = centered(res['positions'], obs)
     first = np.array([np.flatnonzero(obs[i])[0] for i in range(N)])
@@ -172,10 +183,28 @@ def export_stop(k):
     q1 = lambda M_: [[None if not np.isfinite(v) else round(float(v), 1) for v in row] for row in M_]
     heat = dict(n=len(ordr), sizes=[s['size'] for s in subs], z=q1(H),
                 steps=[q1(Q[t][np.ix_(ordr, ordr)]) for t in range(Q.shape[0])])   # per-increment pair scores
-    stop = dict(k=k, T=T, N=int(N), actions=int(summ.get('cohort_actions') or len(rows)), d=int(res['d']),
-                n_factors=int(res['n_factors']), B=int(summ['B']),
-                step_bounds=summ['step_bounds'], rounds=rounds, subnetworks=subs, heat=heat)
+    stop = dict(k=k, T=T, N=int(N), actions=actions, d=int(res['d']),
+                n_factors=int(res['n_factors']), B=B,
+                step_bounds=step_bounds, rounds=rounds, subnetworks=subs, heat=heat)
     return stop, (names, grp, Zm, obs)
+
+
+def monitor(names, Zm, obs, stops, highlight=(), show=None):
+    """Perspective monitor: every agent's positions (centered per step) on the two leading
+    directions, named if detected at some stopping point, in highlight (ringed and labeled by
+    the page), or in show (named only)."""
+    N, T = obs.shape
+    found = {m['name'] for st in stops.values() for sb in st['subnetworks'] for m in sb['members']}
+    isf = np.isin(names, list(found) + list(highlight) + list(show or []))
+    X = Zm.reshape(-1, Zm.shape[2])
+    ok = np.isfinite(X[:, 0])
+    V = np.linalg.svd(X[ok] - X[ok].mean(0), full_matrices=False)[2][:2]
+    P = (Zm - X[ok].mean(0)) @ V.T
+    P = P / np.nanstd(P)
+    return dict(highlight=[h for h in highlight if h in set(names)],
+                name=[str(names[i]) if isf[i] else None for i in range(N)],
+                xy=[[None if not np.isfinite(P[i, t, 0]) else [round(float(P[i, t, 0]), 3), round(float(P[i, t, 1]), 3)]
+                     for t in range(T)] for i in range(N)])
 
 
 def main():
@@ -209,18 +238,7 @@ def main():
             full = extra
     if full is not None:                                                   # perspective monitor (k = 8 positions)
         names, grp, Zm, obs = full
-        N, T = obs.shape
-        found = {m['name'] for st in data['stops'].values() for sb in st['subnetworks'] for m in sb['members']}
-        isf = np.isin(names, list(found))
-        pick = np.arange(N)                                                # every agent analyzed
-        X = Zm[pick].reshape(-1, Zm.shape[2])
-        ok = np.isfinite(X[:, 0])
-        V = np.linalg.svd(X[ok] - X[ok].mean(0), full_matrices=False)[2][:2]
-        P = (Zm[pick] - X[ok].mean(0)) @ V.T
-        P = P / np.nanstd(P)
-        data['monitor'] = dict(name=[str(names[i]) if isf[i] else None for i in pick],     # names of detected members only
-                               xy=[[None if not np.isfinite(P[i, t, 0]) else [round(float(P[i, t, 0]), 3), round(float(P[i, t, 1]), 3)]
-                                    for t in range(T)] for i in range(len(pick))])
+        data['monitor'] = monitor(names, Zm, obs, data['stops'], HIGHLIGHT)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w') as fh:
         fh.write('window.MOLTBOOK = ' + json.dumps(data, separators=(',', ':')) + ';\n')

@@ -51,6 +51,7 @@ Comparator nulls: 'block' (shuffle per block of steps), 'rotate' (per-agent
 Haar rotation of the whole trajectory), 'cshift' (per-agent circular shift).
 """
 import multiprocessing as mp
+import os
 import warnings
 import numpy as np
 
@@ -63,8 +64,12 @@ BANDS = np.array([2, 3, 11, 31, 101])   # size-band lower edges; band 0 = pairs
 def condition(U, X, k=64, bw=1.0, chunk=None):
     """Residuals x - kernel-weighted mean of all responses to the k nearest queries, the
     response's own query included (one reference from all the data, as on Moltbook,
-    pipeline/pkps.py); bandwidth bw x the median distance to the nearest other query."""
-    import torch
+    pipeline/pkps.py); bandwidth bw x the median distance to the nearest other query.
+    Uses torch (GPU if present) when installed, else numpy (same result)."""
+    try:
+        import torch
+    except ImportError:
+        return _condition_np(U, X, k=k, bw=bw, chunk=chunk)
     dev = 'cuda' if torch.cuda.is_available() else 'cpu'
     chunk = chunk or max(128, int(1e8 // len(U)))
     Ut = torch.as_tensor(U, device=dev)
@@ -86,6 +91,33 @@ def condition(U, X, k=64, bw=1.0, chunk=None):
     if dev == 'cuda':
         torch.cuda.empty_cache()
     return out
+
+
+def _condition_np(U, X, k=64, bw=1.0, chunk=None):
+    """condition() without torch: the same neighbours, bandwidth (lower median, as torch) and
+    weights, by chunked brute-force distances."""
+    U = np.asarray(U, np.float32)
+    U = (U - U.mean(0)) / U.std(0, ddof=1)
+    X = np.asarray(X, np.float32)
+    from concurrent.futures import ThreadPoolExecutor
+    chunk = chunk or max(128, int(1e8 // len(U)))
+    sq = (U ** 2).sum(1)
+
+    def knn(a):                                                        # numpy releases the GIL here
+        d2 = np.maximum(sq[a:a + chunk, None] + sq[None] - 2 * U[a:a + chunk] @ U.T, 0)
+        i = np.argpartition(d2, k - 1, axis=1)[:, :k]
+        v = np.take_along_axis(d2, i, 1)
+        o = np.argsort(v, 1)                                           # ascending, as topk(largest=False)
+        return np.take_along_axis(i, o, 1), np.sqrt(np.take_along_axis(v, o, 1))
+    with ThreadPoolExecutor(os.cpu_count()) as ex:
+        idx_all, d_all = map(list, zip(*ex.map(knn, range(0, len(U), chunk))))
+    nn = np.sort(np.concatenate([v[:, 1] for v in d_all]))
+    sigma = bw * nn[(len(nn) - 1) // 2]
+    R = np.empty_like(X)
+    for a, (i, v) in zip(range(0, len(U), chunk), zip(idx_all, d_all)):
+        w = np.exp(-v ** 2 / (2 * sigma ** 2))
+        R[a:a + chunk] = X[a:a + chunk] - (w[:, :, None] * X[i]).sum(1) / w.sum(1, keepdims=True)
+    return R, float(sigma)
 
 
 def _unit_means(R, agent, step, N, T, chunk=200_000):
@@ -494,7 +526,7 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None, Q=Non
 
 def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers=1,
         n_factors='auto', gpu_slot=None, per_step=None, center=True, two_signed_alpha=None,
-        weight=None, min_move=None, split=False, stat='rank', peel=0):
+        weight=None, min_move=None, split=False, stat='rank', peel=0, keep_arrays=False):
     """gpu_slot: optional lock/semaphore held while on the GPU (conditioning, and the pair
     threshold when split=True), so many replicate processes can share one GPU."""
     import contextlib
@@ -507,7 +539,7 @@ def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers
                         known_S=(list(data['groups']) if len(data.get('groups', [])) > 1
                                  else (data['S'] if len(data['S']) else None)), peel=peel,
                         two_signed_alpha=two_signed_alpha, weight=weight, min_move=min_move,
-                        split=split, gpu_slot=gpu_slot, stat=stat)
+                        split=split, gpu_slot=gpu_slot, stat=stat, keep_arrays=keep_arrays)
     res.update(sigma=sigma)
     return res
 
