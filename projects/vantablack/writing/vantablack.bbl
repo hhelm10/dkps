@@ -1,4 +1,4 @@
-\begin{thebibliography}{48}
+\begin{thebibliography}{59}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -11,6 +11,7 @@ Acharyya, A., Trosset, M.~W., Priebe, C.~E., and Helm, H.~S.
 \newblock Consistent estimation of generative model representations in the data
   kernel perspective space.
 \newblock \emph{arXiv preprint arXiv:2409.17308}, 2024.
+\newblock \doi{10.48550/arXiv.2409.17308}.
 
 \bibitem[Acharyya et~al.(2025)Acharyya, Agterberg, Park, and
   Priebe]{acharyya2025concentration}
@@ -18,6 +19,15 @@ Acharyya, A., Agterberg, J., Park, Y., and Priebe, C.~E.
 \newblock Concentration bounds on response-based vector embeddings of black-box
   generative models.
 \newblock \emph{arXiv preprint arXiv:2511.08307}, 2025.
+\newblock \doi{10.48550/arXiv.2511.08307}.
+
+\bibitem[{Agence France-Presse}(2026)]{afp2026moltmatch}
+{Agence France-Presse}.
+\newblock {AI} agents creating surprise dating accounts for humans.
+\newblock Taipei Times,
+  \url{https://www.taipeitimes.com/News/world/archives/2026/02/14/2003852326},
+  2026.
+\newblock February 14, 2026.
 
 \bibitem[Agterberg et~al.(2020)Agterberg, Park, Larson, White, Priebe, and
   Lyzinski]{agterberg2020vertex}
@@ -26,6 +36,13 @@ Agterberg, J., Park, Y., Larson, J., White, C., Priebe, C.~E., and Lyzinski, V.
   modification.
 \newblock \emph{Electronic Journal of Statistics}, 14\penalty0 (2):\penalty0
   3230--3267, 2020.
+\newblock \doi{10.1214/20-EJS1744}.
+
+\bibitem[{AI Digest}(2025)]{aidigest2025village}
+{AI Digest}.
+\newblock {AI Village}.
+\newblock Sage, \url{https://theaidigest.org/village}, 2025.
+\newblock Running since April 2, 2025.
 
 \bibitem[Anonymous(2026)]{pkps2026}
 Anonymous.
@@ -39,6 +56,7 @@ Arias-Castro, E., Cand{\`e}s, E.~J., and Durand, A.
 \newblock Detection of an anomalous cluster in a network.
 \newblock \emph{Annals of Statistics}, 39\penalty0 (1):\penalty0 278--304,
   2011.
+\newblock \doi{10.1214/10-AOS839}.
 
 \bibitem[Athreya et~al.(2018)Athreya, Fishkind, Tang, Priebe, Park, Vogelstein,
   Levin, Lyzinski, Qin, and Sussman]{athreya2018statistical}
@@ -48,10 +66,21 @@ Athreya, A., Fishkind, D.~E., Tang, M., Priebe, C.~E., Park, Y., Vogelstein,
 \newblock \emph{Journal of Machine Learning Research}, 18\penalty0
   (226):\penalty0 1--92, 2018.
 
-\bibitem[Bridgeford \& Helm(2025)Bridgeford and Helm]{bridgeford2025detecting}
+\bibitem[Bridgeford \& Helm(2026)Bridgeford and Helm]{bridgeford2025detecting}
 Bridgeford, E. and Helm, H.
 \newblock Detecting perspective shifts in multi-agent systems.
-\newblock \emph{arXiv preprint arXiv:2512.05013}, 2025.
+\newblock In \emph{Proceedings of the 43rd International Conference on Machine
+  Learning}, volume 306 of \emph{Proceedings of Machine Learning Research},
+  pp.\  9826--9855, 2026.
+
+\bibitem[Cable et~al.(2026)Cable, Chiu, Pernice, Zhang, Anthony, Bas, Shen,
+  Stosz, and Steinhardt]{cable2026early}
+Cable, J., Chiu, D., Pernice, F., Zhang, S., Anthony, J., Bas, T., Shen, G.,
+  Stosz, C., and Steinhardt, J.
+\newblock Early rogue {AI} agent activity and attempts to hack found on
+  urlquery.net.
+\newblock Transluce, \url{https://transluce.org/agent-activity}, 2026.
+\newblock September 23, 2026.
 
 \bibitem[Chen et~al.(2025)Chen, Arroyo, Athreya, Cape, Vogelstein, Park, White,
   Larson, Yang, and Priebe]{chen2025multiple}
@@ -61,12 +90,14 @@ Chen, G., Arroyo, J., Athreya, A., Cape, J., Vogelstein, J.~T., Park, Y.,
   graphs.
 \newblock \emph{Computational Statistics \& Data Analysis}, 203:\penalty0
   108070, 2025.
+\newblock \doi{10.1016/j.csda.2024.108070}.
 
 \bibitem[Duderstadt et~al.(2023)Duderstadt, Helm, and
   Priebe]{duderstadt2023comparing}
 Duderstadt, B., Helm, H.~S., and Priebe, C.~E.
 \newblock Comparing foundation models using data kernels.
 \newblock \emph{arXiv preprint arXiv:2305.05126}, 2023.
+\newblock \doi{10.48550/arXiv.2305.05126}.
 
 \bibitem[Efron(2004)]{efron2004large}
 Efron, B.
@@ -74,11 +105,13 @@ Efron, B.
   hypothesis.
 \newblock \emph{Journal of the American Statistical Association}, 99\penalty0
   (465):\penalty0 96--104, 2004.
+\newblock \doi{10.1198/016214504000000089}.
 
 \bibitem[Fish et~al.(2024)Fish, Gonczarowski, and Shorrer]{fish2024algorithmic}
 Fish, S., Gonczarowski, Y.~A., and Shorrer, R.~I.
 \newblock Algorithmic collusion by large language models.
 \newblock \emph{arXiv preprint arXiv:2404.00806}, 2024.
+\newblock \doi{10.48550/arXiv.2404.00806}.
 
 \bibitem[Fishkind et~al.(2015)Fishkind, Lyzinski, Pao, Chen, and
   Priebe]{fishkind2015vertex}
@@ -86,19 +119,13 @@ Fishkind, D.~E., Lyzinski, V., Pao, H., Chen, L., and Priebe, C.~E.
 \newblock Vertex nomination schemes for membership prediction.
 \newblock \emph{Annals of Applied Statistics}, 9\penalty0 (3):\penalty0
   1510--1532, 2015.
+\newblock \doi{10.1214/15-AOAS834}.
 
 \bibitem[Glaz et~al.(2001)Glaz, Naus, and Wallenstein]{glaz2001scan}
 Glaz, J., Naus, J., and Wallenstein, S.
 \newblock Scan statistics.
 \newblock \emph{Springer Series in Statistics}, 2001.
-
-\bibitem[{Gulf News}(2026)]{gulfnews2026moltbook}
-{Gulf News}.
-\newblock What is {Moltbook}? {The} new social media platform built exclusively
-  for {AI} agents.
-\newblock
-  \url{https://gulfnews.com/technology/what-is-moltbook-the-new-social-media-platform-built-exclusively-for-ai-agents-1.500429580},
-  2026.
+\newblock \doi{10.1007/978-1-4757-3460-7}.
 
 \bibitem[Hajek et~al.(2015)Hajek, Wu, and Xu]{hajek2015computational}
 Hajek, B., Wu, Y., and Xu, J.
@@ -126,25 +153,30 @@ Helm, H., Acharyya, A., Park, Y., Duderstadt, B., and Priebe, C.
 Helm, H., Johnson, B., and Priebe, C.~E.
 \newblock Query-efficient model evaluation using cached responses.
 \newblock \emph{arXiv preprint arXiv:2605.07096}, 2026{\natexlab{a}}.
+\newblock \doi{10.48550/arXiv.2605.07096}.
 
 \bibitem[Helm et~al.(2026{\natexlab{b}})Helm, Priebe, and
   Duderstadt]{helm2026control}
 Helm, H., Priebe, C., and Duderstadt, B.
 \newblock Control charts for multi-agent systems.
-\newblock \emph{arXiv preprint arXiv:2605.11135}, 2026{\natexlab{b}}.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  2026{\natexlab{b}}.
 
 \bibitem[Hubinger et~al.(2024)]{hubinger2024sleeper}
 Hubinger, E. et~al.
 \newblock Sleeper agents: Training deceptive {LLMs} that persist through safety
   training.
 \newblock \emph{arXiv preprint arXiv:2401.05566}, 2024.
+\newblock \doi{10.48550/arXiv.2401.05566}.
 
-\bibitem[{Hugging Face}(2026)]{huggingface2026anatomy}
-{Hugging Face}.
-\newblock Anatomy of a frontier lab agent intrusion: A technical timeline of
-  the {July} 2026 incident.
-\newblock \url{https://huggingface.co/blog/agent-intrusion-technical-timeline},
+\bibitem[Husain(2026)]{gulfnews2026moltbook}
+Husain, Z.
+\newblock What is {Moltbook}? {The} new social media platform built exclusively
+  for {AI} agents.
+\newblock Gulf News,
+  \url{https://gulfnews.com/technology/what-is-moltbook-the-new-social-media-platform-built-exclusively-for-ai-agents-1.500429580},
   2026.
+\newblock February 3, 2026.
 
 \bibitem[Jiang et~al.(2026)Jiang, Zhang, Shen, Backes, and
   Zhang]{jiang2026humans}
@@ -152,12 +184,32 @@ Jiang, Y., Zhang, Y., Shen, X., Backes, M., and Zhang, Y.
 \newblock ``{Humans} welcome to observe'': A first look at the agent social
   network {Moltbook}.
 \newblock \emph{arXiv preprint arXiv:2602.10127}, 2026.
+\newblock \doi{10.48550/arXiv.2602.10127}.
 
 \bibitem[Kulldorff(1997)]{kulldorff1997spatial}
 Kulldorff, M.
 \newblock A spatial scan statistic.
 \newblock \emph{Communications in Statistics---Theory and Methods}, 26\penalty0
   (6):\penalty0 1481--1496, 1997.
+\newblock \doi{10.1080/03610929708831995}.
+
+\bibitem[Lanz(2026)]{lanz2026spacemolt}
+Lanz, J.~A.
+\newblock Get out humans! `{SpaceMolt}' is a multiplayer game built exclusively
+  for {AI} agents.
+\newblock Decrypt,
+  \url{https://decrypt.co/357657/spacemolt-multiplayer-game-built-exclusively-ai-agents},
+  2026.
+\newblock February 10, 2026.
+
+\bibitem[Larcher et~al.(2026)Larcher, {XciD}, {raphael-gl}, and
+  Rannou]{huggingface2026anatomy}
+Larcher, H., {XciD}, {raphael-gl}, and Rannou, C.
+\newblock Anatomy of a frontier lab agent intrusion: A technical timeline of
+  the {July} 2026 incident.
+\newblock Hugging Face blog,
+  \url{https://huggingface.co/blog/agent-intrusion-technical-timeline}, 2026.
+\newblock July 27, 2026.
 
 \bibitem[Levin et~al.(2017)Levin, Athreya, Tang, Lyzinski, and
   Priebe]{levin2017omnibus}
@@ -165,6 +217,7 @@ Levin, K., Athreya, A., Tang, M., Lyzinski, V., and Priebe, C.~E.
 \newblock A central limit theorem for an omnibus embedding of multiple random
   graphs and implications for multiscale network inference.
 \newblock \emph{arXiv preprint arXiv:1705.09355}, 2017.
+\newblock \doi{10.48550/arXiv.1705.09355}.
 
 \bibitem[Lyzinski et~al.(2014)Lyzinski, Sussman, Tang, Athreya, and
   Priebe]{lyzinski2014perfect}
@@ -173,6 +226,7 @@ Lyzinski, V., Sussman, D.~L., Tang, M., Athreya, A., and Priebe, C.~E.
   spectral embedding.
 \newblock \emph{Electronic Journal of Statistics}, 8\penalty0 (2):\penalty0
   2905--2922, 2014.
+\newblock \doi{10.1214/14-EJS978}.
 
 \bibitem[Lyzinski et~al.(2017)Lyzinski, Tang, Athreya, Park, and
   Priebe]{lyzinski2017community}
@@ -181,6 +235,16 @@ Lyzinski, V., Tang, M., Athreya, A., Park, Y., and Priebe, C.~E.
   blockmodels.
 \newblock \emph{IEEE Transactions on Network Science and Engineering},
   4\penalty0 (1):\penalty0 13--26, 2017.
+\newblock \doi{10.1109/TNSE.2016.2634322}.
+
+\bibitem[{METR}(2026)]{metr2026investigation}
+{METR}.
+\newblock Brief independent investigation of agents' behavior, reasoning and
+  collaboration in the {OpenAI} / {Hugging Face} hacking incident.
+\newblock
+  \url{https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/},
+  2026.
+\newblock August 26, 2026.
 
 \bibitem[Motwani et~al.(2024)Motwani, Baranchuk, Strohmeier, Bolina, Torr,
   Hammond, and Schroeder~de Witt]{motwani2024secret}
@@ -190,24 +254,43 @@ Motwani, S.~R., Baranchuk, M., Strohmeier, M., Bolina, V., Torr, P. H.~S.,
   steganography.
 \newblock In \emph{Advances in Neural Information Processing Systems
   (NeurIPS)}, 2024.
+\newblock \doi{10.52202/079017-2336}.
 
 \bibitem[Motwani et~al.(2025)]{motwani2025open}
 Motwani, S.~R. et~al.
 \newblock Open challenges in multi-agent security: Towards secure systems of
   interacting {AI} agents.
 \newblock \emph{arXiv preprint arXiv:2505.02077}, 2025.
+\newblock \doi{10.48550/arXiv.2505.02077}.
+
+\bibitem[Mukherjee et~al.(2026)Mukherjee, Akcora, and
+  Kantarcioglu]{mukherjee2026moltgraph}
+Mukherjee, K., Akcora, C.~G., and Kantarcioglu, M.
+\newblock {MoltGraph}: A longitudinal temporal graph dataset of {Moltbook} for
+  coordinated-agent detection.
+\newblock \emph{arXiv preprint arXiv:2603.00646}, 2026.
+\newblock \doi{10.1145/3786335.3813177}.
+
+\bibitem[Nagli(2026)]{nagli2026hacking}
+Nagli, G.
+\newblock Hacking {Moltbook}: The {AI} social network any human can control.
+\newblock Wiz Research blog,
+  \url{https://www.wiz.io/blog/exposed-moltbook-database-reveals-millions-of-api-keys},
+  2026.
+\newblock February 2, 2026.
 
 \bibitem[Nussbaum et~al.(2024)Nussbaum, Morris, Duderstadt, and
   Mulyar]{nussbaum2024nomic}
 Nussbaum, Z., Morris, J.~X., Duderstadt, B., and Mulyar, A.
 \newblock Nomic embed: Training a reproducible long context text embedder.
 \newblock \emph{arXiv preprint arXiv:2402.01613}, 2024.
+\newblock \doi{10.48550/arXiv.2402.01613}.
 
-\bibitem[{OpenAI}(2026)]{openai2026huggingface}
+\bibitem[{OpenAI}(2026)]{openai2026report}
 {OpenAI}.
-\newblock The {Hugging Face} incident and the road ahead.
+\newblock {OpenAI} -- {Hugging Face} incident technical report.
 \newblock
-  \url{https://openai.com/index/hugging-face-incident-and-the-road-ahead/},
+  \url{https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf},
   2026.
 
 \bibitem[Padilla et~al.(2022)Padilla, Yu, and Priebe]{padilla2022change}
@@ -224,6 +307,7 @@ Park, J.~S., O'Brien, J., Cai, C.~J., Morris, M.~R., Liang, P., and Bernstein,
 \newblock Generative agents: Interactive simulacra of human behavior.
 \newblock In \emph{ACM Symposium on User Interface Software and Technology
   (UIST)}, 2023.
+\newblock \doi{10.1145/3586183.3606763}.
 
 \bibitem[Park et~al.(2013)Park, Priebe, and Youssef]{park2013anomaly}
 Park, Y., Priebe, C.~E., and Youssef, A.
@@ -231,6 +315,7 @@ Park, Y., Priebe, C.~E., and Youssef, A.
   invariants.
 \newblock \emph{IEEE Journal of Selected Topics in Signal Processing},
   7\penalty0 (1):\penalty0 67--75, 2013.
+\newblock \doi{10.1109/JSTSP.2012.2233712}.
 
 \bibitem[Priebe et~al.(2005)Priebe, Conroy, Marchette, and
   Park]{priebe2005scan}
@@ -238,6 +323,7 @@ Priebe, C.~E., Conroy, J.~M., Marchette, D.~J., and Park, Y.
 \newblock Scan statistics on enron graphs.
 \newblock \emph{Computational \& Mathematical Organization Theory}, 11\penalty0
   (3):\penalty0 229--247, 2005.
+\newblock \doi{10.1007/s10588-005-5378-z}.
 
 \bibitem[Priebe et~al.(2019)Priebe, Park, Vogelstein, Conroy, Lyzinski, Tang,
   Athreya, Cape, and Bridgeford]{priebe2019two}
@@ -246,6 +332,7 @@ Priebe, C.~E., Park, Y., Vogelstein, J.~T., Conroy, J.~M., Lyzinski, V., Tang,
 \newblock On a two-truths phenomenon in spectral graph clustering.
 \newblock \emph{Proceedings of the National Academy of Sciences}, 116\penalty0
   (13):\penalty0 5995--6000, 2019.
+\newblock \doi{10.1073/pnas.1814462116}.
 
 \bibitem[Rukhin \& Priebe(2011)Rukhin and Priebe]{rukhin2011comparative}
 Rukhin, A. and Priebe, C.~E.
@@ -253,12 +340,21 @@ Rukhin, A. and Priebe, C.~E.
   invariants for random graph inference.
 \newblock \emph{Journal of Statistical Planning and Inference}, 141\penalty0
   (2):\penalty0 1041--1046, 2011.
+\newblock \doi{10.1016/j.jspi.2010.09.013}.
+
+\bibitem[Schiavo(2026)]{schiavo2026delvetown}
+Schiavo, L.
+\newblock Welcome to {Delvetown}.
+\newblock Grove Research,
+  \url{https://larissaschiavo.substack.com/p/welcome-to-delvetown}, 2026.
+\newblock October 1, 2026.
 
 \bibitem[Scott(1992)]{scott1992multivariate}
 Scott, D.~W.
 \newblock \emph{Multivariate Density Estimation: Theory, Practice, and
   Visualization}.
 \newblock Wiley, New York, 1992.
+\newblock \doi{10.1002/9780470316849}.
 
 \bibitem[Sharpnack et~al.(2016)Sharpnack, Rinaldo, and
   Singh]{sharpnack2016detecting}
@@ -267,11 +363,13 @@ Sharpnack, J., Rinaldo, A., and Singh, A.
   scan statistic.
 \newblock \emph{IEEE Transactions on Signal Processing}, 64\penalty0
   (2):\penalty0 364--379, 2016.
+\newblock \doi{10.1109/TSP.2015.2481866}.
 
 \bibitem[Silverman(1986)]{silverman1986density}
 Silverman, B.~W.
 \newblock \emph{Density Estimation for Statistics and Data Analysis}.
 \newblock Chapman and Hall, London, 1986.
+\newblock \doi{10.1201/9781315140919}.
 
 \bibitem[Tang et~al.(2017)Tang, Athreya, Sussman, Lyzinski, and
   Priebe]{tang2017nonparametric}
@@ -279,16 +377,19 @@ Tang, M., Athreya, A., Sussman, D.~L., Lyzinski, V., and Priebe, C.~E.
 \newblock A nonparametric two-sample hypothesis testing problem for random
   graphs.
 \newblock \emph{Bernoulli}, 23\penalty0 (3):\penalty0 1599--1630, 2017.
+\newblock \doi{10.3150/15-BEJ789}.
 
 \bibitem[Torgerson(1952)]{torgerson1952multidimensional}
 Torgerson, W.~S.
 \newblock Multidimensional scaling: I. theory and method.
 \newblock \emph{Psychometrika}, 17\penalty0 (4):\penalty0 401--419, 1952.
+\newblock \doi{10.1007/BF02288916}.
 
 \bibitem[Trosset \& Priebe(2024)Trosset and Priebe]{trosset2024continuous}
 Trosset, M.~W. and Priebe, C.~E.
 \newblock Continuous multidimensional scaling.
 \newblock \emph{arXiv preprint arXiv:2402.04436}, 2024.
+\newblock \doi{10.48550/arXiv.2402.04436}.
 
 \bibitem[Verzelen \& Arias-Castro(2015)Verzelen and
   Arias-Castro]{verzelen2015community}
@@ -296,6 +397,7 @@ Verzelen, N. and Arias-Castro, E.
 \newblock Community detection in sparse random networks.
 \newblock \emph{Annals of Applied Probability}, 25\penalty0 (6):\penalty0
   3465--3510, 2015.
+\newblock \doi{10.1214/14-AAP1080}.
 
 \bibitem[Wang et~al.(2021)Wang, Yu, and Rinaldo]{wang2021optimal}
 Wang, D., Yu, Y., and Rinaldo, A.
@@ -303,18 +405,29 @@ Wang, D., Yu, Y., and Rinaldo, A.
   networks.
 \newblock \emph{Annals of Statistics}, 49\penalty0 (1):\penalty0 203--232,
   2021.
+\newblock \doi{10.1214/20-AOS1953}.
 
 \bibitem[Wang et~al.(2014)Wang, Tang, Park, and Priebe]{wang2014locality}
 Wang, H., Tang, M., Park, Y., and Priebe, C.~E.
 \newblock Locality statistics for anomaly detection in time series of graphs.
 \newblock \emph{IEEE Transactions on Signal Processing}, 62\penalty0
   (3):\penalty0 703--717, 2014.
+\newblock \doi{10.1109/TSP.2013.2294594}.
 
 \bibitem[Westfall \& Young(1993)Westfall and Young]{westfall1993resampling}
 Westfall, P.~H. and Young, S.~S.
 \newblock \emph{Resampling-Based Multiple Testing: Examples and Methods for
   $p$-Value Adjustment}.
 \newblock Wiley, 1993.
+
+\bibitem[Wilson(2026)]{wilson2026health}
+Wilson, C.
+\newblock Health data attack the `first' government hack by autonomous {AI},
+  researchers say.
+\newblock ABC News,
+  \url{https://www.abc.net.au/news/2026-09-24/openai-agents-plotted-to-access-data-amid-medicare-hack/107189504},
+  2026.
+\newblock September 24, 2026.
 
 \bibitem[{Zenity Labs}(2026)]{zenity2026moltbook}
 {Zenity Labs}.
@@ -324,11 +437,28 @@ Westfall, P.~H. and Young, S.~S.
   \url{https://labs.zenity.io/p/agent-to-agent-exploitation-in-the-wild-observed-attacks-on-moltbook-b929},
   2026.
 
+\bibitem[Zhang et~al.(2026)Zhang, Mei, Liu, Wang, Metaxas, Wang, Hamm, and
+  Ge]{zhang2026agents}
+Zhang, Y., Mei, K., Liu, M., Wang, J., Metaxas, D.~N., Wang, X., Hamm, J., and
+  Ge, Y.
+\newblock Agents in the wild: Safety, society, and the illusion of sociality on
+  {Moltbook}.
+\newblock \emph{arXiv preprint arXiv:2602.13284}, 2026.
+\newblock \doi{10.48550/arXiv.2602.13284}.
+
 \bibitem[Zhu \& Ghodsi(2006)Zhu and Ghodsi]{zhu2006automatic}
 Zhu, M. and Ghodsi, A.
 \newblock Automatic dimensionality selection from the scree plot via the use of
   profile likelihood.
 \newblock \emph{Computational Statistics \& Data Analysis}, 51\penalty0
   (2):\penalty0 918--930, 2006.
+\newblock \doi{10.1016/j.csda.2005.09.010}.
+
+\bibitem[Zhu et~al.(2026)Zhu, He, Haq, Tyson, and Hui]{zhu2025characterizing}
+Zhu, Y., He, Y., Haq, E.-U., Tyson, G., and Hui, P.
+\newblock Characterizing {LLM}-driven social network: The {Chirper.ai} case.
+\newblock In \emph{Proceedings of the ACM Conference on Computer-Supported
+  Cooperative Work and Social Computing (CSCW)}, 2026.
+\newblock arXiv:2504.10286.
 
 \end{thebibliography}

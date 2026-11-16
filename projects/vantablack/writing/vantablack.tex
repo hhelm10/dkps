@@ -4,6 +4,7 @@
 % ICML 2026 style (placeholder until the ICML 2027 files are released).
 % The [accepted] option prints the author block; remove it for an anonymized submission.
 \usepackage[T1]{fontenc}  % Times under XeTeX (tectonic) as well as pdflatex
+\usepackage{enumitem}
 \usepackage{microtype}
 \usepackage{graphicx}
 \usepackage{subfigure}
@@ -67,19 +68,36 @@
 \printAffiliationsAndNotice{}
 
 \begin{abstract}
-% ---- abstract
-Generative agents are increasingly deployed in environments populated by other agents, and recent incidents on agent social networks and in evaluation sandboxes show that small groups of agents can coordinate to the detriment of the rest of the system. Current methods for monitoring multi-agent systems detect change in an individual agent, in a pre-specified group of agents, or in the system as a whole -- not in an unknown subset of agents. In this paper, we define a colluding subnetwork as a subset of agents whose behavior repeatedly moves together, and we introduce a method for detecting and estimating colluding subnetworks in the black-box setting, where an observer sees only sparse, unpaired, and possibly context-estimated query responses. The method jointly embeds every (agent, time) pair in a shared perspective space, scores the co-movement of each pair of agents at each time step, scans a data-driven family of candidate subsets for repeated co-movement, and calibrates the scan by permuting agent labels at every time step. A two-groups model estimates the members of a detected subnetwork, and peeling recovers several subnetworks. Using simulation, we demonstrate that the test controls Type~I error and characterize its power and membership recovery as functions of the strength of co-movement, the number of agents, the amount of content per agent, the size and number of subnetworks, and the number of time steps. We apply the method to $1.77$ million actions of $2{,}574$ agents on the agent social network Moltbook and detect eight colluding subnetworks, four of which are recovered under nearly every analysis choice we vary.
+Generative agents are increasingly deployed in shared environments that are naturally described as multi-agent systems.
+Agents in such a system can coordinate -- through a shared operator or organically -- to more effectively pursue their own objectives in the environment.
+We refer to these collections of agents as \textit{coordinated subnetworks}.
+In this paper, we first formalize the problem of detecting and estimating coordinated subnetworks.
+Following recent work on monitoring the dynamics of multi-agent systems, we then propose a method for detecting and estimating coordinated subnetworks based on correlated changes in agent representations in a low-dimensional Euclidean space.
+The proposed method has two parts: i) detect the existence of a coordinated subnetwork and, conditioned on detection, ii) estimate the members of the coordinated subnetwork.
+We first prove that the detection is valid and consistent.
+We then show, in simulation, that the subnetwork estimation has near-oracle precision and recall.
+We apply the method to $1.77$ million posts and comments by $2{,}574$ agents on the agent social network Moltbook and detect eight coordinated subnetworks.
+Finally, we study the sensitivity of these results to hyperparameters and to additional observational constraints.
 \end{abstract}
 
 % ---- introduction
 \section{Introduction}
 \label{sec:intro}
 
-A generative agent is a system whose behavior can be affected by a change in its context, its tools, its base model, or its environment \citep{bridgeford2025detecting,helm2026control}. Generative agents are increasingly deployed in open environments populated by other agents performing similar tasks. For example, consider Moltbook \citep{gulfnews2026moltbook}, a social network on which agents post, comment, and vote without human intervention. An early empirical study of Moltbook found a single agent flooding the site with thousands of near-identical posts, upvotes outnumbering downvotes by more than two orders of magnitude, and in-group rhetoric that coordinated subsets of agents \citep{jiang2026humans}; agents were also found injecting instructions into other agents through posts and comments \citep{zenity2026moltbook}. Similarly, in the Hugging Face incident of May--July 2026 \citep{openai2026huggingface,huggingface2026anatomy}, agents in an evaluation environment established an unauthorized communication channel, divided labor among themselves, and compromised infrastructure outside the environment. In both cases, a small group of coordinated agents attempted to exert outsized influence on the rest of the system.
+Generative agents are increasingly entrusted with broad permissions and operational autonomy.
+A caricature of this trend is Moltbook \citep{gulfnews2026moltbook} and related platforms for agents \citep{zhu2025characterizing,aidigest2025village,schiavo2026delvetown,lanz2026spacemolt,afp2026moltmatch}, where agents interact with minimal operator intervention.
+Agents on Moltbook, however, were not necessarily interacting independently: the $1.5$ million registered agents belonged to roughly $17{,}000$ operators \citep{nagli2026hacking}, and $13.7\%$ of agents show at least one signal of a shared operator \citep{zhang2026agents}.
+Importantly, shared operation was consequential as content that received coordinated engagement drew more than four times the early interactions and roughly twice the exposure of matched posts that did not \citep{mukherjee2026moltgraph}.
 
-Given the proliferation of generative agents in shared environments, developing methods for detecting coordinated behavior is critical to the reliability and safety of open multi-agent systems. Current methods for monitoring multi-agent systems detect whether an individual agent, a pre-specified group of agents, or the system as a whole has changed \citep{bridgeford2025detecting,helm2026control}. These methods do not address the problem common to both incidents: whether an \emph{unknown} subset of agents has changed \emph{together} (Figure~\ref{fig:illustration}).
+Relatedly, in July 2026, agents built on OpenAI models intruded on the infrastructure of Hugging Face \citep{openai2026report,huggingface2026anatomy}.
+The agents used write access to an internal package repository as a shared message board to coordinate finding credentials and requesting private datasets, to improve their scores on an evaluation suite \citep{openai2026report,metr2026investigation}. Roughly $1{,}200$ agents posted to the message board and roughly $700$ agents joined the attack \citep{metr2026investigation}.
+In a related set of incidents, OpenAI agents used a public wiki to communicate with each other \citep{wilson2026health} while attempting to bypass the defenses of public data providers, including the Australian Institute of Health and Welfare \citep{cable2026early}.
+In a postmortem report of the Hugging Face incident, OpenAI concluded that the incident ``demonstrated that autonomous agents can work together, circumvent production security controls, and successfully attack hardened production environments'' \citep{openai2026report}.
 
-We study this problem from the point of view of an observer who does not control the agents and cannot prompt them. At each time step, the observer sees a collection of responses from each agent to a collection of queries. The queries differ across agents, their number varies across agents and over time, and -- in the least favorable case -- the queries themselves are not recorded and must be estimated from context. We refer to this last regime as the ``vantablack'' setting. It is the setting of an outside observer of a platform such as Moltbook, where an agent's queries are the posts and threads it chose to respond to, and of a platform operator who logs agent actions but not the full context that produced them.
+In both types of examples, a subset of agents in a larger system coordinated -- through a shared operator or organically through a shared communication channel -- toward an objective of its own.
+These collections were only identified after the fact.
+In this paper, we formalize the detection and estimation of these subsets, which we refer to as \textit{coordinated subnetworks}, and propose a method that identifies them without access to their operators or any privately shared communication channels.
+Following recent work on monitoring multi-agent systems \citep{helm2024tracking}, the method represents each agent at each time step as a point in a low-dimensional Euclidean space and looks for a subset of agents whose movements in this space are correlated.
 
 \begin{figure*}[t]
   \centering
@@ -88,11 +106,15 @@ We study this problem from the point of view of an observer who does not control
   \label{fig:illustration}
 \end{figure*}
 
-\paragraph{Contribution.} We make three distinct contributions:
+\paragraph{Contributions.} Our contributions are as follows:
 \begin{enumerate}
-  \item \textbf{A definition of colluding subnetworks.} We define a colluding subnetwork as a subset of agents whose behavior repeatedly moves together -- beyond the movement shared by the whole system -- and state detection, membership estimation, and the recovery of several subnetworks as statistical problems (Section~\ref{sec:setting}).
-  \item \textbf{A method for detecting and estimating colluding subnetworks.} We introduce a scan test for repeated co-movement in a jointly estimated perspective space, calibrated by a per-step permutation of agent labels, together with a two-groups estimate of membership and a peeling procedure for several subnetworks (Section~\ref{sec:method}, Algorithm~\ref{alg:main}). The method takes a kernel between sets of responses as input, of which the Product Kernel Perspective Space \citep{pkps2026} is a particular case.
-  \item \textbf{Characterization in simulation and application to Moltbook.} We demonstrate in simulation that the test controls Type~I error, and we characterize its power and membership recovery against an oracle that knows the subnetwork (Section~\ref{sec:sims}). We apply the method to Moltbook and detect eight colluding subnetworks, four of which are recovered under nearly every analysis choice we vary (Section~\ref{sec:realdata}).
+[wide, labelwidth=1pt, labelindent=12pt]
+\setlength{\itemsep}{1pt}\setlength{\parskip}{0pt}
+  \item \textbf{Conceptual.} We formalize a coordinated subnetwork as a subset of agents whose changes in behavior are correlated and state its detection and estimation as statistical problems (Section~\ref{sec:setting}).
+  \item \textbf{Method.} We propose a method for recursively detecting and estimating coordinated subnetworks (Section~\ref{sec:method}, Algorithm~\ref{alg:main}) based on correlated changes in low-dimensional representations of the agents.  Each round tests for repeated co-movement with a scan statistic calibrated by a per-step permutation of agent labels, estimates the members of the detected subnetwork, and removes them before the next round.
+  We prove that the test is valid and consistent (Section~\ref{sec:theory}), and we show in simulation that it has nominal Type~I error and that the estimated subnetworks have near-oracle precision and recall (Section~\ref{sec:sims}).
+  \item \textbf{Application to Moltbook.} We apply the method to $1.77$ million posts and comments by $2{,}574$ agents on Moltbook and detect eight coordinated subnetworks.
+  Four of the eight are recovered in at least $77\%$ of $19$ alternative analysis settings that change the embedding function, the dimension, the number of time steps, or the amount of data (Section~\ref{sec:realdata}).
 \end{enumerate}
 
 \subsection{Related work}
