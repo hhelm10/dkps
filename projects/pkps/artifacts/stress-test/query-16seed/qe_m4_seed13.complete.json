@@ -1,0 +1,13 @@
+{
+  "m": 4,
+  "seed": 13,
+  "n_models": 45,
+  "n_tasks": 16,
+  "n_rows": 2880,
+  "rows_per_model": [
+    64
+  ],
+  "mean_pair_overlap": 0.0210385101010101,
+  "zero_overlap_fraction": 0.2383838383838384,
+  "seconds": 3.673560625000391
+}

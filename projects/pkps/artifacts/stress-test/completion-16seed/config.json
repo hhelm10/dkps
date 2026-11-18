@@ -1,0 +1,62 @@
+{
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "cohorts": [
+    10,
+    45
+  ],
+  "coverage": [
+    0.2,
+    0.5
+  ],
+  "m": 16,
+  "implementation_sha256": {
+    "projects/pkps/scripts/experiments/stress_followups.py": "5c910c5096c1d19b5d49513e093fb64038741d46ba37bbacfbf9731afcd7f5c1",
+    "projects/pkps/scripts/experiments/stress_completion.py": "af903eb012c4e47839cafa7fdb5c755823d22a8b3343472d0e082178b5b74e3b",
+    "projects/pkps/scripts/pipeline/stress_geometry.py": "c718551c7c5d2cd2db59e73e47fa70ac1a8387647a99d05af1882a037e295362",
+    "dkps/preprocessing.py": "2fc81b3e61fe536c3f2b4cf5df76574785fef2796cdbc5a2a76953ad42c01a2a",
+    "dkps/baselines.py": "9ba4a54ab9bfc2d7530f4cca66819803c90961ad383960148a9ca0581a76fed9"
+  },
+  "reference_regime": "cache-only",
+  "inner_validation": "20% cells; delete response+score",
+  "preprocessing": "observed-only logit/standardization/two-way bias",
+  "embeddings": {
+    "model": "google/embeddinggemma-2",
+    "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+    "model_path": "/Users/avijit/Documents/dkps/data/models/embeddinggemma-2",
+    "dtype": "float32",
+    "device": "mps:0",
+    "prompt": "SentenceSimilarity",
+    "max_length": 2048,
+    "dimension": 768,
+    "text_sha256": "612b2a72b6608bee68e0b6a7280ce2d15ec8494cfbf693fc681c9840bbdddbee",
+    "n_texts": 28590,
+    "chunk_size": 128,
+    "batch_size": 8,
+    "normalize": true,
+    "fallback_enabled": false,
+    "versions": {
+      "torch": "2.14.1",
+      "transformers": "5.19.0",
+      "sentence-transformers": "6.1.0",
+      "numpy": "2.5.3"
+    }
+  },
+  "dataset_revision": "8b9632422dd2b3806431efd758c7cdc84044169f"
+}

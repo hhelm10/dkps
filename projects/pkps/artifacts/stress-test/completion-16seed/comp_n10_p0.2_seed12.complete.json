@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 41,
+  "n_validation_cells": 8,
+  "n_inner_rows": 528,
+  "n_outer_rows": 656,
+  "actual_coverage": 0.25625,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "cohere/c4ai-command-r-plus-08-2024",
+    "deepseek/deepseek-v3-2",
+    "deepseek/deepseek-v3-2-speciale",
+    "deepseek/deepseek-v4-flash-fp8",
+    "google/gemma-3-27b-it",
+    "mistral/mistral-small-4-119b-2603",
+    "moonshot/kimi-k2-thinking",
+    "qwen/qwen3-6-plus",
+    "stepfun/step-3-5-flash",
+    "zai-org/glm-4-7-fp8"
+  ],
+  "mask_sha256": "7317dec72cfec8ae4f4756b59c35e7550e58e7ca7e8a5ddbf7ac6dc0afc486b7",
+  "seconds": 0.5479452090221457
+}

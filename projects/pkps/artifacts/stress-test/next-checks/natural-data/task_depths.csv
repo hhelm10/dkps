@@ -1,0 +1,17 @@
+task_id,n_models,min_depth,max_depth
+gpqa-diamond:gpqa_diamond,66,198,198
+gsm-mc:gsm_mc,68,1319,1319
+judgebench:judge_judgebench_coding,52,42,42
+judgebench:judge_judgebench_knowledge,52,154,154
+judgebench:judge_judgebench_math,52,56,56
+judgebench:judge_judgebench_reasoning,52,98,98
+math-mc:math_mc_level1,69,430,430
+math-mc:math_mc_level2,69,882,882
+math-mc:math_mc_level3,69,1115,1115
+math-mc:math_mc_level4,69,1199,1199
+math-mc:math_mc_level5,69,1288,1288
+reward-bench-2:judge_rewardbench2_factuality,52,475,475
+reward-bench-2:judge_rewardbench2_focus,52,495,495
+reward-bench-2:judge_rewardbench2_math,52,183,183
+reward-bench-2:judge_rewardbench2_precise_if,52,160,160
+reward-bench-2:judge_rewardbench2_safety,52,450,450

@@ -1,0 +1,28 @@
+[
+  {
+    "mode": "uniform",
+    "observed_cells": 360,
+    "rows_per_model": 128,
+    "selected_score_mean": 0.8075879895222156,
+    "hidden_score_mean": 0.8279097140067184,
+    "common_hidden_cells": 170,
+    "mask_sha256": "7577238e4a3e8f019c5f666c90f55913de22f7a037ce8dec1f3c7760a8da7068",
+    "n_observed_cells": 360,
+    "n_validation_cells": 72,
+    "n_inner_rows": 4608,
+    "n_outer_rows": 5760
+  },
+  {
+    "mode": "hide-poor",
+    "observed_cells": 360,
+    "rows_per_model": 128,
+    "selected_score_mean": 0.9224833776932068,
+    "hidden_score_mean": 0.7130143258357271,
+    "common_hidden_cells": 170,
+    "mask_sha256": "c21c3846bd168c9db18567fa4a6cebd1a18e667d4bc97d0e4fe456483f5f4d5a",
+    "n_observed_cells": 360,
+    "n_validation_cells": 72,
+    "n_inner_rows": 4608,
+    "n_outer_rows": 5760
+  }
+]

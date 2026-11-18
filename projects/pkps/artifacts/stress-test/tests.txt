@@ -1,0 +1,18 @@
+....................................................                     [100%]
+=============================== warnings summary ===============================
+tests/test_baselines.py::test_pkps_cv_bandwidth_selects_from_grid
+  /Users/avijit/Documents/dkps/dkps/pkps.py:200: UserWarning: model pairs with zero query-kernel mass: their distance is set to the maximum observed distance
+    self._finalize()
+
+tests/test_baselines.py::test_pkps_cv_bandwidth_selects_from_grid
+  /Users/avijit/Documents/dkps/dkps/pkps.py:223: UserWarning: model pairs with zero query-kernel mass: their distance is set to the maximum observed distance
+    self._finalize()
+
+tests/test_baselines.py::test_ensemble_fixed_and_cv
+  /Users/avijit/Documents/dkps/.conda-eee/lib/python3.12/site-packages/joblib/externals/loky/backend/context.py:134: UserWarning: Could not find the number of physical cores for the following reason:
+  invalid literal for int() with base 10: ''
+  Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+52 passed, 3 warnings in 7.86s

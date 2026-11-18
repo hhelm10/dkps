@@ -1,0 +1,18 @@
+{
+  "design": "temporal-0.8",
+  "seed": 4,
+  "n_models": 64,
+  "n_tasks": 16,
+  "observed_cell_sha256": "72ba3658188c8a538c47d4f95689a3765a3a1efd2dc955463ad9d9a7f68a205f",
+  "cutoff": "2026-04-18T09:07:34+00:00",
+  "fraction": 0.8,
+  "n_early_cells": 783,
+  "n_future_known_cells": 164,
+  "n_supported_future_cells": 95,
+  "n_cold_start_cells": 69,
+  "n_new_task_cells": 0,
+  "n_observed_cells": 783,
+  "n_validation_cells": 157,
+  "n_inner_rows": 10016,
+  "n_outer_rows": 12528
+}

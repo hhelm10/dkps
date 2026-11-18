@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 75,
+  "n_validation_cells": 15,
+  "n_inner_rows": 960,
+  "n_outer_rows": 1200,
+  "actual_coverage": 0.46875,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "cohere/c4ai-command-r-plus-08-2024",
+    "deepseek/deepseek-v4-flash-fp8",
+    "google/gemma-2-9b-it",
+    "moonshot/kimi-k2-5",
+    "moonshot/kimi-k2-thinking",
+    "qwen/qwen3-30b-a3b-thinking-2507",
+    "qwen/qwen3-5-397b-a17b",
+    "qwen/qwen3-6-35b-a3b",
+    "stepfun/step-3-5-flash",
+    "xiaomi/mimo-v2-flash"
+  ],
+  "mask_sha256": "af00225c15ce8421f81cb58c4069c5025513c79e48377f521a41f14367ce8e95",
+  "seconds": 0.611624875018606
+}

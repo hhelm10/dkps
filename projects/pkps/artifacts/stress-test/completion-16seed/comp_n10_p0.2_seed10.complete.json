@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 30,
+  "n_validation_cells": 6,
+  "n_inner_rows": 384,
+  "n_outer_rows": 480,
+  "actual_coverage": 0.1875,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "deepseek/deepseek-v3-1-terminus",
+    "deepseek/deepseek-v3-2-speciale",
+    "deepseek/deepseek-v4-pro",
+    "minimax/minimax-m2-5",
+    "moonshot/kimi-k2-5",
+    "openai/gpt-5-mini",
+    "qwen/qwen3-30b-a3b-thinking-2507",
+    "qwen/qwen3-5-2b",
+    "qwen/qwen3-6-35b-a3b",
+    "qwen/qwen3-6-plus"
+  ],
+  "mask_sha256": "ed6b6b2143fea9bffe0860e80197ec0109620ea36814c909519072b2d8ecee35",
+  "seconds": 0.4932202500058338
+}

@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 25,
+  "n_validation_cells": 5,
+  "n_inner_rows": 320,
+  "n_outer_rows": 400,
+  "actual_coverage": 0.15625,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "cohere/c4ai-command-r-08-2024",
+    "deepseek/deepseek-v3-2-speciale",
+    "deepseek/deepseek-v4-flash-fp8",
+    "google/gemma-3-12b-it",
+    "meta/llama-4-maverick-17b-128e-instruct-fp8",
+    "moonshot/kimi-k2-thinking",
+    "openai/gpt-5-5",
+    "qwen/qwen3-30b-a3b-thinking-2507",
+    "qwen/qwen3-5-2b",
+    "zai-org/glm-5-fp8"
+  ],
+  "mask_sha256": "f9223fed3c2a9cd3d613ebc524da7fb9f3784354c292171d07c10ce4c4541643",
+  "seconds": 0.47077008298947476
+}

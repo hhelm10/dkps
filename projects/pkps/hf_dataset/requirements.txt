@@ -1,0 +1,6 @@
+# Lightweight reader dependencies; encoder weights and torch are unnecessary.
+numpy>=1.26
+pandas>=2.1
+pyarrow>=14
+huggingface_hub>=1.0
+# Optional: datasets, for the named Parquet configurations in README.md.

@@ -1,0 +1,13 @@
+method,candidate,validation_mae,pkps_weight
+model-rbf,model_rbf_1,0.08839763558732172,
+ratio-psd,ratio_psd_0.1,0.08328490211132063,
+ratio-legacy,ratio_legacy_0.1,0.08326960227301859,
+shuffled-rbf,shuffled_rbf_1,0.08824182421394096,
+model-expanded,model_rbf_1,0.08839763558732172,
+lrmc,lrmc_1_1,0.08689925413145541,
+constant,constant,0.0915070073903272,
+delta,delta,0.09850041129789265,
+task,task,0.09192740102961366,
+additive,additive,0.08380088337245886,
+task-mean,task-mean,0.13998319599954567,
+ensemble-nested,model-expanded+lrmc,,0.4

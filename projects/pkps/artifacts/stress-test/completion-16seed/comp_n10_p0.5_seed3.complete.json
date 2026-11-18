@@ -1,0 +1,23 @@
+{
+  "n_observed_cells": 79,
+  "n_validation_cells": 16,
+  "n_inner_rows": 1008,
+  "n_outer_rows": 1264,
+  "actual_coverage": 0.49375,
+  "n_models": 10,
+  "n_tasks": 16,
+  "model_list": [
+    "cohere/c4ai-command-r-08-2024",
+    "cohere/c4ai-command-r7b-12-2024",
+    "cohere/command-a-reasoning-08-2025",
+    "deepseek/deepseek-v3-1-terminus",
+    "deepseek/deepseek-v3-2",
+    "deepseek/deepseek-v4-flash-fp8",
+    "moonshot/kimi-k2-thinking",
+    "openai/gpt-oss-120b",
+    "qwen/qwen3-5-122b-a10b",
+    "qwen/qwen3-6-plus"
+  ],
+  "mask_sha256": "3de1f25db92e26f1d1d806ec1b6e9da45b316d2967e0cc3f4a15bca5f20b7407",
+  "seconds": 0.6176209160184953
+}
