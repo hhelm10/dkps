@@ -10,7 +10,7 @@ Exported (no content of posts or comments):
   activity     actions per hour of the 2,574 agents analyzed (the reference run's cohort)
   monitor      positions of all 2,574 agents (named only if detected at some stopping point, or in
                HIGHLIGHT, which the page rings and labels), centered
-               per step and projected on the two leading directions, for the perspective monitor
+               per step and projected on the three leading directions, for the perspective monitor
   stops[k]     per stopping point: cohort size, d, every peeling round (p, observed scan statistic
                and its 199 permutation null in the round's size band, membership scores of the
                members, a histogram of the other tested agents' scores, and the two-groups fit), and per detected
@@ -190,7 +190,7 @@ def export_result(res, names, obs, k, B, step_bounds, actions):
 
 
 def monitor(names, Zm, obs, stops, highlight=(), show=None):
-    """Perspective monitor: every agent's positions (centered per step) on the two leading
+    """Perspective monitor: every agent's positions (centered per step) on the three leading
     directions, named if detected at some stopping point, in highlight (ringed and labeled by
     the page), or in show (named only)."""
     N, T = obs.shape
@@ -198,13 +198,13 @@ def monitor(names, Zm, obs, stops, highlight=(), show=None):
     isf = np.isin(names, list(found) + list(highlight) + list(show or []))
     X = Zm.reshape(-1, Zm.shape[2])
     ok = np.isfinite(X[:, 0])
-    V = np.linalg.svd(X[ok] - X[ok].mean(0), full_matrices=False)[2][:2]
+    V = np.linalg.svd(X[ok] - X[ok].mean(0), full_matrices=False)[2][:3]    # three leading directions (3D monitor)
     P = (Zm - X[ok].mean(0)) @ V.T
-    P = P / np.nanstd(P)
+    P = P / np.nanstd(P[..., :2])                       # scale set by dims 1-2, so they match the 2D monitor
     return dict(highlight=[h for h in highlight if h in set(names)],
                 name=[str(names[i]) if isf[i] else None for i in range(N)],
-                xy=[[None if not np.isfinite(P[i, t, 0]) else [round(float(P[i, t, 0]), 3), round(float(P[i, t, 1]), 3)]
-                     for t in range(T)] for i in range(N)])
+                xyz=[[None if not np.isfinite(P[i, t, 0]) else [round(float(v), 3) for v in P[i, t, :3]]
+                      for t in range(T)] for i in range(N)])
 
 
 def main():
