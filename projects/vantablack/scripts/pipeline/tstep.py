@@ -58,6 +58,13 @@ import numpy as np
 from . import candidates as cands
 
 BANDS = np.array([2, 3, 11, 31, 101])   # size-band lower edges; band 0 = pairs
+# Matrix the candidate family is built from (nearest-neighbour balls and their refinements):
+# 'z'    the pair statistic z({i, j}) (majority z of the per-step rank scores; the original method)
+# 'corr' the co-movement matrix Z_hat: per pair, the lower median over steps of the correlation
+#        (cosine) of the two agents' increments, the plug-in estimate of the population
+#        Z_ij = median_t rho_ij^(t). Set by run_residuals(family=...); the test is valid either way,
+#        since the family is rebuilt inside every null draw.
+FAMILY = 'z'
 
 
 # ----------------------------------------------------------------------------- 1-4: features
@@ -526,7 +533,7 @@ def test(D, d_eff, B=199, kind='shuffle', seed=0, workers=1, known_S=None, Q=Non
 
 def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers=1,
         n_factors='auto', gpu_slot=None, per_step=None, center=True, two_signed_alpha=None,
-        weight=None, min_move=None, split=False, stat='rank', peel=0, keep_arrays=False):
+        weight=None, min_move=None, split=False, stat='rank', peel=0, keep_arrays=False, family='z'):
     """gpu_slot: optional lock/semaphore held while on the GPU (conditioning, and the pair
     threshold when split=True), so many replicate processes can share one GPU."""
     import contextlib
@@ -539,7 +546,7 @@ def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers
                         known_S=(list(data['groups']) if len(data.get('groups', [])) > 1
                                  else (data['S'] if len(data['S']) else None)), peel=peel,
                         two_signed_alpha=two_signed_alpha, weight=weight, min_move=min_move,
-                        split=split, gpu_slot=gpu_slot, stat=stat, keep_arrays=keep_arrays)
+                        split=split, gpu_slot=gpu_slot, stat=stat, keep_arrays=keep_arrays, family=family)
     res.update(sigma=sigma)
     return res
 
@@ -547,7 +554,7 @@ def run(data, d=None, k=64, mode='split', kind='shuffle', B=199, seed=0, workers
 def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=199, seed=0,
                   workers=1, n_factors='auto', per_step=None, center=True, known_S=None, peel=0,
                   two_signed_alpha=None, weight=None, min_move=None, split=False, gpu_slot=None,
-                  stat='rank', keep_arrays=False):
+                  stat='rank', keep_arrays=False, family='z'):
     """Steps 2-7 from conditioned responses R (one row per response; agent in [0, N), step in
     [0, T)). Returns the scan result plus the factor count, dimensions, membership estimate
     and the agent ranking score; peel > 0 adds up to that many peeled groups (peel_groups).
@@ -556,6 +563,10 @@ def run_residuals(R, agent, step, N, T, d=None, mode='split', kind='shuffle', B=
     keep_arrays=True also returns the positions ('positions', N x T x d) and the increments after
     factor removal ('D')."""
     import contextlib
+    global FAMILY
+    if family not in ('z', 'corr'):
+        raise ValueError(family)
+    FAMILY = family
     pos = positions(R, agent, step, N, T, d=d, seed=seed)
     D = increments(pos, mode=mode, per_step=per_step, center=center, weight=weight, min_move=min_move)
     D, kf = remove_factors(D, two_signed_alpha=two_signed_alpha) if n_factors == 'auto' \
@@ -806,9 +817,29 @@ def _step_units(D):
     return (D / np.maximum(nr, 1e-12)).reshape(len(D), -1)
 
 
+def comovement_matrix(D):
+    """(N, N) co-movement matrix Z_hat: for each pair, the lower median over the steps at which
+    both increments are observed of the cosine of the two agents' increments; -inf where fewer than
+    two steps are shared, and on the diagonal."""
+    N, L, _ = D.shape
+    nr = np.linalg.norm(D, axis=2)
+    U = D / np.maximum(nr, 1e-12)[:, :, None]
+    C = np.einsum('itd,jtd->tij', U.astype(np.float32), U.astype(np.float32))
+    ok = (nr > 0).T                                                      # (L, N)
+    both = ok[:, :, None] & ok[:, None, :]
+    C = np.where(both, C, np.inf).astype(np.float32)                   # missing sort last
+    k = both.sum(0)
+    C.sort(axis=0)
+    Z = np.take_along_axis(C, np.clip((k - 1) // 2, 0, L - 1)[None], 0)[0]   # lower median of the observed
+    Z[k < 2] = -np.inf
+    np.fill_diagonal(Z, -np.inf)
+    return Z
+
+
 def band_max_rank(D, Q, seed=0):
     """Largest majority z per size band (rank statistic). Band 0 (pairs) is exact."""
     Zp = pair_scores(Q)
+    Zf = Zp if FAMILY == 'z' else comovement_matrix(D)               # matrix the family is built from
     out = np.full(len(BANDS), -np.inf)
     best = [None] * len(BANDS)
     i, j = np.unravel_index(np.argmax(Zp), Zp.shape)
@@ -816,7 +847,7 @@ def band_max_rank(D, Q, seed=0):
         out[0], best[0] = Zp[i, j], frozenset([int(i), int(j)])
     F = _step_units(D)
     el = np.linalg.norm(F, axis=1) > 0
-    bl, bsc, ref = balls_rank(Q, Zp)
+    bl, bsc, ref = balls_rank(Q, Zf)
     rest = cands.dedupe(cands.clusters(F, el, seed=seed) + ref)
     fam = [S for S, _ in bl] + [S for S, _ in rest if len(S) >= BANDS[1]]
     z = np.r_[bsc, set_scores(Q, [S for S, _ in rest if len(S) >= BANDS[1]])] if rest else bsc

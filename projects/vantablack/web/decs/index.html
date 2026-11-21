@@ -106,8 +106,40 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .counters { display: flex; gap: 18px; font-family: var(--font-data); font-size: 12.5px; color: var(--ink-mute); }
 .counters b { color: var(--ink-title); font-weight: 500; font-size: 15px; }
 canvas { display: block; width: 100%; }
-#act { height: 110px; }
-#persp { height: min(360px, 42vh); min-height: 240px; background: var(--wash); border-radius: 4px; }
+#act { height: 110px; cursor: ew-resize; touch-action: pan-y; border-radius: 4px; }
+#act:focus-visible, #persp:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.pwrap { position: relative; }
+#persp { height: min(480px, 56vh); min-height: 280px; background: var(--wash); border-radius: 4px; cursor: grab; touch-action: none; }
+#persp:active { cursor: grabbing; }
+.ptools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-mute); }
+.ptools button { padding: 4px 10px; font-size: 12.5px; }
+.tog { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); padding: 8px 10px;
+  display: grid; gap: 2px; font-family: var(--font-data); font-size: 11.5px; color: var(--ink-mute); box-shadow: 0 4px 14px rgba(10, 34, 69, 0.12); max-width: 280px; z-index: 2; }
+.tip b { color: var(--ink-title); font-weight: 500; font-size: 12.5px; }
+.tip .swatch { width: 8px; height: 8px; margin-right: 6px; vertical-align: 0; }
+.pick { align-items: center; }
+.pick button { padding: 3px 9px; font: 500 12px var(--font-data); display: inline-flex; align-items: center; gap: 6px; }
+.pick .swatch { width: 8px; height: 8px; }
+.pgrid { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; }
+@media (max-width: 760px) { .pgrid { grid-template-columns: minmax(0, 1fr); } }
+.finder { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 12.5px; color: var(--ink-mute); }
+.finder form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.idrow { display: flex; gap: 6px; }
+.idrow input { flex: 1 1 0; width: 0; min-width: 0; padding: 6px 8px; font: 500 12.5px var(--font-data); color: var(--ink-title); background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); }
+.idrow input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.idrow button { padding: 4px 10px; font-size: 12.5px; }
+.idnote:empty { display: none; }
+.idnote { margin: 0; font-size: 11.5px; line-height: 1.4; }
+.idnote.err { color: var(--stop); }
+.sellist { list-style: none; margin: 0; padding: 0; overflow-y: auto; max-height: min(330px, 40vh); border-top: 1px solid var(--edge); }
+.sellist li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto 22px; align-items: center; gap: 6px; padding: 5px 2px; border-bottom: 1px solid var(--edge); font-family: var(--font-data); font-size: 11.5px; cursor: default; }
+.sellist li:hover, .sellist li.hot { background: var(--wash); }
+.sellist .nm { color: var(--ink-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sellist .dot { width: 8px; height: 8px; border-radius: 50%; }
+.sellist .dot.off { background: transparent !important; border: 1.5px solid var(--ink-mute); }
+.sellist .rm { padding: 0; width: 22px; height: 22px; line-height: 1; font-size: 14px; border: 0; background: none; color: var(--ink-mute); cursor: pointer; }
+.sellist .rm:hover { color: var(--ink-title); }
 
 /* analysis */
 #analysis { display: grid; gap: 28px; scroll-margin-top: 16px; }
@@ -173,6 +205,49 @@ tr.stoprow td { color: var(--ink-mute); }
 .legend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--ink-mute); margin-right: 6px; vertical-align: middle; }
 .legend i.dash { border-top-style: dashed; }
 .legend i.box { height: 10px; border: 0; background: var(--null); }
+/* live alerts */
+.livetog { font-size: 13.5px; color: var(--ink-title); margin-left: auto; }
+.livetog + #stop { margin-left: 0; }
+.alertbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--stop); border-radius: var(--radius);
+  background: color-mix(in srgb, var(--stop) 8%, var(--surface)); color: var(--ink-title); font-size: 14px; }
+.alertbar svg { width: 16px; height: 16px; flex: none; fill: var(--stop); }
+.alertbar button { margin-left: auto; padding: 5px 12px; font-size: 13px; }
+.alist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--edge); }
+.alist li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--edge); font-size: 13px; }
+.alist li.cur { background: var(--wash); }
+.alist .what { color: var(--ink-title); min-width: 0; }
+.alist .what small { color: var(--ink-mute); font-family: var(--font-data); font-size: 11.5px; margin-left: 8px; }
+.alist .stat { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-mute); }
+.alist .stat.new { color: var(--stop); font-weight: 500; }
+.alist button { padding: 4px 10px; font-size: 12.5px; }
+@media (max-width: 560px) { .alist .what small { display: block; margin-left: 0; margin-top: 2px; white-space: nowrap; font-size: 11px; } .alist .aft { display: none; } .alist .stat { min-width: 7ch; text-align: right; } }
+.adot { width: 10px; height: 10px; border-radius: 50%; }
+.adot.removed { background: transparent; border: 1.5px dashed var(--ink-mute); }
+#inv { position: absolute; top: 10px; right: 10px; bottom: 10px; width: min(360px, calc(100% - 20px)); display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); overflow: hidden; z-index: 3; }
+#inv[hidden] { display: none; }
+#inv .ibody { overflow-y: auto; overscroll-behavior: contain; padding: 14px 16px; display: grid; gap: 14px; align-content: start; flex: 1; min-height: 0; }
+#inv h3 { margin: 2px 0 0; font-size: 18px; color: var(--ink-title); }
+#inv .lead { margin: 0; font-size: 13px; color: var(--ink); }
+.checks { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.checks li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; font-size: 13px; color: var(--ink-mute); }
+.checks li .mk { font-weight: 700; text-align: center; }
+.checks li.hit { color: var(--ink-title); }
+.checks li.hit .mk { color: var(--stop); }
+.checks li small { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; }
+.script { margin-top: 4px; border-left: 3px solid var(--stop); padding: 6px 10px; background: var(--wash); font-size: 12.5px; color: var(--ink); overflow-wrap: anywhere; }
+.script small { display: block; font-family: var(--font-data); font-size: 11px; color: var(--ink-mute); margin-top: 3px; }
+.mlist { list-style: none; margin: 4px 0 0; padding: 0; border-top: 1px solid var(--edge); }
+.mlist li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--edge); font-size: 12.5px; }
+.mlist .nm { font-family: var(--font-data); color: var(--ink-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mlist small { color: var(--ink-mute); font-family: var(--font-data); font-size: 11.5px; white-space: nowrap; }
+.decide { display: grid; gap: 8px; border-top: 1px solid var(--edge); padding: 12px 16px; background: var(--surface); }
+.decide .btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.decide .btns button { flex: 1; }
+.decide .btns span { flex: 2; font-size: 13px; }
+.decide .rmv { background: var(--stop); color: var(--stop-ink); border-color: var(--stop); font-weight: 600; }
+.decide .caption { margin: 0; font-size: 11.5px; }
+@media (max-width: 560px) { #inv { top: 6px; right: 6px; bottom: 6px; width: calc(100% - 12px); } }
 footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
 @media (max-width: 860px) {
@@ -199,7 +274,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
   <div class="sec-head">
     <span class="label">Analysis</span>
-    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected colluding subnetworks.</p>
+    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected colluding subnetworks. With live alerts on, the monitor instead interrupts playback whenever it detects a new subnetwork, so you can investigate it and remove or keep its agents.</p>
   </div>
 
   <section class="panel" aria-label="Monitor">
@@ -214,20 +289,43 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         <button id="sp2" type="button" aria-pressed="false">2×</button>
         <button id="sp4" type="button" aria-pressed="true">4×</button>
       </div>
+      <label class="tog livetog"><input type="checkbox" id="live"> Live alerts</label>
       <button id="stop" type="button" disabled>Analyze</button>
       <div class="row2"><div class="clock"><span class="label">Collecting</span><span class="when num" id="when">Jan 30, 00:00 UTC</span></div>
         <p class="stopnote" id="stopnote"></p></div>
     </div>
+    <div class="alertbar" id="alertBar" role="alert" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7.5 13h-15zM7.2 6v4.2h1.6V6zm0 5.4V13h1.6v-1.6z"/></svg>
+      <span id="alertMsg"></span><button type="button" id="alertGo">Investigate</button></div>
     <div class="monitors">
       <div class="panel" style="padding:14px">
         <div class="mon-head"><h3>Activity monitor <span class="caption" style="font-weight:400">posts and comments per hour by the 2,574 agents</span></h3>
           <div class="counters"><span><b class="num" id="nAct">0</b> actions</span><span><b class="num" id="nAg">0</b> agents</span></div></div>
-        <canvas id="act" aria-label="Actions per hour"></canvas>
+        <canvas id="act" tabindex="0" role="slider" aria-label="Time: drag the blue handle to move through the collection period" aria-valuemin="0" aria-valuemax="240" aria-valuenow="0"></canvas>
       </div>
       <div class="panel" style="padding:14px">
-        <div class="mon-head"><h3>Perspective monitor</h3></div>
-        <canvas id="persp" aria-label="Agents' estimated perspectives, moving over time"></canvas>
+        <div class="mon-head"><h3>Perspective monitor</h3>
+          <div class="ptools"><span class="num" id="selInfo"></span><button id="selClear" type="button" hidden>Clear selection</button>
+            <label class="tog"><input type="checkbox" id="trails" checked> Trails</label><button id="viewReset" type="button">Reset view</button></div></div>
+        <div class="pgrid">
+          <div class="pwrap"><canvas id="persp" tabindex="0" aria-label="Agents' estimated perspectives in three dimensions, moving over time. Drag to rotate, arrow keys rotate, plus and minus zoom."></canvas>
+            <div class="tip" id="tip" role="status" hidden></div>
+            <div id="inv" hidden aria-live="polite" role="dialog" aria-label="Investigate alert"></div></div>
+          <aside class="finder" aria-label="Find agents by id">
+            <form id="idForm" autocomplete="off"><label class="label" for="idIn">Find agents</label>
+              <div class="idrow"><input id="idIn" type="text" inputmode="text" spellcheck="false" placeholder="ids, e.g. 2447, 10-20" aria-describedby="idNote"><button type="submit">Select</button></div></form>
+            <p class="idnote" id="idNote"></p>
+            <ul class="sellist" id="selList" aria-label="Selected agents"></ul>
+          </aside>
+        </div>
+        <div class="chips pick" id="subPick" hidden></div>
         <p class="caption" id="pcap"></p>
+        <p class="caption" id="phelp">Drag to rotate, scroll or pinch to zoom, double-click to reset, and hover a dot for details. Click dots to select them and follow their trails; shift-drag to select a group. Drag the blue handle on the activity monitor to move forward or back in time. Hollow dots: no posts in that step.</p>
+      </div>
+      <div class="panel" style="padding:14px" id="alertPanel" hidden>
+        <div class="mon-head"><h3>Alerts</h3>
+          <div class="counters"><span><b class="num" id="nOpen">0</b> open</span><span><b class="num" id="nRem">0</b> removed</span><span><b class="num" id="nKept">0</b> kept</span></div></div>
+        <p class="caption" id="alertNote">From step 3 on, the monitor runs the detection after every step and raises an alert for each new subnetwork.</p>
+        <ul class="alist" id="alertList" aria-label="Alerts"></ul>
       </div>
     </div>
   </section>
@@ -279,6 +377,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 </div>
 
 <script src="moltbook_data.js"></script>
+<script src="moltbook_alerts.js"></script>
 <script>
 (() => {
   const M = window.MOLTBOOK;
@@ -337,70 +436,409 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       c.save(); c.beginPath(); c.rect(X(B[st.stopped]), Tp, X(st.hour) - X(B[st.stopped]), ph); c.clip();
       area(st.hour, css('--null'), 0.9); c.restore();
     }
-    c.strokeStyle = st.stopped ? css('--stop') : css('--focus'); c.lineWidth = 2;
-    const cx = X(st.stopped ? B[st.stopped] : st.hour); c.beginPath(); c.moveTo(cx, Tp); c.lineTo(cx, Tp + ph); c.stroke();
+    if (st.stopped) { const sx = X(B[st.stopped]); c.strokeStyle = css('--stop'); c.lineWidth = 2; c.beginPath(); c.moveTo(sx, Tp); c.lineTo(sx, Tp + ph); c.stroke(); }
+    const cx = X(st.hour); c.strokeStyle = css('--focus'); c.lineWidth = 2; c.beginPath(); c.moveTo(cx, Tp + 6); c.lineTo(cx, Tp + ph); c.stroke();
+    c.fillStyle = css('--focus'); c.strokeStyle = css('--surface'); c.lineWidth = 1.5; c.beginPath(); c.arc(cx, Tp + 6, 5.5, 0, 7); c.fill(); c.stroke();   // handle: drag to move through time
+    const cvA = $('act'); cvA.setAttribute('aria-valuemax', String(Math.round(st.stopped ? B[st.stopped] : H))); cvA.setAttribute('aria-valuenow', String(Math.round(st.hour)));
+    cvA.setAttribute('aria-valuetext', dateOf(st.hour, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC');
     c.fillStyle = css('--ink-mute'); c.textAlign = 'center'; c.textBaseline = 'top'; c.font = font(11);
     for (let d = 0; d <= 10; d += 1) c.fillText(dateOf(d * 24, { month: 'short', day: 'numeric' }), X(d * 24), Tp + ph + 4);
   }
 
-  // ---------- perspective monitor
+  // ---------- perspective monitor (3D: drag to rotate, wheel or pinch to zoom, hover for details, click or shift-drag to select)
   const MON = M.monitor || { xy: [], name: [] };
-  const MARK = (MON.highlight || []).map((n) => MON.name.indexOf(n)).filter((i) => i >= 0);   // agents called out by name
-  const PCAP = `Each dot is one of the ${fmt(MON.xy.length)} agents.` + (MARK.length ? ` Ringed: ${MARK.map((i) => MON.name[i]).join(', ')}.` : '');
+  const PTS = MON.xyz || MON.xy;                                  // xyz: three leading directions; xy: two (third axis flat)
+  const DIM = MON.xyz ? 3 : 2;
+  const P3 = (p) => (p ? [p[0], p[1], DIM === 3 ? p[2] : 0] : null);
+  const PCAP = `Each dot is one of the ${fmt(PTS.length)} agents.`;
+  const HELP = 'Drag to rotate, scroll or pinch to zoom, hover a dot for details. Click dots to select them; shift-drag to select a group.';
   $('pcap').textContent = PCAP;
   let ext = 1;
-  { const v = []; MON.xy.forEach((a) => a.forEach((p) => p && v.push(Math.abs(p[0]), Math.abs(p[1])))); v.sort((a, b) => a - b); ext = v[Math.floor(v.length * 0.985)] || 1; }
+  { const v = []; PTS.forEach((a) => a.forEach((p) => p && p.forEach((x) => v.push(Math.abs(x))))); v.sort((a, b) => a - b); ext = v[Math.floor(v.length * 0.985)] || 1; }
+  const nActive = PTS.map((a) => a.filter(Boolean).length);
+  const idxOf = new Map(); MON.name.forEach((n, i) => n && idxOf.set(n, i));
   let colorOf = new Map();
+  const view = { yaw: -0.55, pitch: 0.32, zoom: 1 };
+  const VIEW0 = Object.assign({}, view);
+  const sel = new Set();
+  let proj = [], hover = -1, box = null;
+  const stepAt = (hr, upto) => { let s = mids.findIndex((m) => m > hr) - 1; if (s < -1) s = upto - 1; return Math.min(s, upto - 1); };
+  // An agent has a position only at steps in which it posted. LAST[i][t] is the last such step <= t (-1 if none yet).
+  const LAST = PTS.map((a) => { let k = -1; return a.map((p, t) => (p ? (k = t) : k)); });
+  // Position at hour hr: between active steps the dot holds its last position (drawn hollow) and then travels to the
+  // next one, rather than vanishing and reappearing elsewhere. on: active in the current step; k: last active step.
   function posAt(i, hr, upto) {
-    const a = MON.xy[i], last = upto - 1;
-    let s = mids.findIndex((m) => m > hr) - 1; if (s < -1) s = last; s = Math.min(s, last);
-    if (s < 0) return a[0] ? { p: a[0], f: Math.max(0.35, hr / mids[0]) } : null;
-    const p0 = a[s], p1 = s + 1 <= last ? a[s + 1] : null;
-    if (!p0 && !p1) return null;
-    if (!p0) return { p: p1, f: 0.4 };
-    if (!p1) return { p: p0, f: 1 };
-    const u = Math.min(1, (hr - mids[s]) / (mids[s + 1] - mids[s])), e = u * u * (3 - 2 * u);
-    return { p: [p0[0] + (p1[0] - p0[0]) * e, p0[1] + (p1[1] - p0[1]) * e], f: 1 };
+    const a = PTS[i], last = upto - 1, s = stepAt(hr, upto);
+    if (s < 0) return a[0] ? { p: P3(a[0]), f: Math.max(0.35, hr / mids[0]), on: true, k: 0, s: 0 } : null;
+    const k = LAST[i][s], p1 = s + 1 <= last ? P3(a[s + 1]) : null;
+    const u = s + 1 <= last ? Math.min(1, (hr - mids[s]) / (mids[s + 1] - mids[s])) : 0, e = u * u * (3 - 2 * u);
+    if (k < 0) return p1 ? { p: p1, f: Math.max(0.15, e), on: false, k: -1, s, fresh: true } : null;   // first appearance: fade in
+    const p0 = P3(a[k]), q = p1 || p0;
+    return { p: p0.map((x, j) => x + (q[j] - x) * e), f: 1, on: k === s, k, s };
+  }
+  const viewHour = () => (st.stopped ? Math.min(st.hour, mids[st.stopped - 1]) : st.hour);
+  function projector(w, h) {
+    const sc = (Math.min(w, h) / 2 / (ext * 2.15)) * view.zoom, cx = w / 2, cy = h / 2, D = ext * 6;
+    const ca = Math.cos(view.yaw), sa = Math.sin(view.yaw), cb = Math.cos(view.pitch), sb = Math.sin(view.pitch);
+    return (p) => {
+      const x1 = p[0] * ca + p[2] * sa, z1 = -p[0] * sa + p[2] * ca;
+      const y2 = p[1] * cb - z1 * sb, z2 = p[1] * sb + z1 * cb, f = D / (D + z2);
+      return [cx + x1 * sc * f, cy - y2 * sc * f, z2, f];
+    };
   }
   function drawPersp() {
-    const { c, w, h } = fit($('persp'));
-    const sc = Math.min(w, h) / 2 / (ext * 1.08), cx = w / 2, cy = h / 2;
-    const upto = st.stopped || T, hr = st.stopped ? Math.min(st.hour, mids[st.stopped - 1]) : st.hour;
-    const P = (p) => [cx + p[0] * sc, cy - p[1] * sc], hi = [];
-    c.fillStyle = css('--ink-mute');
-    MON.xy.forEach((_, i) => {
-      const q = posAt(i, hr, upto); if (!q) return;
-      if (MARK.includes(i)) return;
-      const g = MON.name[i] && colorOf.get(MON.name[i]);
-      if (g) { hi.push([q, g]); return; }
-      const [x, y] = P(q.p); c.globalAlpha = 0.35 * q.f * (colorOf.size ? 0.6 : 1);
-      c.beginPath(); c.arc(x, y, 2.2, 0, 7); c.fill();
+    const { c, w, h } = fit($('persp')), Pj = projector(w, h);
+    const upto = st.stopped || T, hr = viewHour(), any = sel.size > 0;
+    // reference cube and axes
+    const e = ext * 1.05, cube = [];
+    for (const x of [-e, e]) for (const y of [-e, e]) for (const z of [-e, e]) cube.push(Pj([x, y, z]));
+    c.strokeStyle = css('--grid'); c.lineWidth = 1; c.beginPath();
+    [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([a, b]) => { c.moveTo(cube[a][0], cube[a][1]); c.lineTo(cube[b][0], cube[b][1]); });
+    c.stroke();
+    c.font = font(10.5); c.fillStyle = css('--ink-mute'); c.textAlign = 'center'; c.textBaseline = 'middle';
+    [[e, -e, -e, 'dim 1'], [-e, e, -e, 'dim 2'], [-e, -e, e, 'dim 3']].forEach(([x, y, z, lab]) => { const o = Pj([-e, -e, -e]), q = Pj([x, y, z]); c.strokeStyle = css('--null'); c.beginPath(); c.moveTo(o[0], o[1]); c.lineTo(q[0], q[1]); c.stroke(); c.fillText(lab, q[0] + (q[0] - o[0]) * 0.06, q[1] + (q[1] - o[1]) * 0.06); });
+    // points, back to front
+    proj = [];
+    PTS.forEach((_, i) => { if (gone(i, hr)) return; const q = posAt(i, hr, upto); if (!q) return; const s = Pj(q.p); proj.push({ i, x: s[0], y: s[1], z: s[2], f: s[3], a: q.f, p: q.p, on: q.on || q.fresh }); });
+    proj.sort((a, b) => b.z - a.z);
+    const ink = css('--ink-mute'), surf = css('--surface'), title = css('--ink-title');
+    // trails of the selected agents through the steps so far
+    if (any && $('trails').checked) {
+      const s = stepAt(hr, upto);
+      sel.forEach((i) => {
+        const g = gc(i), col = g || title, path = [];
+        let prev = -1;                                            // dashed segments span steps in which the agent did not post
+        for (let t = 0; t <= Math.max(s, 0); t++) { const p = P3(PTS[i][t]); if (p) { path.push({ q: Pj(p), gap: prev >= 0 && t - prev > 1, knot: true }); prev = t; } }
+        const now = posAt(i, hr, upto); if (now && !now.fresh) path.push({ q: Pj(now.p), gap: now.k < now.s });
+        if (path.length < 2) return;
+        c.strokeStyle = col; c.lineWidth = 1.6; c.globalAlpha = 0.55;
+        for (let k = 1; k < path.length; k++) {
+          c.setLineDash(path[k].gap ? [4, 4] : []); c.beginPath();
+          c.moveTo(path[k - 1].q[0], path[k - 1].q[1]); c.lineTo(path[k].q[0], path[k].q[1]); c.stroke();
+        }
+        c.setLineDash([]);
+        c.fillStyle = col; path.filter((d) => d.knot).forEach((d) => { c.beginPath(); c.arc(d.q[0], d.q[1], 2, 0, 7); c.fill(); });
+        c.globalAlpha = 1;
+      });
+    }
+    proj.forEach((d) => {
+      const g = gc(d.i), on = sel.has(d.i);
+      if (on) return;
+      const r = (g ? 4.2 : 2.2) * d.f;
+      c.globalAlpha = (g ? 1 : 0.35 * d.a * (colorOf.size || AL.any() ? 0.6 : 1)) * (any ? 0.25 : 1) * (d.on ? 1 : 0.7);
+      c.beginPath(); c.arc(d.x, d.y, r, 0, 7);
+      if (!d.on) { c.strokeStyle = g || ink; c.lineWidth = 1; c.stroke(); return; }   // inactive this step: hollow, at its last position
+      c.fillStyle = g || ink; c.fill();
+      if (g) { c.strokeStyle = surf; c.lineWidth = 1; c.stroke(); }
     });
-    c.globalAlpha = 1; c.strokeStyle = css('--surface');
-    hi.forEach(([q, g]) => { const [x, y] = P(q.p); c.fillStyle = SUB(g); c.beginPath(); c.arc(x, y, 4.2, 0, 7); c.fill(); c.stroke(); });
-    MARK.forEach((i) => {                                         // named agents: a ring and a label, above everything
-      const q = posAt(i, hr, upto); if (!q) return;
-      const [x, y] = P(q.p), ink = css('--ink-title');
-      c.globalAlpha = Math.max(0.5, q.f);
-      c.fillStyle = ink; c.beginPath(); c.arc(x, y, 3.2, 0, 7); c.fill();
-      c.strokeStyle = ink; c.lineWidth = 1.6; c.beginPath(); c.arc(x, y, 8, 0, 7); c.stroke();
-      const lab = MON.name[i]; c.font = font(12); c.textBaseline = 'middle';
-      const right = x + 12 + c.measureText(lab).width < w - 4;
-      c.textAlign = right ? 'left' : 'right';
-      const tx = right ? x + 12 : x - 12;
-      c.lineWidth = 3; c.strokeStyle = css('--surface'); c.strokeText(lab, tx, y);
-      c.fillStyle = ink; c.fillText(lab, tx, y);
-      c.globalAlpha = 1; c.lineWidth = 1;
+    c.globalAlpha = 1;
+    const labels = [];
+    proj.forEach((d) => {                                         // selected agents on top, ringed
+      if (!sel.has(d.i)) return;
+      const g = gc(d.i);
+      c.beginPath(); c.arc(d.x, d.y, 4.5 * d.f, 0, 7);
+      if (d.on) { c.fillStyle = g || title; c.fill(); c.strokeStyle = surf; c.lineWidth = 2; c.stroke(); }
+      else { c.fillStyle = surf; c.fill(); c.strokeStyle = g || title; c.lineWidth = 1.8; c.stroke(); }
+      c.strokeStyle = title; c.lineWidth = 1.4; c.beginPath(); c.arc(d.x, d.y, 8 * d.f, 0, 7); c.stroke();
+      labels.push(d);
+    });
+    if (labels.length <= 12) labels.forEach((d) => {
+      const lab = (MON.name[d.i] || `#${d.i + 1}`) + (d.on ? '' : ' · inactive'); c.font = font(11.5); c.textBaseline = 'middle';
+      const right = d.x + 12 + c.measureText(lab).width < w - 4; c.textAlign = right ? 'left' : 'right';
+      const tx = right ? d.x + 12 : d.x - 12;
+      c.lineWidth = 3; c.strokeStyle = surf; c.strokeText(lab, tx, d.y); c.fillStyle = title; c.fillText(lab, tx, d.y);
+    });
+    if (hover >= 0) { const d = proj.find((q) => q.i === hover); if (d) { c.strokeStyle = title; c.lineWidth = 1.5; c.beginPath(); c.arc(d.x, d.y, 6.5, 0, 7); c.stroke(); } }
+    if (box) { c.fillStyle = css('--focus'); c.globalAlpha = 0.12; c.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0); c.globalAlpha = 1;
+      c.strokeStyle = css('--focus'); c.lineWidth = 1; c.strokeRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0); }
+    selUI();
+  }
+  function nearest(x, y, rad = 10) {
+    let best = -1, bd = rad * rad;
+    for (let k = proj.length - 1; k >= 0; k--) { const d = proj[k], dd = (d.x - x) ** 2 + (d.y - y) ** 2; if (dd < bd) { bd = dd; best = d.i; } }
+    return best;
+  }
+  let selKey = '';
+  const LIST_MAX = 300;
+  function selUI() {
+    const n = sel.size;
+    $('selInfo').textContent = n ? `${fmt(n)} selected` : '';
+    $('selClear').hidden = !n;
+    const upto = st.stopped || T, s = stepAt(viewHour(), upto), ids = [...sel].sort((a, b) => a - b);
+    const key = ids.join(',') + '|' + s + '|' + colorOf.size + '|' + hover + '|' + AL.ver;
+    if (key === selKey) return;                                   // rebuild only when something shown changes
+    selKey = key;
+    const ul = $('selList');
+    ul.innerHTML = ids.slice(0, LIST_MAX).map((i) => {
+      const g = gc(i), on = s < 0 ? !!PTS[i][0] : !!PTS[i][Math.max(0, s)];
+      const nm = esc(MON.name[i] || `#${i + 1}`);
+      return `<li data-i="${i}"${i === hover ? ' class="hot"' : ''} title="posted in ${nActive[i]} of ${T} steps">` +
+        `<i class="dot${on ? '' : ' off'}" style="background:${g || css('--ink-title')}${on ? '' : `;border-color:${g || css('--ink-mute')}`}"></i>` +
+        `<span class="nm">${nm}</span><span>${nActive[i]}/${T}</span>` +
+        `<button type="button" class="rm" data-rm="${i}" aria-label="Deselect ${nm}">×</button></li>`;
+    }).join('') + (ids.length > LIST_MAX ? `<li><span></span><span>and ${fmt(ids.length - LIST_MAX)} more</span></li>` : '');
+  }
+  // ---------- finder: select agents by id (single, list or range) or by name
+  {
+    const N = PTS.length;
+    const nameIdx = new Map(); MON.name.forEach((nm, i) => nm && nameIdx.set(nm.toLowerCase(), i));
+    function parseIds(text) {
+      const got = [], bad = [];
+      const norm = text.replace(/\s*(?:-|–|—|\.\.|:)\s*(?=#?\d)/gi, '-');   // "10 - 20", "10..20", "10:20" -> "10-20"
+      norm.split(/[\s,;]+/).filter(Boolean).forEach((tok) => {
+        const t = tok.replace(/#/g, ''), r = t.match(/^(\d+)-(\d+)$/);
+        if (r) {
+          let a = +r[1], b = +r[2]; if (a > b) [a, b] = [b, a];
+          if (b < 1 || a > N) { bad.push(tok); return; }
+          for (let x = Math.max(1, a); x <= Math.min(N, b); x++) got.push(x - 1);
+          if (a < 1 || b > N) bad.push(`${tok} (clipped to 1–${N})`);
+        } else if (/^\d+$/.test(t)) { const x = +t; if (x >= 1 && x <= N) got.push(x - 1); else bad.push(tok); }
+        else if (nameIdx.has(tok.toLowerCase())) got.push(nameIdx.get(tok.toLowerCase()));
+        else bad.push(tok);
+      });
+      return { got, bad };
+    }
+    const note = $('idNote');
+    $('idForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const txt = $('idIn').value.trim();
+      if (!txt) { note.textContent = ''; note.classList.remove('err'); return; }
+      const { got, bad } = parseIds(txt), before = sel.size;
+      got.forEach((i) => sel.add(i));
+      const added = sel.size - before;
+      note.classList.toggle('err', bad.length > 0);
+      note.textContent = (got.length ? `Added ${fmt(added)}.` : '') +
+        (bad.length ? ` Not found: ${bad.slice(0, 5).join(', ')}${bad.length > 5 ? ', …' : ''}.` : '');
+      if (!bad.length) $('idIn').value = '';
+      drawPersp();
+    });
+    const ul = $('selList');
+    ul.addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (b) { sel.delete(+b.dataset.rm); if (hover === +b.dataset.rm) hover = -1; drawPersp(); } });
+    ul.addEventListener('pointerover', (e) => { const li = e.target.closest('li[data-i]'); const i = li ? +li.dataset.i : -1; if (i !== hover) { hover = i; drawPersp(); } });
+    ul.addEventListener('pointerleave', () => { if (hover >= 0) { hover = -1; drawPersp(); } });
+  }
+  function tipFor(i, px, py) {
+    const tip = $('tip'), upto = st.stopped || T, hr = viewHour(), s = Math.max(0, stepAt(hr, upto));
+    const q = posAt(i, hr, upto), g = gc(i), gl = groupLabel(i);
+    const cur = PTS[i][s], kp = s > 0 ? LAST[i][s - 1] : -1, prev = kp >= 0 ? PTS[i][kp] : null, k = LAST[i][s];
+    const mv = cur && prev ? Math.hypot(...P3(cur).map((x, j) => x - P3(prev)[j])) : null;
+    const state = cur ? '' : k >= 0 ? ' · inactive' : ' · not yet active';
+    const f3 = (v) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(2);
+    tip.innerHTML = `<b>${esc(MON.name[i] || `Agent #${i + 1}`)}</b>` +
+      (g ? `<span><i class="swatch" style="background:${g}"></i>${gl}</span>` : '') +
+      `<span>step ${s + 1} of ${upto}${state}</span>` +
+      (q ? `<span>dim 1 ${f3(q.p[0])} · dim 2 ${f3(q.p[1])}${DIM === 3 ? ` · dim 3 ${f3(q.p[2])}` : ''}</span>` : '') +
+      (mv !== null ? `<span>moved ${mv.toFixed(2)} since step ${kp + 1}</span>` : '') +
+      `<span>active in ${nActive[i]} of ${T} steps</span>` + (sel.has(i) ? '<span>selected · click to deselect</span>' : '<span>click to select</span>');
+    tip.hidden = false;
+    const wrap = $('persp').getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = `${Math.min(wrap.width - tw - 4, px + 14)}px`; tip.style.top = `${py + 14 + th > wrap.height ? py - th - 10 : py + 14}px`;
+  }
+  {
+    const cv = $('persp'), ptrs = new Map();
+    let drag = null, pinch = null;
+    const at = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    cv.addEventListener('pointerdown', (e) => {
+      cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, at(e));
+      if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z: view.zoom }; drag = null; return; }
+      const [x, y] = at(e); drag = { x, y, x0: x, y0: y, shift: e.shiftKey, moved: false };
+    });
+    cv.addEventListener('pointermove', (e) => {
+      const [x, y] = at(e);
+      if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, [x, y]);
+      if (pinch && ptrs.size === 2) { const [a, b] = [...ptrs.values()]; view.zoom = Math.max(0.4, Math.min(8, pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d)); drawPersp(); return; }
+      if (drag) {
+        if (Math.hypot(x - drag.x0, y - drag.y0) > 4) drag.moved = true;
+        if (drag.shift) box = { x0: Math.min(drag.x0, x), y0: Math.min(drag.y0, y), x1: Math.max(drag.x0, x), y1: Math.max(drag.y0, y) };
+        else if (drag.moved) { view.yaw += (x - drag.x) * 0.01; view.pitch = Math.max(-1.5, Math.min(1.5, view.pitch + (y - drag.y) * 0.01)); }
+        drag.x = x; drag.y = y; $('tip').hidden = true; hover = -1; drawPersp(); return;
+      }
+      const i = nearest(x, y);
+      if (i !== hover) { hover = i; drawPersp(); }
+      if (i >= 0) { tipFor(i, x, y); cv.style.cursor = 'pointer'; } else { $('tip').hidden = true; cv.style.cursor = 'grab'; }
+    });
+    const end = (e) => {
+      ptrs.delete(e.pointerId);
+      if (pinch) { if (ptrs.size < 2) pinch = null; drag = null; return; }
+      if (!drag) return;
+      if (box) { proj.forEach((d) => { if (d.x >= box.x0 && d.x <= box.x1 && d.y >= box.y0 && d.y <= box.y1) sel.add(d.i); }); box = null; }
+      else if (!drag.moved && e.type === 'pointerup') { const i = nearest(drag.x0, drag.y0, e.pointerType === 'touch' ? 16 : 10); if (i >= 0) { sel.has(i) ? sel.delete(i) : sel.add(i); if (e.pointerType !== 'mouse') tipFor(i, drag.x0, drag.y0); } }
+      drag = null; drawPersp();
+    };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    cv.addEventListener('pointerleave', () => { if (!drag && hover >= 0) { hover = -1; $('tip').hidden = true; drawPersp(); } });
+    cv.addEventListener('wheel', (e) => { e.preventDefault(); view.zoom = Math.max(0.4, Math.min(8, view.zoom * Math.exp(-e.deltaY * 0.0015))); drawPersp(); }, { passive: false });
+    cv.addEventListener('dblclick', () => { Object.assign(view, VIEW0); drawPersp(); });
+    cv.addEventListener('keydown', (e) => {
+      const k = e.key, r = 0.08;
+      if (k === 'ArrowLeft') view.yaw -= r; else if (k === 'ArrowRight') view.yaw += r;
+      else if (k === 'ArrowUp') view.pitch = Math.max(-1.5, view.pitch - r); else if (k === 'ArrowDown') view.pitch = Math.min(1.5, view.pitch + r);
+      else if (k === '+' || k === '=') view.zoom = Math.min(8, view.zoom * 1.15); else if (k === '-') view.zoom = Math.max(0.4, view.zoom / 1.15);
+      else if (k === '0') Object.assign(view, VIEW0); else if (k === 'Escape') sel.clear(); else return;
+      e.preventDefault(); drawPersp();
+    });
+    $('viewReset').onclick = () => { Object.assign(view, VIEW0); drawPersp(); };
+    $('selClear').onclick = () => { sel.clear(); drawPersp(); };
+    $('trails').onchange = drawPersp;
+  }
+  function subPicker() {                                          // after analysis: select a detected subnetwork in one click
+    const box = $('subPick'), subs = st.run ? st.run.subnetworks : [];
+    if (!subs.length) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML = '<span class="label">Select</span>' + subs.map((s) => `<button type="button" data-sub="${s.id}"><i class="swatch" style="background:${SUB(s.id)}"></i>Subnetwork ${s.id}</button>`).join('');
+    box.querySelectorAll('[data-sub]').forEach((b) => (b.onclick = () => {
+      const s = subs[+b.dataset.sub - 1], ids = s.members.map((m) => idxOf.get(m.name)).filter((i) => i !== undefined);
+      const all = ids.every((i) => sel.has(i)); ids.forEach((i) => (all ? sel.delete(i) : sel.add(i))); drawPersp();
+    }));
+  }
+
+  // ---------- live detection: alerts, investigation, decisions
+  // TREE (moltbook_alerts.js): the method run after every step k >= 3 on every keep/remove decision path
+  // (alert_tree.py), keyed `${k}_${path}`, path = one letter per earlier alert (R removed, K kept); a key exists only
+  // where that run raises an alert. Removed agents are dropped from every later run; kept agents stay in the data but
+  // are not searched again. ALS: the alerts raised so far on the viewer's path; status 'open', 'kept' or 'removed'.
+  const TREE = window.MOLTBOOK_ALERTS || {};
+  const ALS = [];
+  const AL = { status: [], fired: 2, cur: -1, resume: false, ver: 0, of: new Map(), path: '' };
+  AL.any = () => ALS.length > 0;
+  AL.openK = () => { const j = AL.status.indexOf('open'); return j < 0 ? null : ALS[j].k; };
+  const alertOf = (i) => { const n = MON.name[i]; const j = n ? AL.of.get(n) : undefined; return j === undefined ? -1 : j; };
+  function gc(i) {                                                // dot color: detected subnetwork after Analyze, else alert state
+    const n = MON.name[i]; if (!n) return null;
+    const g = colorOf.get(n); if (g) return SUB(g);
+    const j = alertOf(i); if (j < 0) return null;
+    return AL.status[j] === 'open' ? css('--stop') : null;          // kept agents return to the crowd
+  }
+  function groupLabel(i) {
+    const n = MON.name[i], g = n && colorOf.get(n); if (g) return `Subnetwork ${g}`;
+    const j = alertOf(i); return j < 0 ? '' : `Alert ${j + 1} · ${AL.status[j]}`;
+  }
+  const gone = (i, hr) => { const j = alertOf(i); return j >= 0 && AL.status[j] === 'removed' && hr >= B[ALS[j].k] - 1e-6; };
+  const thruK = (k) => dateOf(B[k], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
+  // Run the monitor on every step completed since the last check, along the viewer's decision path. An alert stops
+  // collection at the end of its step until the viewer decides, since the later runs depend on the decision.
+  function checkAlerts() {
+    if (st.stopped || !$('live').checked || AL.openK() !== null) return;
+    const k = complete(st.hour);
+    for (let kk = AL.fired + 1; kk <= k; kk++) {
+      AL.fired = kk;
+      const a = TREE[`${kk}_${AL.path}`];
+      if (!a) continue;
+      ALS.push(a); AL.status.push('open'); a.members.forEach((n) => AL.of.set(n, ALS.length - 1)); AL.ver++;
+      if (st.playing) AL.resume = true;
+      st.playing = false; st.target = null; st.hour = B[kk];
+      renderAlerts([ALS.length - 1]); return;
+    }
+  }
+  function renderAlerts(hit) {
+    const open = AL.status.filter((x) => x === 'open').length;
+    $('nOpen').textContent = open; $('nRem').textContent = AL.status.filter((x) => x === 'removed').length;
+    $('nKept').textContent = AL.status.filter((x) => x === 'kept').length;
+    const bar = $('alertBar');
+    if (open) {
+      const j = AL.status.indexOf('open'), a = ALS[j];
+      $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> after step ${a.k} · ${a.members.length} agents · p = ${a.p.toFixed(3)}. Decide to continue.`;
+      bar.hidden = false; $('alertGo').onclick = () => investigate(j);
+    } else bar.hidden = true;
+    const ul = $('alertList');
+    ul.innerHTML = ALS.map((a, j) => {
+      const s = AL.status[j];
+      const col = s === 'open' ? css('--stop') : s === 'kept' ? css('--s3') : 'transparent';
+      return `<li class="${j === AL.cur ? 'cur' : ''}"><i class="adot ${s}" style="background:${col}"></i>` +
+        `<span class="what">${a.members.length} agents moving together<small><span class="aft">after </span>step ${a.k} · p = ${a.p.toFixed(3)}</small></span>` +
+        `<span class="stat ${s === 'open' ? 'new' : ''}">${s}</span>` +
+        `<button type="button" data-inv="${j}">${j === AL.cur ? 'Close' : s === 'open' ? 'Investigate' : 'View'}</button></li>`;
+    }).join('');
+    ul.querySelectorAll('[data-inv]').forEach((b) => (b.onclick = () => (+b.dataset.inv === AL.cur ? closeInv() : investigate(+b.dataset.inv))));
+    $('alertNote').hidden = AL.any();
+    if (!st.run) $('pcap').textContent = PCAP + (open ? ' Red: agents in open alerts.' : '') + (AL.status.includes('removed') ? ' Removed agents leave the monitor at the end of their alert\'s step.' : '');
+    controlsUI();
+  }
+  const pct = (v) => `${Math.round(v * 100)}%`;
+  function investigate(j) {
+    const a = ALS[j], inv = $('inv'), M_ = a.member_info, n = M_.length, e = a.evidence, f2 = (v) => v.toFixed(2);
+    AL.cur = j; sel.clear(); a.members.forEach((nm) => { const i = idxOf.get(nm); if (i !== undefined) sel.add(i); });
+    const chk = (label, x, f) => `<li class="${x.p <= 0.05 ? 'hit' : ''}"><span class="mk" aria-hidden="true">${x.p <= 0.05 ? '✓' : '–'}</span><span>${label}</span><small>${f(x.value)} vs ${f(x.null_median)}</small></li>`;
+    const nHit = ['template_jaccard', 'hourly_corr', 'shared_threads', 'replies'].filter((m) => e[m].p <= 0.05).length;
+    const groups = new Map(); M_.forEach((m) => { if (!m.sample) return; const key = m.sample.slice(0, 70); if (!groups.has(key)) groups.set(key, { text: m.sample, who: [] }); groups.get(key).who.push(m.name); });
+    const script = [...groups.values()].sort((x, y) => y.who.length - x.who.length)[0];
+    const stem = a.stem ? ` ${a.stem.count} of the ${a.size} names begin with “${esc(a.stem.stem)}”.` : '';
+    const open = AL.status[j] === 'open';
+    inv.innerHTML = `
+      <div class="ibody">
+        <div><span class="label">Alert ${j + 1} · after step ${a.k}</span><h3>${n} agents moving together</h3></div>
+        <p class="lead">Their perspectives moved together more than chance allows (p = ${a.p.toFixed(3)}, among ${fmt(a.n_tested)} agents).${stem}</p>
+        <div><span class="label">Other signs (vs random groups)</span>
+          <ul class="checks">
+            ${chk('Post at the same hours', e.hourly_corr, f2)}
+            ${chk('Reuse the same texts', e.template_jaccard, f2)}
+            ${chk('Post in the same threads', e.shared_threads, pct)}
+            ${chk('Reply to each other', e.replies, pct)}
+          </ul>
+          <p class="caption" style="margin:6px 0 0">${nHit ? `${nHit} of 4 unusual.` : 'Nothing else stands out.'} The method saw none of this.</p></div>
+        ${script ? `<div><span class="label">Repeated text</span><div class="script">${esc(script.text)}<small>posted by ${script.who.length} of ${n}</small></div></div>` : ''}
+        <div><span class="label">Members</span><ul class="mlist">
+          ${M_.map((m) => `<li><span class="nm" title="${esc(m.name)}">${esc(m.name)}</span><small>${fmt(m.actions)} actions${m.submolts.length ? ` · ${esc(m.submolts[0][0])}` : ''}</small></li>`).join('')}
+        </ul></div>
+      </div>
+      <div class="decide">${open
+        ? `<div class="btns"><button type="button" class="rmv" data-dec="removed">Remove</button><button type="button" data-dec="kept">Keep</button></div>
+           <p class="caption">Remove takes them off Moltbook from here on. Keep leaves them in and stops flagging them.</p>`
+        : `<div class="btns"><span>Decision: <b>${AL.status[j]}</b></span>${j === ALS.length - 1 ? '<button type="button" data-dec="undo">Undo</button>' : ''}<button type="button" data-dec="close">Close</button></div>`}</div>`;
+    inv.hidden = false; inv.querySelector('.ibody').scrollTop = 0;
+    inv.querySelectorAll('[data-dec]').forEach((b) => (b.onclick = () => decide(j, b.dataset.dec)));
+    renderAlerts(); drawPersp();
+    $('persp').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
+  }
+  function closeInv() { AL.cur = -1; $('inv').hidden = true; sel.clear(); renderAlerts(); drawPersp(); }
+  function decide(j, d) {
+    if (d === 'close') { closeInv(); return; }
+    if (d === 'undo') {                                           // only the latest decision, before anything later was raised
+      AL.status[j] = 'open'; AL.path = AL.path.slice(0, -1); AL.fired = ALS[j].k; AL.ver++; investigate(j); return;
+    }
+    AL.status[j] = d; AL.path += d === 'removed' ? 'R' : 'K'; AL.ver++;
+    closeInv();
+    if (AL.resume && !st.stopped && st.hour < H) { AL.resume = false; $('play').click(); }      // collection continues
+    else checkAlerts();
+  }
+  $('live').onchange = () => {                                   // off: the standard demo; on: playback is interrupted by detection
+    const on = $('live').checked; $('alertPanel').hidden = !on;
+    sel.clear(); resetAlerts(); if (!st.run) $('pcap').textContent = PCAP;
+    if (on) checkAlerts();                                       // a step already completed raises its alert now (collection returns to it)
+    draw();
+  };
+  function resetAlerts() { ALS.length = 0; AL.status = []; AL.of = new Map(); AL.path = ''; AL.fired = 2; AL.cur = -1; AL.resume = false; AL.ver++; $('inv').hidden = true; renderAlerts(); }
+
+  // ---------- activity monitor as a slider: drag the blue bar (or click anywhere) to move through time
+  {
+    const cv = $('act');
+    const hourAt = (x) => { const r = cv.getBoundingClientRect(), L = 40, R = 8; return ((x - r.left - L) / (r.width - L - R)) * H; };
+    const maxHour = () => (st.stopped ? B[st.stopped] : AL.openK() !== null ? B[AL.openK()] : H);
+    const seek = (hr) => { st.playing = false; st.target = null; st.analyzeAfter = false; st.hour = Math.max(0, Math.min(maxHour(), hr)); draw(); };
+    let dragging = false;
+    cv.addEventListener('pointerdown', (e) => { dragging = true; cv.setPointerCapture(e.pointerId); seek(hourAt(e.clientX)); });
+    cv.addEventListener('pointermove', (e) => { if (dragging) seek(hourAt(e.clientX)); });
+    const up = () => { dragging = false; };
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+    cv.addEventListener('keydown', (e) => {
+      const d = e.shiftKey ? 24 : 1, k = e.key;
+      if (k === 'ArrowRight') seek(st.hour + d); else if (k === 'ArrowLeft') seek(st.hour - d);
+      else if (k === 'Home') seek(0); else if (k === 'End') seek(maxHour());
+      else if (k === 'PageUp') { const n = B.find((b) => b > st.hour + 0.1); seek(n === undefined ? maxHour() : n); }
+      else if (k === 'PageDown') { const p = [...B].reverse().find((b) => b < st.hour - 0.1); seek(p === undefined ? 0 : p); }
+      else return;
+      e.preventDefault();
     });
   }
 
   // ---------- console
   function controlsUI() {
     const k = complete(st.hour);
-    const hr = st.stopped ? B[st.stopped] : st.hour, i = Math.min(H - 1, Math.floor(hr));
+    const hr = st.hour, i = Math.min(H - 1, Math.floor(hr));
+    document.querySelector('.clock .label').textContent = st.stopped ? 'Viewing' : AL.openK() !== null ? 'Paused · alert' : st.playing ? 'Collecting' : st.hour > 0 && st.hour < H ? 'Paused' : 'Collecting';
     $('when').textContent = dateOf(hr, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
     $('nAct').textContent = fmt(upTo(cumAct, M.per_hour, hr)); $('nAg').textContent = fmt(upTo(cumAg, M.new_agents, hr));
-    $('play').disabled = (st.playing && st.target == null) || !!st.stopped;
+    $('play').disabled = (st.playing && st.target == null) || !!st.stopped || AL.openK() !== null;
     $('pause').disabled = !st.playing || st.target != null;
     const done = !!st.stopped || st.hour >= H;                    // collection over: Reset takes Play's place
     $('play').hidden = done; $('rewind').hidden = !done; $('rewind').disabled = false;
@@ -410,10 +848,10 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     if (st.stopped) { stop.disabled = true; $('stopnote').textContent = 'Analyzed. Use Reset to collect again.'; return; }
     stop.disabled = st.analyzeAfter || !(st.playing || k >= 3);       // while running, Analyze stops first
     const when = (h) => dateOf(h, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
-    $('stopnote').textContent = st.hour === 0 ? 'Hit play to start collecting.' : k < 3 ? `Analysis is available from ${when(B[3])}.`
+    $('stopnote').textContent = AL.openK() !== null ? 'Decide on the open alert to continue collecting.' : st.hour === 0 ? 'Hit play to start collecting.' : k < 3 ? `Analysis is available from ${when(B[3])}.`
       : `Analysis uses data through ${when(B[k])}.`;
   }
-  function draw() { drawActivity(); drawPersp(); controlsUI(); }
+  function draw() { checkAlerts(); drawActivity(); drawPersp(); controlsUI(); }
   function tick(ts) {
     if (!st.playing) return;
     const dt = st.last ? (ts - st.last) / 1000 : 0; st.last = ts;
@@ -720,7 +1158,8 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     }
     stage(1, 'done', `${run.rounds.length} rounds · B = ${run.B}`); stage(2, 'done', `${sub} subnetwork${sub === 1 ? '' : 's'}`);
     $('verdict').textContent = sub === 0 ? `No colluding subnetwork detected among ${fmt(run.N)} activated agents.` : `${sub} colluding subnetwork${sub === 1 ? '' : 's'} detected among ${fmt(run.N)} activated agents.`;
-    $('pcap').textContent = 'Each dot is one agent\'s estimated perspective. Colored: agents in the detected subnetworks.';
+    $('pcap').textContent = 'Each dot is one agent\'s estimated perspective. Colored: agents in the detected subnetworks. Drag the blue handle above to replay the analyzed period.';
+    subPicker();
     $('detection').hidden = false;
     if (sub) { ['carMove', 'carSub'].forEach((id) => ($(id).hidden = false)); buildCarousels(); }
     drawScan(); scanTable();
@@ -728,7 +1167,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   }
   function startAnalysis() {
     const k = complete(st.hour); if (k < 3) return;
-    st.playing = false; st.target = null; st.stopped = k; draw(); analyze(k);
+    st.playing = false; st.target = null; st.stopped = k; st.hour = B[k]; draw(); analyze(k);
   }
   $('stop').onclick = () => {                   // Analyze: if collection is running, stop it first
     if (st.playing) { st.analyzeAfter = true; stopCollection(); if (!st.playing) { st.analyzeAfter = false; startAnalysis(); } return; }
@@ -737,7 +1176,8 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   const resetAll = () => {
     st.runId = (st.runId || 0) + 1;
     st.stopped = null; st.run = null; st.hour = 0; st.playing = false; st.target = null; st.analyzeAfter = false; colorOf = new Map();
-    $('analysis').hidden = true; $('pcap').textContent = PCAP;
+    sel.clear(); resetAlerts();
+    $('analysis').hidden = true; $('pcap').textContent = PCAP; subPicker();
     draw();
   };
   $('reset').onclick = () => { resetAll(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); };

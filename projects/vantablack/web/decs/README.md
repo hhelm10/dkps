@@ -1,9 +1,12 @@
 # Detecting Colluding Subnetworks in Multi-Agent Systems
 
-Live at https://helivan.io/projects/decs/ (this package matches the live page as of 2026-10-30).
+Live at https://helivan.io/projects/decs/ (this package matches the live page as of 2026-11-21).
 
 Interactive page: play back Moltbook activity (January 30 to February 9, 2026), stop at any
 point, and replay the detection and estimation of colluding subnetworks on the data collected so far.
+With the "Live alerts" toggle on (off by default), playback pauses whenever the method detects a
+subnetwork after a step; the viewer investigates it and decides to remove the agents or keep them,
+and later alerts follow from those decisions.
 
 Second page, `api.html`: the same demonstration on synthetic agents calling a public API (three
 scenarios: split scraping, distillation, side channel), with the planted colluders revealed after
@@ -11,7 +14,7 @@ the analysis.
 
 ## Hosting
 
-Upload `index.html`, `moltbook_data.js`, `api.html` and `api_data.js` to the same folder. Nothing else is needed: no server,
+Upload `index.html`, `moltbook_data.js`, `moltbook_alerts.js`, `api.html` and `api_data.js` to the same folder. Nothing else is needed: no server,
 build step or external data. Fonts load from Google Fonts (with system fallbacks).
 
 To preview locally, open `index.html` in a browser.
@@ -22,6 +25,11 @@ To preview locally, open `index.html` in a browser.
 - `moltbook_data.js`: the data the page shows (about 1.6 MB). It contains activity counts,
   estimated perspectives, and the method's results at every stopping point. It contains public
   Moltbook agent handles but no post or comment content.
+- `moltbook_alerts.js`: the live-alert readouts (about 0.5 MB): for every alert in the keep/remove
+  tree, the members' public handles, activity counts, top submolts and four evidence measures
+  against random groups. It includes post text only when an agent repeats one scripted template in
+  at least 25% of its actions: one instance of that text, with links and @mentions masked and
+  truncated to 200 characters. No free-form post or comment content.
 - `api.html`, `api_data.js` (about 1.5 MB): the API demo page and its data (synthetic).
 - `source/make_web_data.py`: the script that builds `moltbook_data.js` from the pipeline's saved
   runs (vantablack repository, `scripts/`). Not needed for hosting.
@@ -34,6 +42,12 @@ To preview locally, open `index.html` in a browser.
 Every result on the page comes from running the full method offline (`scripts/real_tstep.py`) on
 the 2,574 agents analyzed in the paper. There is one run per possible stopping point; each run uses
 only the data up to that point. Nothing is computed in the browser.
+
+The live alerts come from `scripts/alert_tree.py`, which runs the method after every step k = 3, ..., 8
+on every keep/remove decision path (one alert per step; 63 runs). Remove drops the agents' responses
+from later runs; keep leaves them in the data but out of the search. The runs reuse the saved
+stop-at-step responses and settings (old candidate family), on the same 2,574-agent cohort, which is
+defined from activity across all eight steps. `scripts/make_alert_data.py` builds the readouts.
 
 The API page's data are synthetic (pipeline/simgen.py, 1,000 agents, 16 steps of 3 minutes, about
 40 calls per agent per step on average, seed 0), with a saved run every 6 minutes from minute 12.
