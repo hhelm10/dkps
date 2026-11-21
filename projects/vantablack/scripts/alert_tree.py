@@ -1,7 +1,7 @@
 """Live-alert tree for the Moltbook page: the method run after every step k = 3, ..., 8, where each
 alert's keep/remove decision changes the later runs.
 
-    python scripts/alert_tree.py [--B 199 --workers 14] [--only-root]
+    python scripts/alert_tree.py [--B 199 --workers 14] [--checks 3,6,8] [--only-root]
 
 One alert per step: after step k the method tests the agents not yet reviewed and, if the test
 rejects (p <= 0.05) and the membership estimate has at least two agents, raises one alert for it.
@@ -16,8 +16,11 @@ reference run's cohort (real_tstep.py --stop-step k --cohort-tag 01-30_02-09_T8_
 with that run's settings (old candidate family, family='z'), so nothing is re-embedded. With no
 decisions (the root), a node reproduces round 1 of the saved run.
 
-Writes data/derived/alert_tree/<k>_<path>.json per node (path: one letter per earlier alert,
-R = removed, K = kept; resumable) and data/results/alert_tree.json (all nodes).
+--checks: the steps after which the monitor checks (default: every step from 3 to 8). With fewer checks
+the decisions at one check carry over to the next.
+
+Writes data/derived/alert_tree[/checks_<list>]/<k>_<path>.json per node (path: one letter per earlier alert,
+R = removed, K = kept; resumable) and data/results/alert_tree[_<list>].json (all nodes).
 """
 import argparse
 import json
@@ -94,13 +97,18 @@ def main():
     ap.add_argument('--B', type=int, default=199)
     ap.add_argument('--workers', type=int, default=14)
     ap.add_argument('--only-root', action='store_true')
+    ap.add_argument('--checks', default='3,4,5,6,7,8')
     a = ap.parse_args()
-    os.makedirs(OUT, exist_ok=True)
-    frontier = [(3, '', (), ())]                                             # (k, path, removed, kept)
+    checks = sorted(int(x) for x in a.checks.split(','))
+    tag = '' if checks == [3, 4, 5, 6, 7, 8] else '-'.join(map(str, checks))
+    out = os.path.join(OUT, f'checks_{tag}') if tag else OUT
+    os.makedirs(out, exist_ok=True)
+    nxt = dict(zip(checks, checks[1:]))
+    frontier = [(checks[0], '', (), ())]                                             # (k, path, removed, kept)
     nodes = {}
     while frontier:
         k, path, removed, kept = frontier.pop(0)
-        f = os.path.join(OUT, f'{k}_{path or "root"}.json')
+        f = os.path.join(out, f'{k}_{path or "root"}.json')
         if os.path.exists(f):
             node = json.load(open(f))
         else:
@@ -112,15 +120,16 @@ def main():
         print(f'step {k} path {path or "-":6s} N={node["N"]} tested={node["n_tested"]} p={node["p"]:.3f} '
               + (f'alert: {al["size"]} agents {al["members"][:3]}' if al else 'no alert') + f' ({node.get("seconds")}s)', flush=True)
         nodes[f'{k}_{path}'] = node
-        if a.only_root or k == 8:
+        if a.only_root or k not in nxt:
             continue
         if al:
-            frontier.append((k + 1, path + 'R', removed + tuple(al['members']), kept))
-            frontier.append((k + 1, path + 'K', removed, kept + tuple(al['members'])))
+            frontier.append((nxt[k], path + 'R', removed + tuple(al['members']), kept))
+            frontier.append((nxt[k], path + 'K', removed, kept + tuple(al['members'])))
         else:
-            frontier.append((k + 1, path, removed, kept))
-    json.dump(nodes, open(os.path.join(RESULTS, 'alert_tree.json'), 'w'), indent=1)
-    print(f'{len(nodes)} nodes; wrote data/results/alert_tree.json', flush=True)
+            frontier.append((nxt[k], path, removed, kept))
+    res = os.path.join(RESULTS, f'alert_tree_{tag}.json' if tag else 'alert_tree.json')
+    json.dump(nodes, open(res, 'w'), indent=1)
+    print(f'{len(nodes)} nodes; wrote {res}', flush=True)
 
 
 if __name__ == '__main__':

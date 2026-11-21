@@ -212,6 +212,8 @@ tr.stoprow td { color: var(--ink-mute); }
   background: color-mix(in srgb, var(--stop) 8%, var(--surface)); color: var(--ink-title); font-size: 14px; }
 .alertbar svg { width: 16px; height: 16px; flex: none; fill: var(--stop); }
 .alertbar button { margin-left: auto; padding: 5px 12px; font-size: 13px; }
+.alertbar.ok { border-color: var(--edge); background: var(--wash); }
+.alertbar.ok svg { display: none; }
 .alist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--edge); }
 .alist li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--edge); font-size: 13px; }
 .alist li.cur { background: var(--wash); }
@@ -285,9 +287,9 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         <button id="pause" type="button" disabled><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h8v8H1z"/></svg>Stop</button>
       </div>
       <div class="seg" role="group" aria-label="Playback speed">
-        <button id="sp1" type="button" aria-pressed="false">1×</button>
+        <button id="sp1" type="button" aria-pressed="true">1×</button>
         <button id="sp2" type="button" aria-pressed="false">2×</button>
-        <button id="sp4" type="button" aria-pressed="true">4×</button>
+        <button id="sp4" type="button" aria-pressed="false">4×</button>
       </div>
       <label class="tog livetog"><input type="checkbox" id="live"> Live alerts</label>
       <button id="stop" type="button" disabled>Analyze</button>
@@ -319,12 +321,12 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         </div>
         <div class="chips pick" id="subPick" hidden></div>
         <p class="caption" id="pcap"></p>
-        <p class="caption" id="phelp">Drag to rotate, scroll or pinch to zoom, double-click to reset, and hover a dot for details. Click dots to select them and follow their trails; shift-drag to select a group. Drag the blue handle on the activity monitor to move forward or back in time. Hollow dots: no posts in that step.</p>
+        <p class="caption" id="phelp">Drag to rotate, scroll or pinch to zoom, double-click to reset, and hover a dot for details. Click dots to select them and follow their trails; shift-drag to select a group. Drag the blue handle on the activity monitor to go back in time. Hollow dots: no posts in that step.</p>
       </div>
       <div class="panel" style="padding:14px" id="alertPanel" hidden>
         <div class="mon-head"><h3>Alerts</h3>
           <div class="counters"><span><b class="num" id="nOpen">0</b> open</span><span><b class="num" id="nRem">0</b> removed</span><span><b class="num" id="nKept">0</b> kept</span></div></div>
-        <p class="caption" id="alertNote">From step 3 on, the monitor runs the detection after every step and raises an alert for each new subnetwork.</p>
+        <p class="caption" id="alertNote"></p>
         <ul class="alist" id="alertList" aria-label="Alerts"></ul>
       </div>
     </div>
@@ -413,7 +415,8 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   }
 
   // ---------- state
-  const st = { hour: 0, playing: false, speed: 4, last: 0, stopped: null, run: null };
+  const st = { hour: 0, reach: 0, playing: false, speed: 1, last: 0, stopped: null, run: null };   // reach: latest hour collected
+  const actEnd = () => Math.max(st.reach, 2);                    // the activity monitor's time axis ends at the current time
   const complete = (h) => B.slice(1).filter((b) => b <= h + 1e-9).length;
 
   // ---------- activity monitor
@@ -421,7 +424,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     const { c, w, h } = fit($('act'));
     const L = 40, R = 8, Tp = 4, Bt = 18, pw = w - L - R, ph = h - Tp - Bt;
     const ymax = Math.max(...M.per_hour) * 1.05;
-    const X = (hr) => L + (hr / H) * pw, Y = (v) => Tp + ph - (v / ymax) * ph;
+    const D = actEnd(), X = (hr) => L + (hr / D) * pw, Y = (v) => Tp + ph - (v / ymax) * ph;
     c.strokeStyle = css('--grid'); c.lineWidth = 1; c.fillStyle = css('--ink-mute'); c.font = font(11); c.textAlign = 'right'; c.textBaseline = 'middle';
     const step = ymax > 40000 ? 40000 : 20000;
     for (let v = 0; v <= ymax; v += step) { c.beginPath(); c.moveTo(L, Y(v)); c.lineTo(w - R, Y(v)); c.stroke(); c.fillText(v ? `${v / 1000}k` : '0', L - 6, Y(v)); }
@@ -430,7 +433,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       for (let i = 0; i < Math.min(H, Math.ceil(to)); i++) { const v = M.per_hour[i]; c.lineTo(X(i), Y(v)); c.lineTo(X(Math.min(i + 1, to)), Y(v)); }
       c.lineTo(X(Math.min(to, H)), Y(0)); c.closePath(); c.globalAlpha = alpha; c.fillStyle = color; c.fill(); c.globalAlpha = 1;
     };
-    area(H, css('--null'), 0.25);
+    area(st.reach, css('--null'), 0.25);
     area(st.stopped ? B[st.stopped] : st.hour, css('--anchor'), 0.9);
     if (st.stopped && st.hour > B[st.stopped]) {
       c.save(); c.beginPath(); c.rect(X(B[st.stopped]), Tp, X(st.hour) - X(B[st.stopped]), ph); c.clip();
@@ -442,7 +445,11 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     const cvA = $('act'); cvA.setAttribute('aria-valuemax', String(Math.round(st.stopped ? B[st.stopped] : H))); cvA.setAttribute('aria-valuenow', String(Math.round(st.hour)));
     cvA.setAttribute('aria-valuetext', dateOf(st.hour, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC');
     c.fillStyle = css('--ink-mute'); c.textAlign = 'center'; c.textBaseline = 'top'; c.font = font(11);
-    for (let d = 0; d <= 10; d += 1) c.fillText(dateOf(d * 24, { month: 'short', day: 'numeric' }), X(d * 24), Tp + ph + 4);
+    const iv = [1, 3, 6, 12, 24, 48, 72].find((v) => (v / D) * pw >= 64) || 72;   // tick spacing that fits
+    for (let t = 0; t <= D + 1e-6; t += iv) {
+      const lab = t % 24 === 0 ? dateOf(t, { month: 'short', day: 'numeric' }) : dateOf(t, { hour: '2-digit', minute: '2-digit', hour12: false });
+      c.textAlign = t === 0 ? 'left' : X(t) > w - R - 30 ? 'right' : 'center'; c.fillText(lab, Math.min(X(t), w - R), Tp + ph + 4);
+    }
   }
 
   // ---------- perspective monitor (3D: drag to rotate, wheel or pinch to zoom, hover for details, click or shift-drag to select)
@@ -698,6 +705,9 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   // where that run raises an alert. Removed agents are dropped from every later run; kept agents stay in the data but
   // are not searched again. ALS: the alerts raised so far on the viewer's path; status 'open', 'kept' or 'removed'.
   const TREE = window.MOLTBOOK_ALERTS || {};
+  const CHECKS = [...new Set(Object.values(TREE).map((a) => a.k))].sort((x, y) => x - y);   // steps after which the monitor checks
+  const listSteps = (v) => (v.length < 2 ? `${v[0]}` : `${v.slice(0, -1).join(', ')}${v.length > 2 ? ',' : ''} and ${v[v.length - 1]}`);
+  $('alertNote').textContent = CHECKS.length ? `The monitor checks for a coordinated subnetwork after step${CHECKS.length > 1 ? 's' : ''} ${listSteps(CHECKS)}, and raises an alert if it finds one.` : '';
   const ALS = [];
   const AL = { status: [], fired: 2, cur: -1, resume: false, ver: 0, of: new Map(), path: '' };
   AL.any = () => ALS.length > 0;
@@ -726,7 +736,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       if (!a) continue;
       ALS.push(a); AL.status.push('open'); a.members.forEach((n) => AL.of.set(n, ALS.length - 1)); AL.ver++;
       if (st.playing) AL.resume = true;
-      st.playing = false; st.target = null; st.hour = B[kk];
+      st.playing = false; st.target = null; st.hour = B[kk]; st.reach = B[kk];
       renderAlerts([ALS.length - 1]); return;
     }
   }
@@ -736,9 +746,12 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     $('nKept').textContent = AL.status.filter((x) => x === 'kept').length;
     const bar = $('alertBar');
     if (open) {
+      AL.note = null;
       const j = AL.status.indexOf('open'), a = ALS[j];
-      $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> after step ${a.k} · ${a.members.length} agents · p = ${a.p.toFixed(3)}. Decide to continue.`;
-      bar.hidden = false; $('alertGo').onclick = () => investigate(j);
+      $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> (${a.members.length} agents, p = ${a.p.toFixed(3)}). Decide to continue.`;
+      bar.hidden = false; bar.classList.remove('ok'); $('alertGo').hidden = false; $('alertGo').onclick = () => investigate(j);
+    } else if (AL.note && $('live').checked) {
+      $('alertMsg').innerHTML = AL.note; bar.hidden = false; bar.classList.add('ok'); $('alertGo').hidden = true;
     } else bar.hidden = true;
     const ul = $('alertList');
     ul.innerHTML = ALS.map((a, j) => {
@@ -758,27 +771,25 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   function investigate(j) {
     const a = ALS[j], inv = $('inv'), M_ = a.member_info, n = M_.length, e = a.evidence, f2 = (v) => v.toFixed(2);
     AL.cur = j; sel.clear(); a.members.forEach((nm) => { const i = idxOf.get(nm); if (i !== undefined) sel.add(i); });
-    const chk = (label, x, f) => `<li class="${x.p <= 0.05 ? 'hit' : ''}"><span class="mk" aria-hidden="true">${x.p <= 0.05 ? '✓' : '–'}</span><span>${label}</span><small>${f(x.value)} vs ${f(x.null_median)}</small></li>`;
-    const nHit = ['template_jaccard', 'hourly_corr', 'shared_threads', 'replies'].filter((m) => e[m].p <= 0.05).length;
+    const chk = (label, x, f) => `<li class="${x.p <= 0.05 ? 'hit' : ''}"><span class="mk" aria-hidden="true">${x.p <= 0.05 ? '✓' : '–'}</span><span>${label}</span><small>${f(x.value)} (random: ${f(x.null_median)})</small></li>`;
     const groups = new Map(); M_.forEach((m) => { if (!m.sample) return; const key = m.sample.slice(0, 70); if (!groups.has(key)) groups.set(key, { text: m.sample, who: [] }); groups.get(key).who.push(m.name); });
     const script = [...groups.values()].sort((x, y) => y.who.length - x.who.length)[0];
     const stem = a.stem ? ` ${a.stem.count} of the ${a.size} names begin with “${esc(a.stem.stem)}”.` : '';
     const open = AL.status[j] === 'open';
     inv.innerHTML = `
       <div class="ibody">
-        <div><span class="label">Alert ${j + 1} · after step ${a.k}</span><h3>${n} agents moving together</h3></div>
-        <p class="lead">Their perspectives moved together more than chance allows (p = ${a.p.toFixed(3)}, among ${fmt(a.n_tested)} agents).${stem}</p>
-        <div><span class="label">Other signs (vs random groups)</span>
+        <div><span class="label">Alert ${j + 1} · after step ${a.k}</span><h3>${n} coordinated agents detected</h3></div>
+        <p class="lead">p = ${a.p.toFixed(3)}.${stem}</p>
+        <div><span class="label">Other evidence</span>
           <ul class="checks">
             ${chk('Post at the same hours', e.hourly_corr, f2)}
             ${chk('Reuse the same texts', e.template_jaccard, f2)}
             ${chk('Post in the same threads', e.shared_threads, pct)}
             ${chk('Reply to each other', e.replies, pct)}
-          </ul>
-          <p class="caption" style="margin:6px 0 0">${nHit ? `${nHit} of 4 unusual.` : 'Nothing else stands out.'} The method saw none of this.</p></div>
+          </ul></div>
         ${script ? `<div><span class="label">Repeated text</span><div class="script">${esc(script.text)}<small>posted by ${script.who.length} of ${n}</small></div></div>` : ''}
         <div><span class="label">Members</span><ul class="mlist">
-          ${M_.map((m) => `<li><span class="nm" title="${esc(m.name)}">${esc(m.name)}</span><small>${fmt(m.actions)} actions${m.submolts.length ? ` · ${esc(m.submolts[0][0])}` : ''}</small></li>`).join('')}
+          ${M_.map((m) => `<li><span class="nm" title="${esc(m.name)}">${esc(m.name)}</span><small>${fmt(m.actions)} actions</small></li>`).join('')}
         </ul></div>
       </div>
       <div class="decide">${open
@@ -797,6 +808,8 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       AL.status[j] = 'open'; AL.path = AL.path.slice(0, -1); AL.fired = ALS[j].k; AL.ver++; investigate(j); return;
     }
     AL.status[j] = d; AL.path += d === 'removed' ? 'R' : 'K'; AL.ver++;
+    const tot = ALS.reduce((t, a, i) => t + (AL.status[i] === d ? a.members.length : 0), 0), verb = d === 'removed' ? 'removed' : 'kept';
+    AL.note = `<b>${d === 'removed' ? 'Removed' : 'Kept'} ${ALS[j].members.length} agents.</b> Total agents ${verb}: ${tot}.`;
     closeInv();
     if (AL.resume && !st.stopped && st.hour < H) { AL.resume = false; $('play').click(); }      // collection continues
     else checkAlerts();
@@ -807,13 +820,13 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     if (on) checkAlerts();                                       // a step already completed raises its alert now (collection returns to it)
     draw();
   };
-  function resetAlerts() { ALS.length = 0; AL.status = []; AL.of = new Map(); AL.path = ''; AL.fired = 2; AL.cur = -1; AL.resume = false; AL.ver++; $('inv').hidden = true; renderAlerts(); }
+  function resetAlerts() { ALS.length = 0; AL.status = []; AL.of = new Map(); AL.path = ''; AL.fired = 2; AL.cur = -1; AL.resume = false; AL.note = null; AL.ver++; $('inv').hidden = true; renderAlerts(); }
 
   // ---------- activity monitor as a slider: drag the blue bar (or click anywhere) to move through time
   {
     const cv = $('act');
-    const hourAt = (x) => { const r = cv.getBoundingClientRect(), L = 40, R = 8; return ((x - r.left - L) / (r.width - L - R)) * H; };
-    const maxHour = () => (st.stopped ? B[st.stopped] : AL.openK() !== null ? B[AL.openK()] : H);
+    const hourAt = (x) => { const r = cv.getBoundingClientRect(), L = 40, R = 8; return ((x - r.left - L) / (r.width - L - R)) * actEnd(); };
+    const maxHour = () => Math.min(st.reach, st.stopped ? B[st.stopped] : AL.openK() !== null ? B[AL.openK()] : H);   // only back in time
     const seek = (hr) => { st.playing = false; st.target = null; st.analyzeAfter = false; st.hour = Math.max(0, Math.min(maxHour(), hr)); draw(); };
     let dragging = false;
     cv.addEventListener('pointerdown', (e) => { dragging = true; cv.setPointerCapture(e.pointerId); seek(hourAt(e.clientX)); });
@@ -855,14 +868,19 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   function tick(ts) {
     if (!st.playing) return;
     const dt = st.last ? (ts - st.last) / 1000 : 0; st.last = ts;
-    const rate = st.target != null ? Math.max(8 * st.speed, (st.target - st.from) / 0.7) : 8 * st.speed;   // finish a step in <= 0.7 s
-    st.hour = Math.min(st.target != null ? st.target : H, st.hour + dt * rate);
+    let rate = st.target != null ? Math.max(8 * st.speed, (st.target - st.from) / 0.7) : 8 * st.speed;   // finish a step in <= 0.7 s
+    if (st.target == null && $('live').checked) {               // live alerts at 1x: the data up to the first check play in 8 s,
+      const k0 = CHECKS[0] || 3;                                  // then every step in 5 s (half that at 2x, a quarter at 4x)
+      const s_ = Math.min(B.length - 2, Math.max(0, B.findIndex((b) => b > st.hour) - 1));
+      rate = st.hour < B[k0] ? (B[k0] * st.speed) / 8 : ((B[s_ + 1] - B[s_]) * st.speed) / 5;
+    }
+    st.hour = Math.min(st.target != null ? st.target : H, st.hour + dt * rate); st.reach = Math.max(st.reach, st.hour);
     if (st.hour >= H || (st.target != null && st.hour >= st.target)) { st.playing = false; st.target = null; }
     draw();
     if (st.playing) requestAnimationFrame(tick);
     else if (st.analyzeAfter) { st.analyzeAfter = false; startAnalysis(); }
   }
-  $('play').onclick = () => { if (st.stopped) return; if (st.hour >= H) st.hour = 0; st.target = null; if (!st.playing) { st.playing = true; st.last = 0; requestAnimationFrame(tick); } controlsUI(); };
+  $('play').onclick = () => { if (st.stopped) return; if (st.hour >= H) st.hour = st.reach = 0; st.target = null; if (!st.playing) { st.playing = true; st.last = 0; requestAnimationFrame(tick); } controlsUI(); };
   $('pause').onclick = () => stopCollection();
   function stopCollection() {                  // stop at the end of the current step, and never before step 3 ends
     const k = complete(st.hour), atEdge = k >= 3 && Math.abs(st.hour - B[k]) < 1e-6;
@@ -1175,7 +1193,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   };
   const resetAll = () => {
     st.runId = (st.runId || 0) + 1;
-    st.stopped = null; st.run = null; st.hour = 0; st.playing = false; st.target = null; st.analyzeAfter = false; colorOf = new Map();
+    st.stopped = null; st.run = null; st.hour = 0; st.reach = 0; st.playing = false; st.target = null; st.analyzeAfter = false; colorOf = new Map();
     sel.clear(); resetAlerts();
     $('analysis').hidden = true; $('pcap').textContent = PCAP; subPicker();
     draw();
