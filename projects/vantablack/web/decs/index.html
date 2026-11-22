@@ -242,12 +242,12 @@ tr.stoprow td { color: var(--ink-mute); }
 .mlist { width: 100%; margin-top: 4px; border-collapse: collapse; table-layout: fixed; font-size: 12.5px; }
 .mlist th { text-align: left; font-weight: 500; font-size: 11px; color: var(--ink-mute); padding: 4px 6px 4px 0; border-bottom: 1px solid var(--edge); }
 .mlist td { padding: 5px 6px 5px 0; border-bottom: 1px solid var(--edge); font-family: var(--font-data); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mlist th:first-child { width: 52px; }
+.mlist th.aid { width: 52px; }
 .mlist td.id { color: var(--ink-mute); text-align: left; }
 .mlist td.nm { color: var(--ink-title); text-align: left; }
-.mlist th:nth-child(3) { width: 52px; text-align: right; }
+.mlist th.acts { width: 52px; text-align: right; }
 .mlist td.n { text-align: right; color: var(--ink-mute); }
-.mlist th:last-child { width: 92px; padding: 4px 0 4px 8px; white-space: normal; line-height: 1.2; }
+.mlist th.asc { width: 92px; padding: 4px 0 4px 8px; white-space: normal; line-height: 1.2; }
 .mlist td.sc { padding: 5px 0 5px 8px; }
 .mlist td.sc b { font-weight: 500; font-size: 11.5px; color: var(--ink-title); margin-left: 6px; }
 .sbar { display: inline-block; width: 52px; height: 6px; border-radius: 3px; background: var(--wash); vertical-align: middle; overflow: hidden; }
@@ -256,6 +256,10 @@ tr.stoprow td { color: var(--ink-mute); }
 .mlist tr.out td.nm, .mlist tr.out td.sc b { color: var(--ink-mute); }
 .mlist tr.out .sbar i { background: var(--null); }
 .mlist tr.arow { cursor: pointer; }
+.mlist th.ck { width: 22px; padding-right: 0; }
+.mlist td.ck { padding: 0; text-align: left; }
+.mlist td.ck input { margin: 0; width: 15px; height: 15px; accent-color: var(--stop); cursor: pointer; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .mlist tr.arow:hover td, .mlist tr.arow.opened td { background: var(--wash); }
 .mlist tr.arow:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .mlist tr.posts td { white-space: normal; font-family: inherit; padding: 0 0 8px; background: var(--wash); }
@@ -268,7 +272,7 @@ tr.stoprow td { color: var(--ink-mute); }
 .decide .btns span { flex: 2; font-size: 13px; }
 .decide .rmv { background: var(--stop); color: var(--stop-ink); border-color: var(--stop); font-weight: 600; }
 .decide .caption { margin: 0; font-size: 11.5px; }
-@media (max-width: 560px) { .mlist { table-layout: auto; } .mlist td.nm { max-width: 130px; } .mlist th:nth-child(3), .mlist td.n { display: none; } .mlist th:first-child { width: auto; } .mlist th:last-child { width: 84px; } .mlist th { white-space: normal; line-height: 1.2; } .sbar { width: 40px; } }
+@media (max-width: 560px) { .mlist { table-layout: auto; } .mlist td.nm { max-width: 130px; } .mlist th.acts, .mlist td.n { display: none; } .mlist th.aid { width: auto; } .mlist th.asc { width: 84px; } .mlist th { white-space: normal; line-height: 1.2; } .sbar { width: 40px; } }
 @media (max-width: 560px) { #inv { top: 6px; right: 6px; bottom: 6px; width: calc(100% - 12px); } }
 footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
@@ -345,7 +349,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       </div>
       <div class="panel" style="padding:14px" id="alertPanel" hidden>
         <div class="mon-head"><h3>Alerts</h3>
-          <div class="counters"><span><b class="num" id="nOpen">0</b> open</span><span><b class="num" id="nRem">0</b> removed</span><span><b class="num" id="nKept">0</b> kept</span></div></div>
+          <div class="counters"><span><b class="num" id="nOpen">0</b> open</span><span><b class="num" id="nRem">0</b> agents removed</span><span><b class="num" id="nKept">0</b> kept</span></div></div>
         <p class="caption" id="alertNote"></p>
         <ul class="alist" id="alertList" aria-label="Alerts"></ul>
       </div>
@@ -732,10 +736,11 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   const AL = { status: [], fired: 2, cur: -1, resume: false, ver: 0, of: new Map(), path: '' };
   AL.any = () => ALS.length > 0;
   AL.openK = () => { const j = AL.status.indexOf('open'); return j < 0 ? null : ALS[j].k; };
-  const alertOf = (i) => { const n = MON.name[i]; const j = n ? AL.of.get(n) : undefined; return j === undefined ? -1 : j; };
+  const alertOf = (i) => { const j = AL.of.get(i); return j === undefined ? -1 : j; };
+  const ixOf = (m) => (m.id ? m.id - 1 : idxOf.get(m.name));
+  const decided = (i) => { const j = AL.of.get(i); return j !== undefined && AL.status[j] !== 'open'; };
   function gc(i) {                                                // dot color: detected subnetwork after Analyze, else alert state
-    const n = MON.name[i]; if (!n) return null;
-    const g = colorOf.get(n); if (g) return SUB(g);
+    const n = MON.name[i], g = n && colorOf.get(n); if (g) return SUB(g);
     const j = alertOf(i); if (j < 0) return null;
     return AL.status[j] === 'open' ? css('--stop') : null;          // kept agents return to the crowd
   }
@@ -754,7 +759,11 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       AL.fired = kk;
       const a = TREE[`${kk}_${AL.path}`];
       if (!a) continue;
-      ALS.push(a); AL.status.push('open'); a.members.forEach((n) => AL.of.set(n, ALS.length - 1)); AL.ver++;
+      const q = a.member_info.map((m, t) => t).filter((t) => !decided(ixOf(a.member_info[t])));
+      if (q.length < 2) continue;
+      const b = Object.assign({}, a, { member_info: q.map((t) => a.member_info[t]), members: q.map((t) => a.members[t]),
+        scores: q.map((t) => a.scores[t]), outsiders: (a.outsiders || []).filter((o) => !decided(ixOf(o))) });
+      ALS.push(b); AL.status.push('open'); b.member_info.forEach((m) => AL.of.set(ixOf(m), ALS.length - 1)); AL.ver++;
       if (st.playing) AL.resume = true;
       st.playing = false; st.target = null; st.hour = B[kk]; st.reach = B[kk];
       renderAlerts([ALS.length - 1]); return;
@@ -762,8 +771,8 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   }
   function renderAlerts(hit) {
     const open = AL.status.filter((x) => x === 'open').length;
-    $('nOpen').textContent = open; $('nRem').textContent = AL.status.filter((x) => x === 'removed').length;
-    $('nKept').textContent = AL.status.filter((x) => x === 'kept').length;
+    const nAg = (d) => [...AL.of.values()].filter((j) => AL.status[j] === d).length;
+    $('nOpen').textContent = open; $('nRem').textContent = nAg('removed'); $('nKept').textContent = nAg('kept');
     const bar = $('alertBar');
     if (open) {
       AL.note = null;
@@ -790,7 +799,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   const pct = (v) => `${Math.round(v * 100)}%`;
   function investigate(j) {
     const a = ALS[j], inv = $('inv'), M_ = a.member_info, n = M_.length, e = a.evidence, f2 = (v) => v.toFixed(2);
-    AL.cur = j; sel.clear(); a.members.forEach((nm) => { const i = idxOf.get(nm); if (i !== undefined) sel.add(i); });
+    AL.cur = j; sel.clear(); a.member_info.forEach((m) => { const i = ixOf(m); if (i !== undefined) sel.add(i); });
     const chk = (label, x, f) => `<li class="${x.p <= 0.05 ? 'hit' : ''}"><span class="mk" aria-hidden="true">${x.p <= 0.05 ? '✓' : '–'}</span><span>${label}</span><small>${f(x.value)} (random: ${f(x.null_median)})</small></li>`;
     const groups = new Map(); M_.forEach((m) => { if (!m.sample) return; const key = m.sample.slice(0, 70); if (!groups.has(key)) groups.set(key, { text: m.sample, who: [] }); groups.get(key).who.push(m.name); });
     const script = [...groups.values()].sort((x, y) => y.who.length - x.who.length)[0];
@@ -800,10 +809,11 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     const TX = window.MOLTBOOK_TEXTS || [];
     const posts = (rec) => (rec && rec.length ? rec.map(([h, kd, t]) => `<li><small>${dateOf(h, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })} UTC · ${kd === 'p' ? 'post' : 'comment'}</small>${esc(TX[t] || '')}</li>`).join('')
       : '<li><small>No posts to show.</small></li>');
-    const row = (m, sc, out) => `<tr class="arow ${out ? 'out' : ''}" tabindex="0" role="button" aria-expanded="false" title="Show recent posts"><td class="id">#${m.id || (idxOf.has(m.name) ? idxOf.get(m.name) + 1 : '–')}</td>` +
+    const row = (m, sc, out) => `<tr class="arow ${out ? 'out' : ''}" tabindex="0" role="button" aria-expanded="false" title="Show recent posts">` +
+      `<td class="ck"><input type="checkbox" data-ix="${ixOf(m)}" aria-label="Include ${esc(m.name)} in the decision"${alertOf(ixOf(m)) === j ? ' checked' : ''}${open ? '' : ' disabled'}></td><td class="id">#${m.id || (idxOf.has(m.name) ? idxOf.get(m.name) + 1 : '–')}</td>` +
       `<td class="nm" title="${esc(m.name)}">${esc(m.name)}</td><td class="n">${fmt(m.actions)}</td>` +
       `<td class="sc"><span class="sbar"><i style="width:${Math.max(0, (sc / smax) * 100).toFixed(1)}%"></i></span><b>${sc.toFixed(1)}</b></td></tr>` +
-      `<tr class="posts" hidden><td colspan="4"><ul class="plist">${posts(m.recent)}</ul></td></tr>`;
+      `<tr class="posts" hidden><td colspan="5"><ul class="plist">${posts(m.recent)}</ul></td></tr>`;
     inv.innerHTML = `
       <div class="ibody">
         <div><span class="label">Alert ${j + 1} · after step ${a.k}</span><h3>${n} coordinated agents detected</h3></div>
@@ -816,19 +826,30 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
             ${chk('Reply to each other', e.replies, pct)}
           </ul></div>
         ${script ? `<div><span class="label">Repeated text</span><div class="script">${esc(script.text)}<small>posted by ${script.who.length} of ${n}</small></div></div>` : ''}
-        <div><span class="label">Members</span><table class="mlist"><thead><tr><th>Agent</th><th>Name / IP address</th><th class="acts">Actions</th><th>Membership score</th></tr></thead><tbody>
+        <div><span class="label">Members</span><table class="mlist"><thead><tr><th class="ck"><span class="sr">Include</span></th><th class="aid">Agent</th><th>Name / IP address</th><th class="acts">Actions</th><th class="asc">Membership score</th></tr></thead><tbody>
           ${M_.map((m, q) => row(m, a.scores[q], false)).join('')}
-          ${near.length ? `<tr class="sep"><td colspan="4">Closest agents not in the group</td></tr>${near.map((o) => row(o, o.score, true)).join('')}` : ''}
+          ${near.length ? `<tr class="sep"><td colspan="5">Closest agents not in the group</td></tr>${near.map((o) => row(o, o.score, true)).join('')}` : ''}
         </tbody></table>
-        <p class="caption" style="margin:6px 0 0">Membership score: how consistently an agent's changes track the group's. Click an agent for its most recent posts.</p></div>
+        <p class="caption" style="margin:6px 0 0">Membership score: how consistently an agent's changes track the group's. Click an agent for its most recent posts; untick it to leave it out of the decision.</p></div>
       </div>
       <div class="decide">${open
         ? `<div class="btns"><button type="button" class="rmv" data-dec="removed">Remove</button><button type="button" data-dec="kept">Keep</button></div>
-           <p class="caption">Remove takes them off Moltbook from here on. Keep leaves them in and stops flagging them.</p>`
+           <p class="caption">Remove takes the ticked agents off Moltbook from here on. Keep leaves them in and stops flagging them.</p>`
         : `<div class="btns"><span>Decision: <b>${AL.status[j]}</b></span>${j === ALS.length - 1 ? '<button type="button" data-dec="undo">Undo</button>' : ''}<button type="button" data-dec="close">Close</button></div>`}</div>`;
     inv.hidden = false; inv.querySelector('.ibody').scrollTop = 0;
     inv.querySelectorAll('[data-dec]').forEach((b) => (b.onclick = () => decide(j, b.dataset.dec)));
+    const pickUI = () => {                                          // button counts; note when the pick is not the whole group
+      const ticked = [...AL.of.entries()].filter(([, jj]) => jj === j).map(([i]) => i);
+      const n = ticked.length;
+      inv.querySelectorAll('[data-dec="removed"],[data-dec="kept"]').forEach((b) => { b.textContent = `${b.dataset.dec === 'removed' ? 'Remove' : 'Keep'} ${n}`; b.disabled = !n; });
+    };
+    inv.querySelectorAll('td.ck input').forEach((cb) => {
+      cb.onclick = (e) => e.stopPropagation();
+      cb.onchange = () => { const i = +cb.dataset.ix; if (cb.checked) AL.of.set(i, j); else if (AL.of.get(i) === j) AL.of.delete(i); AL.ver++; pickUI(); drawPersp(); };
+    });
+    if (open) pickUI();
     inv.querySelectorAll('tr.arow').forEach((tr) => {
+      tr.querySelector('td.ck').onclick = (e) => { if (e.target.tagName !== 'INPUT') { e.stopPropagation(); const c = tr.querySelector('input'); if (!c.disabled) c.click(); } };
       const flip = () => { const p_ = tr.nextElementSibling, o = p_.hidden; p_.hidden = !o; tr.setAttribute('aria-expanded', String(o)); tr.classList.toggle('opened', o); };
       tr.onclick = flip; tr.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } };
     });
@@ -839,11 +860,13 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   function decide(j, d) {
     if (d === 'close') { closeInv(); return; }
     if (d === 'undo') {                                           // only the latest decision, before anything later was raised
-      AL.status[j] = 'open'; AL.path = AL.path.slice(0, -1); AL.fired = ALS[j].k; AL.ver++; investigate(j); return;
+      AL.status[j] = 'open'; AL.path = AL.path.slice(0, -1); AL.fired = ALS[j].k;
+      [...AL.of.entries()].forEach(([i, jj]) => { if (jj === j) AL.of.delete(i); }); ALS[j].member_info.forEach((m) => AL.of.set(ixOf(m), j));
+      AL.ver++; investigate(j); return;
     }
     AL.status[j] = d; AL.path += d === 'removed' ? 'R' : 'K'; AL.ver++;
-    const tot = ALS.reduce((t, a, i) => t + (AL.status[i] === d ? a.members.length : 0), 0), verb = d === 'removed' ? 'removed' : 'kept';
-    AL.note = `<b>${d === 'removed' ? 'Removed' : 'Kept'} ${ALS[j].members.length} agents.</b> Total agents ${verb}: ${tot}.`;
+    const nAg = (x) => [...AL.of.values()].filter((jj) => AL.status[jj] === x).length, n = [...AL.of.values()].filter((jj) => jj === j).length;
+    AL.note = `<b>${d === 'removed' ? 'Removed' : 'Kept'} ${n} agent${n === 1 ? '' : 's'}.</b> Total agents ${d}: ${nAg(d)}.`;
     closeInv();
     if (AL.resume && !st.stopped && st.hour < H) { AL.resume = false; $('play').click(); }      // collection continues
     else checkAlerts();
