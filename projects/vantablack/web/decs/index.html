@@ -440,7 +440,8 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
   // ---------- state
   const st = { hour: 0, reach: 0, playing: false, speed: 1, last: 0, stopped: null, run: null };   // reach: latest hour collected
-  const actEnd = () => Math.max(st.reach, 2);                    // the activity monitor's time axis ends at the current time
+  const actEnd = () => Math.max(st.reach, B[3]);   // the time axis spans the data up to the first check,
+                                                                   // then ends at the current time
   const complete = (h) => B.slice(1).filter((b) => b <= h + 1e-9).length;
 
   // ---------- activity monitor
