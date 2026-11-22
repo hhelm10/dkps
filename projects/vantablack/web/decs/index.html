@@ -239,16 +239,36 @@ tr.stoprow td { color: var(--ink-mute); }
 .checks li small { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; }
 .script { margin-top: 4px; border-left: 3px solid var(--stop); padding: 6px 10px; background: var(--wash); font-size: 12.5px; color: var(--ink); overflow-wrap: anywhere; }
 .script small { display: block; font-family: var(--font-data); font-size: 11px; color: var(--ink-mute); margin-top: 3px; }
-.mlist { list-style: none; margin: 4px 0 0; padding: 0; border-top: 1px solid var(--edge); }
-.mlist li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--edge); font-size: 12.5px; }
-.mlist .nm { font-family: var(--font-data); color: var(--ink-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mlist small { color: var(--ink-mute); font-family: var(--font-data); font-size: 11.5px; white-space: nowrap; }
+.mlist { width: 100%; margin-top: 4px; border-collapse: collapse; table-layout: fixed; font-size: 12.5px; }
+.mlist th { text-align: left; font-weight: 500; font-size: 11px; color: var(--ink-mute); padding: 4px 6px 4px 0; border-bottom: 1px solid var(--edge); }
+.mlist td { padding: 5px 6px 5px 0; border-bottom: 1px solid var(--edge); font-family: var(--font-data); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mlist th:first-child { width: 52px; }
+.mlist td.id { color: var(--ink-mute); text-align: left; }
+.mlist td.nm { color: var(--ink-title); text-align: left; }
+.mlist th:nth-child(3) { width: 52px; text-align: right; }
+.mlist td.n { text-align: right; color: var(--ink-mute); }
+.mlist th:last-child { width: 92px; padding: 4px 0 4px 8px; white-space: normal; line-height: 1.2; }
+.mlist td.sc { padding: 5px 0 5px 8px; }
+.mlist td.sc b { font-weight: 500; font-size: 11.5px; color: var(--ink-title); margin-left: 6px; }
+.sbar { display: inline-block; width: 52px; height: 6px; border-radius: 3px; background: var(--wash); vertical-align: middle; overflow: hidden; }
+.sbar i { display: block; height: 100%; background: var(--stop); border-radius: 3px; }
+.mlist tr.sep td { font-family: inherit; font-size: 11px; color: var(--ink-mute); padding: 10px 0 4px; border-bottom: 1px dashed var(--edge); }
+.mlist tr.out td.nm, .mlist tr.out td.sc b { color: var(--ink-mute); }
+.mlist tr.out .sbar i { background: var(--null); }
+.mlist tr.arow { cursor: pointer; }
+.mlist tr.arow:hover td, .mlist tr.arow.opened td { background: var(--wash); }
+.mlist tr.arow:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.mlist tr.posts td { white-space: normal; font-family: inherit; padding: 0 0 8px; background: var(--wash); }
+.plist { list-style: none; margin: 0; padding: 4px 8px; display: grid; gap: 8px; }
+.plist li { font-size: 12px; line-height: 1.4; color: var(--ink); overflow-wrap: anywhere; border-left: 2px solid var(--edge); padding-left: 8px; }
+.plist small { display: block; font-family: var(--font-data); font-size: 10.5px; color: var(--ink-mute); margin-bottom: 2px; }
 .decide { display: grid; gap: 8px; border-top: 1px solid var(--edge); padding: 12px 16px; background: var(--surface); }
 .decide .btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .decide .btns button { flex: 1; }
 .decide .btns span { flex: 2; font-size: 13px; }
 .decide .rmv { background: var(--stop); color: var(--stop-ink); border-color: var(--stop); font-weight: 600; }
 .decide .caption { margin: 0; font-size: 11.5px; }
+@media (max-width: 560px) { .mlist { table-layout: auto; } .mlist td.nm { max-width: 130px; } .mlist th:nth-child(3), .mlist td.n { display: none; } .mlist th:first-child { width: auto; } .mlist th:last-child { width: 84px; } .mlist th { white-space: normal; line-height: 1.2; } .sbar { width: 40px; } }
 @media (max-width: 560px) { #inv { top: 6px; right: 6px; bottom: 6px; width: calc(100% - 12px); } }
 footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
@@ -775,11 +795,19 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     const groups = new Map(); M_.forEach((m) => { if (!m.sample) return; const key = m.sample.slice(0, 70); if (!groups.has(key)) groups.set(key, { text: m.sample, who: [] }); groups.get(key).who.push(m.name); });
     const script = [...groups.values()].sort((x, y) => y.who.length - x.who.length)[0];
     const stem = a.stem ? ` ${a.stem.count} of the ${a.size} names begin with “${esc(a.stem.stem)}”.` : '';
-    const open = AL.status[j] === 'open';
+    const open = AL.status[j] === 'open', near = a.outsiders || [];
+    const smax = Math.max(1, ...a.scores, ...near.map((o) => o.score));
+    const TX = window.MOLTBOOK_TEXTS || [];
+    const posts = (rec) => (rec && rec.length ? rec.map(([h, kd, t]) => `<li><small>${dateOf(h, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })} UTC · ${kd === 'p' ? 'post' : 'comment'}</small>${esc(TX[t] || '')}</li>`).join('')
+      : '<li><small>No posts to show.</small></li>');
+    const row = (m, sc, out) => `<tr class="arow ${out ? 'out' : ''}" tabindex="0" role="button" aria-expanded="false" title="Show recent posts"><td class="id">#${m.id || (idxOf.has(m.name) ? idxOf.get(m.name) + 1 : '–')}</td>` +
+      `<td class="nm" title="${esc(m.name)}">${esc(m.name)}</td><td class="n">${fmt(m.actions)}</td>` +
+      `<td class="sc"><span class="sbar"><i style="width:${Math.max(0, (sc / smax) * 100).toFixed(1)}%"></i></span><b>${sc.toFixed(1)}</b></td></tr>` +
+      `<tr class="posts" hidden><td colspan="4"><ul class="plist">${posts(m.recent)}</ul></td></tr>`;
     inv.innerHTML = `
       <div class="ibody">
         <div><span class="label">Alert ${j + 1} · after step ${a.k}</span><h3>${n} coordinated agents detected</h3></div>
-        <p class="lead">p = ${a.p.toFixed(3)}.${stem}</p>
+        <p class="lead">Based on shared changes in their behavior (p = ${a.p.toFixed(3)}).${stem}</p>
         <div><span class="label">Other evidence</span>
           <ul class="checks">
             ${chk('Post at the same hours', e.hourly_corr, f2)}
@@ -788,9 +816,11 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
             ${chk('Reply to each other', e.replies, pct)}
           </ul></div>
         ${script ? `<div><span class="label">Repeated text</span><div class="script">${esc(script.text)}<small>posted by ${script.who.length} of ${n}</small></div></div>` : ''}
-        <div><span class="label">Members</span><ul class="mlist">
-          ${M_.map((m) => `<li><span class="nm" title="${esc(m.name)}">${esc(m.name)}</span><small>${fmt(m.actions)} actions</small></li>`).join('')}
-        </ul></div>
+        <div><span class="label">Members</span><table class="mlist"><thead><tr><th>Agent</th><th>Name / IP address</th><th class="acts">Actions</th><th>Membership score</th></tr></thead><tbody>
+          ${M_.map((m, q) => row(m, a.scores[q], false)).join('')}
+          ${near.length ? `<tr class="sep"><td colspan="4">Closest agents not in the group</td></tr>${near.map((o) => row(o, o.score, true)).join('')}` : ''}
+        </tbody></table>
+        <p class="caption" style="margin:6px 0 0">Membership score: how consistently an agent's changes track the group's. Click an agent for its most recent posts.</p></div>
       </div>
       <div class="decide">${open
         ? `<div class="btns"><button type="button" class="rmv" data-dec="removed">Remove</button><button type="button" data-dec="kept">Keep</button></div>
@@ -798,6 +828,10 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         : `<div class="btns"><span>Decision: <b>${AL.status[j]}</b></span>${j === ALS.length - 1 ? '<button type="button" data-dec="undo">Undo</button>' : ''}<button type="button" data-dec="close">Close</button></div>`}</div>`;
     inv.hidden = false; inv.querySelector('.ibody').scrollTop = 0;
     inv.querySelectorAll('[data-dec]').forEach((b) => (b.onclick = () => decide(j, b.dataset.dec)));
+    inv.querySelectorAll('tr.arow').forEach((tr) => {
+      const flip = () => { const p_ = tr.nextElementSibling, o = p_.hidden; p_.hidden = !o; tr.setAttribute('aria-expanded', String(o)); tr.classList.toggle('opened', o); };
+      tr.onclick = flip; tr.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } };
+    });
     renderAlerts(); drawPersp();
     $('persp').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
   }

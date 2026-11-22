@@ -49,7 +49,8 @@ OUT = os.path.join(DERIVED, 'alert_tree')
 r2 = lambda x, n=2: None if x is None or not np.isfinite(x) else round(float(x), n)
 
 
-def run_node(k, removed, kept, B, workers):
+def prepare(k, removed, kept):
+    """The node's data: agent names, the searched agents (keep), increments, effective dimension, saved settings."""
     run = pickle.load(open(os.path.join(SRC, f'{TAGS[k]}.pkl'), 'rb'))
     s = run['summary']
     cohort = np.array(run['cohort'], dtype=object)
@@ -73,6 +74,25 @@ def run_node(k, removed, kept, B, workers):
     D, kf = tstep.remove_factors(D, two_signed_alpha=None if tsa is None or tsa < 0 else tsa)
     d_eff = D.shape[1] * D.shape[2] - kf
     keep = np.flatnonzero(~np.isin(names, list(kept)))                       # kept agents: not searched again
+    return names, keep, D, d_eff, pos, kf, s
+
+
+def outsiders(k, removed, kept, members, n=3):
+    """Membership scores of the n searched agents closest to a detected group, from the node's own data
+    (no permutation test), and the members' scores recomputed as a check."""
+    names, keep, D, *_ = prepare(k, removed, kept)
+    Q = tstep.step_scores(D[keep])
+    ix = {nm: i for i, nm in enumerate(names[keep])}
+    S = np.array([ix[m] for m in members])
+    sc = tstep.member_z(Q, S, combine='sum')[0]
+    out = np.setdiff1d(np.arange(len(keep)), S)
+    top = out[np.argsort(-sc[out])][:n]
+    return [[str(names[keep][i]), r2(sc[i], 1)] for i in top], [r2(sc[i], 1) for i in S]
+
+
+def run_node(k, removed, kept, B, workers):
+    names, keep, D, d_eff, pos, kf, s = prepare(k, removed, kept)
+    N = len(names)
     Q = tstep.step_scores(D[keep])
     res = tstep.test(D[keep], d_eff, B=B, seed=s['seed'], workers=workers, Q=Q)
     S, b, score = tstep.estimate_rank(Q, res)
@@ -98,6 +118,7 @@ def main():
     ap.add_argument('--workers', type=int, default=14)
     ap.add_argument('--only-root', action='store_true')
     ap.add_argument('--checks', default='3,4,5,6,7,8')
+    ap.add_argument('--outsiders', action='store_true', help='add the nearest non-members to saved nodes')
     a = ap.parse_args()
     checks = sorted(int(x) for x in a.checks.split(','))
     tag = '' if checks == [3, 4, 5, 6, 7, 8] else '-'.join(map(str, checks))
@@ -111,6 +132,12 @@ def main():
         f = os.path.join(out, f'{k}_{path or "root"}.json')
         if os.path.exists(f):
             node = json.load(open(f))
+            if a.outsiders and node['alert'] and 'outsiders' not in node['alert']:
+                t = time.time()
+                node['alert']['outsiders'], chk = outsiders(k, set(removed), set(kept), node['alert']['members'])
+                assert np.allclose(chk, node['alert']['scores'], atol=0.11), (chk, node['alert']['scores'])
+                json.dump(node, open(f, 'w'), indent=1)
+                print(f'  outsiders {node["alert"]["outsiders"]} ({time.time() - t:.0f}s)', flush=True)
         else:
             t = time.time()
             node = run_node(k, set(removed), set(kept), a.B, a.workers)
