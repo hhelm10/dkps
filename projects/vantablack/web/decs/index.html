@@ -300,7 +300,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
   <div class="sec-head">
     <span class="label">Analysis</span>
-    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected colluding subnetworks. With live alerts on, the monitor instead interrupts playback whenever it detects a new subnetwork, so you can investigate it and remove or keep its agents.</p>
+    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected colluding subnetworks. With live alerts on, the monitor instead interrupts playback whenever it detects a new subnetwork, so you can view it and remove or keep its agents.</p>
   </div>
 
   <section class="panel" aria-label="Monitor">
@@ -315,13 +315,13 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         <button id="sp2" type="button" aria-pressed="false">2×</button>
         <button id="sp4" type="button" aria-pressed="false">4×</button>
       </div>
-      <label class="tog livetog"><input type="checkbox" id="live"> Live alerts</label>
+      <label class="tog livetog"><input type="checkbox" id="live" checked autocomplete="off"> Live alerts</label>
       <button id="stop" type="button" disabled>Analyze</button>
       <div class="row2"><div class="clock"><span class="label">Collecting</span><span class="when num" id="when">Jan 30, 00:00 UTC</span></div>
         <p class="stopnote" id="stopnote"></p></div>
     </div>
     <div class="alertbar" id="alertBar" role="alert" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7.5 13h-15zM7.2 6v4.2h1.6V6zm0 5.4V13h1.6v-1.6z"/></svg>
-      <span id="alertMsg"></span><button type="button" id="alertGo">Investigate</button></div>
+      <span id="alertMsg"></span><button type="button" id="alertGo">View</button></div>
     <div class="monitors">
       <div class="panel" style="padding:14px">
         <div class="mon-head"><h3>Activity monitor <span class="caption" style="font-weight:400">posts and comments per hour by the 2,574 agents</span></h3>
@@ -335,7 +335,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         <div class="pgrid">
           <div class="pwrap"><canvas id="persp" tabindex="0" aria-label="Agents' estimated perspectives in three dimensions, moving over time. Drag to rotate, arrow keys rotate, plus and minus zoom."></canvas>
             <div class="tip" id="tip" role="status" hidden></div>
-            <div id="inv" hidden aria-live="polite" role="dialog" aria-label="Investigate alert"></div></div>
+            <div id="inv" hidden aria-live="polite" role="dialog" aria-label="View alert"></div></div>
           <aside class="finder" aria-label="Find agents by id">
             <form id="idForm" autocomplete="off"><label class="label" for="idIn">Find agents</label>
               <div class="idrow"><input id="idIn" type="text" inputmode="text" spellcheck="false" placeholder="ids, e.g. 2447, 10-20" aria-describedby="idNote"><button type="submit">Select</button></div></form>
@@ -345,9 +345,9 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         </div>
         <div class="chips pick" id="subPick" hidden></div>
         <p class="caption" id="pcap"></p>
-        <p class="caption" id="phelp">Drag to rotate, scroll or pinch to zoom, double-click to reset, and hover a dot for details. Click dots to select them and follow their trails; shift-drag to select a group. Drag the blue handle on the activity monitor to go back in time. Hollow dots: no posts in that step.</p>
+        <p class="caption" id="phelp">Drag to rotate, scroll or pinch to zoom, double-click to reset, and hover a dot for details. Click dots to select them and follow their trails; shift-drag to select a group. Drag the blue handle on the activity monitor to move through time. Hollow dots: no posts in that step.</p>
       </div>
-      <div class="panel" style="padding:14px" id="alertPanel" hidden>
+      <div class="panel" style="padding:14px" id="alertPanel">
         <div class="mon-head"><h3>Alerts</h3>
           <div class="counters"><span><b class="num" id="nOpen">0</b> open</span><span><b class="num" id="nRem">0</b> agents removed</span><span><b class="num" id="nKept">0</b> kept</span></div></div>
         <p class="caption" id="alertNote"></p>
@@ -440,8 +440,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
   // ---------- state
   const st = { hour: 0, reach: 0, playing: false, speed: 1, last: 0, stopped: null, run: null };   // reach: latest hour collected
-  const actEnd = () => Math.max(st.reach, B[3]);   // the time axis spans the data up to the first check,
-                                                                   // then ends at the current time
+  const actEnd = () => H;                                       // the activity monitor's time axis spans the whole period
   const complete = (h) => B.slice(1).filter((b) => b <= h + 1e-9).length;
 
   // ---------- activity monitor
@@ -458,7 +457,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       for (let i = 0; i < Math.min(H, Math.ceil(to)); i++) { const v = M.per_hour[i]; c.lineTo(X(i), Y(v)); c.lineTo(X(Math.min(i + 1, to)), Y(v)); }
       c.lineTo(X(Math.min(to, H)), Y(0)); c.closePath(); c.globalAlpha = alpha; c.fillStyle = color; c.fill(); c.globalAlpha = 1;
     };
-    area(st.reach, css('--null'), 0.25);
+    area(H, css('--null'), 0.25);
     area(st.stopped ? B[st.stopped] : st.hour, css('--anchor'), 0.9);
     if (st.stopped && st.hour > B[st.stopped]) {
       c.save(); c.beginPath(); c.rect(X(B[st.stopped]), Tp, X(st.hour) - X(B[st.stopped]), ph); c.clip();
@@ -790,7 +789,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       return `<li class="${j === AL.cur ? 'cur' : ''}"><i class="adot ${s}" style="background:${col}"></i>` +
         `<span class="what">${a.members.length} agents moving together<small><span class="aft">after </span>step ${a.k} · p = ${a.p.toFixed(3)}</small></span>` +
         `<span class="stat ${s === 'open' ? 'new' : ''}">${s}</span>` +
-        `<button type="button" data-inv="${j}">${j === AL.cur ? 'Close' : s === 'open' ? 'Investigate' : 'View'}</button></li>`;
+        `<button type="button" data-inv="${j}">${j === AL.cur ? 'Close' : 'View'}</button></li>`;
     }).join('');
     ul.querySelectorAll('[data-inv]').forEach((b) => (b.onclick = () => (+b.dataset.inv === AL.cur ? closeInv() : investigate(+b.dataset.inv))));
     $('alertNote').hidden = AL.any();
@@ -884,7 +883,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   {
     const cv = $('act');
     const hourAt = (x) => { const r = cv.getBoundingClientRect(), L = 40, R = 8; return ((x - r.left - L) / (r.width - L - R)) * actEnd(); };
-    const maxHour = () => Math.min(st.reach, st.stopped ? B[st.stopped] : AL.openK() !== null ? B[AL.openK()] : H);   // only back in time
+    const maxHour = () => (st.stopped ? B[st.stopped] : AL.openK() !== null ? B[AL.openK()] : H);
     const seek = (hr) => { st.playing = false; st.target = null; st.analyzeAfter = false; st.hour = Math.max(0, Math.min(maxHour(), hr)); draw(); };
     let dragging = false;
     cv.addEventListener('pointerdown', (e) => { dragging = true; cv.setPointerCapture(e.pointerId); seek(hourAt(e.clientX)); });

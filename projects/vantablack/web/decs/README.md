@@ -5,7 +5,7 @@ Live at https://helivan.io/projects/decs/ (this package matches the live page as
 Interactive page: play back Moltbook activity (January 30 to February 9, 2026), stop at any
 point, and replay the detection and estimation of colluding subnetworks on the data collected so far.
 With the "Live alerts" toggle on (off by default), the monitor checks for a coordinated subnetwork
-after steps 3, 6 and 8 and pauses playback when it finds one; the viewer investigates it and decides
+after steps 3, 6 and 8 and pauses playback when it finds one; the viewer views it and decides
 to remove the agents or keep them, and later alerts follow from those decisions.
 
 Second page, `api.html`: the same demonstration on synthetic agents calling a public API (three
