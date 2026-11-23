@@ -213,7 +213,8 @@ tr.stoprow td { color: var(--ink-mute); }
 .alertbar svg { width: 16px; height: 16px; flex: none; fill: var(--stop); }
 .alertbar button { margin-left: auto; padding: 5px 12px; font-size: 13px; }
 .alertbar.ok { border-color: var(--edge); background: var(--wash); }
-.alertbar.ok svg { display: none; }
+.alertbar .okic, .alertbar.ok .warn { display: none; }
+.alertbar.ok .okic { display: block; fill: var(--ink-mute); }
 .alist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--edge); }
 .alist li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--edge); font-size: 13px; }
 .alist li.cur { background: var(--wash); }
@@ -320,7 +321,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       <div class="row2"><div class="clock"><span class="label">Collecting</span><span class="when num" id="when">Jan 30, 00:00 UTC</span></div>
         <p class="stopnote" id="stopnote"></p></div>
     </div>
-    <div class="alertbar" id="alertBar" role="alert" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7.5 13h-15zM7.2 6v4.2h1.6V6zm0 5.4V13h1.6v-1.6z"/></svg>
+    <div class="alertbar" id="alertBar" role="status"><svg class="okic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0.5a7.5 7.5 0 1 0 0 15a7.5 7.5 0 0 0 0-15zm3.6 5.1l-4.4 5.2-2.9-2.6 1-1.1 1.8 1.6 3.4-4.1z"/></svg><svg class="warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7.5 13h-15zM7.2 6v4.2h1.6V6zm0 5.4V13h1.6v-1.6z"/></svg>
       <span id="alertMsg"></span><button type="button" id="alertGo">View</button></div>
     <div class="monitors">
       <div class="panel" style="padding:14px">
@@ -457,12 +458,9 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       for (let i = 0; i < Math.min(H, Math.ceil(to)); i++) { const v = M.per_hour[i]; c.lineTo(X(i), Y(v)); c.lineTo(X(Math.min(i + 1, to)), Y(v)); }
       c.lineTo(X(Math.min(to, H)), Y(0)); c.closePath(); c.globalAlpha = alpha; c.fillStyle = color; c.fill(); c.globalAlpha = 1;
     };
-    area(H, css('--null'), 0.25);
-    area(st.stopped ? B[st.stopped] : st.hour, css('--anchor'), 0.9);
-    if (st.stopped && st.hour > B[st.stopped]) {
-      c.save(); c.beginPath(); c.rect(X(B[st.stopped]), Tp, X(st.hour) - X(B[st.stopped]), ph); c.clip();
-      area(st.hour, css('--null'), 0.9); c.restore();
-    }
+    area(H, css('--anchor'), 0.9);                                // all activity, in full
+    const cut = st.stopped ? Math.min(st.hour, B[st.stopped]) : st.hour;   // shade what is not yet collected (or after the stop)
+    c.globalAlpha = 0.62; c.fillStyle = css('--surface'); c.fillRect(X(cut), Tp - 2, X(H) - X(cut) + 2, ph + 2); c.globalAlpha = 1;
     if (st.stopped) { const sx = X(B[st.stopped]); c.strokeStyle = css('--stop'); c.lineWidth = 2; c.beginPath(); c.moveTo(sx, Tp); c.lineTo(sx, Tp + ph); c.stroke(); }
     const cx = X(st.hour); c.strokeStyle = css('--focus'); c.lineWidth = 2; c.beginPath(); c.moveTo(cx, Tp + 6); c.lineTo(cx, Tp + ph); c.stroke();
     c.fillStyle = css('--focus'); c.strokeStyle = css('--surface'); c.lineWidth = 1.5; c.beginPath(); c.arc(cx, Tp + 6, 5.5, 0, 7); c.fill(); c.stroke();   // handle: drag to move through time
@@ -778,9 +776,10 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       AL.note = null;
       const j = AL.status.indexOf('open'), a = ALS[j];
       $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> (${a.members.length} agents, p = ${a.p.toFixed(3)}). Decide to continue.`;
-      bar.hidden = false; bar.classList.remove('ok'); $('alertGo').hidden = false; $('alertGo').onclick = () => investigate(j);
-    } else if (AL.note && $('live').checked) {
-      $('alertMsg').innerHTML = AL.note; bar.hidden = false; bar.classList.add('ok'); $('alertGo').hidden = true;
+      bar.hidden = false; bar.classList.remove('ok'); $('alertGo').style.visibility = ''; $('alertGo').onclick = () => investigate(j);
+    } else if ($('live').checked && !st.stopped) {             // no open alert: the last decision, or all clear (same height as an alert)
+      $('alertMsg').innerHTML = AL.note || '<b>System normal.</b> No coordinated subnetwork detected.';
+      bar.hidden = false; bar.classList.add('ok'); $('alertGo').style.visibility = 'hidden';
     } else bar.hidden = true;
     const ul = $('alertList');
     ul.innerHTML = ALS.map((a, j) => {
@@ -1242,7 +1241,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   }
   function startAnalysis() {
     const k = complete(st.hour); if (k < 3) return;
-    st.playing = false; st.target = null; st.stopped = k; st.hour = B[k]; draw(); analyze(k);
+    st.playing = false; st.target = null; st.stopped = k; st.hour = B[k]; renderAlerts(); draw(); analyze(k);
   }
   $('stop').onclick = () => {                   // Analyze: if collection is running, stop it first
     if (st.playing) { st.analyzeAfter = true; stopCollection(); if (!st.playing) { st.analyzeAfter = false; startAnalysis(); } return; }
@@ -1263,6 +1262,6 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
   new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   document.fonts && document.fonts.ready.then(redraw);
-  draw();
+  renderAlerts(); draw();
 })();
 </script>
