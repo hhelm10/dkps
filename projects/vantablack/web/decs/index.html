@@ -775,7 +775,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     if (open) {
       AL.note = null;
       const j = AL.status.indexOf('open'), a = ALS[j];
-      $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> (${a.members.length} agents, p = ${a.p.toFixed(3)}). Decide to continue.`;
+      $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> (${a.members.length} agents, p = ${a.p.toFixed(3)}). View to continue.`;
       bar.hidden = false; bar.classList.remove('ok'); $('alertGo').style.visibility = ''; $('alertGo').onclick = () => investigate(j);
     } else if ($('live').checked && !st.stopped) {             // no open alert: the last decision, or all clear (same height as an alert)
       $('alertMsg').innerHTML = AL.note || '<b>System normal.</b> No coordinated activity detected.';
@@ -917,7 +917,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     if (st.stopped) { stop.disabled = true; $('stopnote').textContent = 'Analyzed. Use Reset to collect again.'; return; }
     stop.disabled = st.analyzeAfter || !(st.playing || k >= 3);       // while running, Analyze stops first
     const when = (h) => dateOf(h, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
-    $('stopnote').textContent = AL.openK() !== null ? 'Decide on the open alert to continue collecting.' : st.hour === 0 ? 'Hit play to start collecting.' : k < 3 ? `Analysis is available from ${when(B[3])}.`
+    $('stopnote').textContent = AL.openK() !== null ? 'View the open alert to continue collecting.' : st.hour === 0 ? 'Hit play to start collecting.' : k < 3 ? `Analysis is available from ${when(B[3])}.`
       : `Analysis uses data through ${when(B[k])}.`;
   }
   function draw() { checkAlerts(); drawActivity(); drawPersp(); controlsUI(); }
