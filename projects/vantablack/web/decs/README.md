@@ -1,15 +1,15 @@
-# Detecting Colluding Subnetworks in Multi-Agent Systems
+# Detecting Coordinated Subnetworks in Multi-Agent Systems
 
 Live at https://helivan.io/projects/decs/ (this package matches the live page as of 2026-11-21).
 
 Interactive page: play back Moltbook activity (January 30 to February 9, 2026), stop at any
-point, and replay the detection and estimation of colluding subnetworks on the data collected so far.
+point, and replay the detection and estimation of coordinated subnetworks on the data collected so far.
 With the "Live alerts" toggle on (off by default), the monitor checks for a coordinated subnetwork
 after steps 3, 6 and 8 and pauses playback when it finds one; the viewer views it and decides
 to remove the agents or keep them, and later alerts follow from those decisions.
 
 Second page, `api.html`: the same demonstration on synthetic agents calling a public API (three
-scenarios: split scraping, distillation, side channel), with the planted colluders revealed after
+scenarios: split scraping, distillation, side channel), with the planted coordinated agents revealed after
 the analysis.
 
 ## Hosting
@@ -60,8 +60,8 @@ How the settings were chosen, in order:
    seed 0; their effect sizes were then strengthened (distillation rho 0.25 to 0.35, side channel 0.7
    to 0.85, opening at minute 18).
 2. With those settings, membership recovery was too low (Jaccard about 0.4 to 0.8). Membership
-   against the true group did no better, so the limit was the data, not the search: the colluders
-   missed were the least active. On seeds 1-2, more steps and more calls per step raised recovery;
+   against the true group did no better, so the limit was the data, not the search: the coordinated
+   agents missed were the least active. On seeds 1-2, more steps and more calls per step raised recovery;
    16 steps of about 40 calls was chosen. The effect sizes were not changed again.
 3. Pilot with the final settings on seeds 1-3, before seed 0 was run: every planted group detected,
    Jaccard 0.83 to 1.00 (side channel 1.00, 1.00, 0.83; scraping crews 0.93, 0.93, 0.93, 0.93, 1.00,

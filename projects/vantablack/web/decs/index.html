@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Detecting Colluding Subnetworks in Multi-Agent Systems</title>
+<title>Detecting Coordinated Subnetworks in Multi-Agent Systems</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
@@ -287,21 +287,21 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
 <div class="wrap">
   <header>
-    <h1>Detecting Colluding Subnetworks in Multi-Agent Systems</h1>
+    <h1>Detecting Coordinated Subnetworks in Multi-Agent Systems</h1>
     <div class="lede">
       <p>Generative agents are increasingly deployed in shared environments. As demonstrated in the Hugging Face incident, a small group of coordinated agents can exert outsized influence on the system. Similar behavior has been observed on Moltbook: agents flooded the site and coordinated through in-group rhetoric.</p>
-      <p>We call a subset of agents whose behavior is highly coordinated a <b>colluding subnetwork</b>. This page demonstrates the detection and estimation of such subnetworks in a group of 2,574 Moltbook agents from January 30 to February 9, 2026.</p>
+      <p>We call a subset of agents whose behavior is repeatedly correlated a <b>coordinated subnetwork</b>. This page demonstrates the detection and estimation of such subnetworks in a group of 2,574 Moltbook agents from January 30 to February 9, 2026.</p>
       <p>Key takeaways:</p>
       <ul class="findings">
         <li>the perspective space provides interpretable representations of the agents through time;</li>
-        <li>using all data through February 9, the method detects <b>eight colluding subnetworks</b> of 4 to 10 agents, of which the agents in <b>five subnetworks share a handle stem</b> (FloClaw, Mizuki, ClawdBot, XNO_, QwenPoweredClaw), though the method never sees agent names.</li>
+        <li>using all data through February 9, the method detects <b>eight coordinated subnetworks</b> of 4 to 10 agents, of which the agents in <b>five subnetworks share a handle stem</b> (FloClaw, Mizuki, ClawdBot, XNO_, QwenPoweredClaw), though the method never sees agent names.</li>
       </ul>
     </div>
   </header>
 
   <div class="sec-head">
     <span class="label">Analysis</span>
-    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected colluding subnetworks. With live alerts on, the monitor instead interrupts playback whenever it detects a new subnetwork, so you can view it and remove or keep its agents.</p>
+    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected coordinated subnetworks. With live alerts on, the monitor instead interrupts playback whenever it detects a new subnetwork, so you can view it and remove or keep its agents.</p>
   </div>
 
   <section class="panel" aria-label="Monitor">
@@ -359,7 +359,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
   <section id="analysis" hidden aria-live="polite">
     <div class="ana-head">
-      <div class="sec-head"><span class="label">Overview</span><h2 id="anaTitle">Detecting colluding subnetworks</h2></div>
+      <div class="sec-head"><span class="label">Overview</span><h2 id="anaTitle">Detecting coordinated subnetworks</h2></div>
       <button id="reset" type="button">Start over</button>
     </div>
     <ol class="stages" id="stages">
@@ -370,7 +370,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     <p class="verdict" id="verdict"></p>
 
     <div class="carousel" id="carMove" hidden>
-      <div class="sec-head"><span class="label">Co-movement</span><p>We first measure the co-movement of each agent pair at each consecutive time point. The statistic we use to determine collusion is a summary of the co-movement across time. Below are the summary pairwise co-movement matrix and the co-movement matrices for consecutive time steps. The block diagonals of the detected subnetworks are highlighted. We also show at which time steps each detected subnetwork has substantial co-movement.</p></div>
+      <div class="sec-head"><span class="label">Co-movement</span><p>We first measure the co-movement of each agent pair at each consecutive time point. The statistic we use to determine coordination is a summary of the co-movement across time. Below are the summary pairwise co-movement matrix and the co-movement matrices for consecutive time steps. The block diagonals of the detected subnetworks are highlighted. We also show at which time steps each detected subnetwork has substantial co-movement.</p></div>
       <div class="car-bar">
         <button id="carMovePrev" type="button" aria-label="Previous slide">←</button>
         <button id="carMoveNext" type="button" aria-label="Next slide">→</button>
@@ -381,7 +381,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     </div>
 
     <div class="details" id="detection" hidden>
-      <div class="sec-head"><span class="label">Detection</span><p>We then search for the subset of agents whose summary co-movement is largest. To decide whether it is a colluding subnetwork, we compare this test statistic to its values in 199 copies of the data in which agent labels are shuffled within every time step. When the test statistic exceeds the shuffled copies (p ≤ 0.05), we report a subnetwork, set its members aside, and search again. Below are the test statistic and null distribution of every round.</p></div>
+      <div class="sec-head"><span class="label">Detection</span><p>We then search for the subset of agents whose summary co-movement is largest. To decide whether it is a coordinated subnetwork, we compare this test statistic to its values in 199 copies of the data in which agent labels are shuffled within every time step. When the test statistic exceeds the shuffled copies (p ≤ 0.05), we report a subnetwork, set its members aside, and search again. Below are the test statistic and null distribution of every round.</p></div>
       <div class="panel"><canvas id="scan" aria-label="Scan statistic and permutation null per round"></canvas>
         <div class="legend"><span><i class="box"></i>null: 199 label-shuffled copies</span><span><i style="border-top-width:3px"></i>observed statistic (colored: subnetwork detected)</span></div></div>
       <div class="panel tablewrap"><table id="scanTable"></table></div>
@@ -778,7 +778,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> (${a.members.length} agents, p = ${a.p.toFixed(3)}). Decide to continue.`;
       bar.hidden = false; bar.classList.remove('ok'); $('alertGo').style.visibility = ''; $('alertGo').onclick = () => investigate(j);
     } else if ($('live').checked && !st.stopped) {             // no open alert: the last decision, or all clear (same height as an alert)
-      $('alertMsg').innerHTML = AL.note || '<b>System normal.</b> No coordinated subnetwork detected.';
+      $('alertMsg').innerHTML = AL.note || '<b>System normal.</b> No coordinated activity detected.';
       bar.hidden = false; bar.classList.add('ok'); $('alertGo').style.visibility = 'hidden';
     } else bar.hidden = true;
     const ul = $('alertList');
@@ -1221,7 +1221,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     const thru = dateOf(B[k], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
     if (!run) { $('anaTitle').textContent = `No saved run for data through ${thru} yet`; return; }
     st.run = run; colorOf = new Map();
-    $('anaTitle').textContent = `Colluding subnetworks in data through ${thru}`;
+    $('anaTitle').textContent = `Coordinated subnetworks in data through ${thru}`;
     stage(0, 'active'); await wait(600); if (!live()) return; stage(0, 'done', `${fmt(run.N)} activated agents · ${k - 1} increments`);
     stage(1, 'active'); stage(2, 'active');
     let sub = 0;
@@ -1231,7 +1231,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       await wait(220); if (!live()) return;
     }
     stage(1, 'done', `${run.rounds.length} rounds · B = ${run.B}`); stage(2, 'done', `${sub} subnetwork${sub === 1 ? '' : 's'}`);
-    $('verdict').textContent = sub === 0 ? `No colluding subnetwork detected among ${fmt(run.N)} activated agents.` : `${sub} colluding subnetwork${sub === 1 ? '' : 's'} detected among ${fmt(run.N)} activated agents.`;
+    $('verdict').textContent = sub === 0 ? `No coordinated subnetwork detected among ${fmt(run.N)} activated agents.` : `${sub} coordinated subnetwork${sub === 1 ? '' : 's'} detected among ${fmt(run.N)} activated agents.`;
     $('pcap').textContent = 'Each dot is one agent\'s estimated perspective. Colored: agents in the detected subnetworks. Drag the blue handle above to replay the analyzed period.';
     subPicker();
     $('detection').hidden = false;
