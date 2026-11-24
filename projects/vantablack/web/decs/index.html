@@ -77,8 +77,8 @@ header { display: grid; gap: 12px; }
 
 /* console */
 .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
-.clock { display: grid; gap: 2px; min-width: 15ch; }
-.clock .when { font-family: var(--font-data); font-size: 18px; color: var(--ink-title); }
+.clock { display: grid; gap: 1px; min-width: 15ch; }
+.clock .when { font-family: var(--font-data); font-size: 16px; color: var(--ink-title); }
 .steps { display: flex; gap: 4px; align-items: center; }
 .steps span { width: 26px; height: 22px; border-radius: 3px; background: var(--wash); border: 1px solid var(--edge);
   font: 500 11.5px var(--font-data); color: var(--ink-mute); display: grid; place-items: center; }
@@ -98,18 +98,19 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .seg button[aria-pressed="true"] { background: var(--wash); color: var(--ink-title); }
 #stop { margin-left: auto; background: var(--stop); color: var(--stop-ink); border-color: var(--stop); font-weight: 600; padding: 10px 18px; min-width: 150px; }
 #stop:disabled { background: var(--wash); color: var(--ink-mute); border-color: var(--edge); opacity: 1; }
-.row2 { flex-basis: 100%; display: flex; justify-content: space-between; align-items: end; gap: 8px 18px; flex-wrap: nowrap; }
 @media (max-width: 640px) { .row2 { flex-wrap: wrap; } }
-.stopnote { font-size: 12.5px; color: var(--ink-mute); text-align: right; }
+.stopnote { font-size: 12.5px; color: var(--ink-mute); text-align: right; margin-left: auto; }
+.alertbar:not(.ok) .stopnote, .alertbar.ok #alertGo { display: none; }
+@media (max-width: 560px) { .alertbar .stopnote { flex-basis: 100%; text-align: left; margin-left: 0; } }
 .monitors { display: grid; grid-template-columns: 1fr; gap: 12px; }
 .mon-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .counters { display: flex; gap: 18px; font-family: var(--font-data); font-size: 12.5px; color: var(--ink-mute); }
 .counters b { color: var(--ink-title); font-weight: 500; font-size: 15px; }
 canvas { display: block; width: 100%; }
-#act { height: 110px; cursor: ew-resize; touch-action: pan-y; border-radius: 4px; }
+#act { height: 72px; cursor: ew-resize; touch-action: pan-y; border-radius: 4px; }
 #act:focus-visible, #persp:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .pwrap { position: relative; }
-#persp { height: min(480px, 56vh); min-height: 280px; background: var(--wash); border-radius: 4px; cursor: grab; touch-action: none; }
+#persp { height: clamp(300px, calc(100vh - var(--chrome, 400px)), 600px); background: var(--wash); border-radius: 4px; cursor: grab; touch-action: none; }
 #persp:active { cursor: grabbing; }
 .ptools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-mute); }
 .ptools button { padding: 4px 10px; font-size: 12.5px; }
@@ -121,7 +122,7 @@ canvas { display: block; width: 100%; }
 .pick { align-items: center; }
 .pick button { padding: 3px 9px; font: 500 12px var(--font-data); display: inline-flex; align-items: center; gap: 6px; }
 .pick .swatch { width: 8px; height: 8px; }
-.pgrid { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; }
+.pgrid { display: grid; gap: 12px; }
 @media (max-width: 760px) { .pgrid { grid-template-columns: minmax(0, 1fr); } }
 .finder { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 12.5px; color: var(--ink-mute); }
 .finder form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
@@ -208,11 +209,12 @@ tr.stoprow td { color: var(--ink-mute); }
 /* live alerts */
 .livetog { font-size: 13.5px; color: var(--ink-title); margin-left: auto; }
 .livetog + #stop { margin-left: 0; }
-.alertbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border: 1px solid var(--stop); border-radius: var(--radius);
+.alertbar { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; padding: 6px 12px; min-height: 44px; border: 1px solid var(--stop); border-radius: var(--radius);
   background: color-mix(in srgb, var(--stop) 8%, var(--surface)); color: var(--ink-title); font-size: 14px; }
 .alertbar svg { width: 16px; height: 16px; flex: none; fill: var(--stop); }
 .alertbar button { margin-left: auto; padding: 5px 12px; font-size: 13px; }
 .alertbar.ok { border-color: var(--edge); background: var(--wash); }
+@media (max-width: 560px) { .alertbar { min-height: 124px; align-content: flex-start; } }
 .alertbar .okic, .alertbar.ok .warn { display: none; }
 .alertbar.ok .okic { display: block; fill: var(--ink-mute); }
 .alist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--edge); }
@@ -227,19 +229,28 @@ tr.stoprow td { color: var(--ink-mute); }
 .adot { width: 10px; height: 10px; border-radius: 50%; }
 .adot.removed { background: transparent; border: 1.5px dashed var(--ink-mute); }
 .side { position: relative; min-width: 0; }
-.finder[hidden] { display: none; }
+.side .sin { position: absolute; inset: 0; display: flex; flex-direction: column; }
+@media (min-width: 761px) { .pgrid { grid-template-columns: minmax(0, 1fr) 300px; } }
 @media (min-width: 761px) { .pgrid.wide { grid-template-columns: minmax(0, 1fr) 360px; } }
-.stabs { display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--edge); height: 34px; }
-.stabs[hidden] { display: none; }
+@media (max-width: 760px) { .side { height: min(560px, 75vh); } #persp { height: min(420px, 56vh); } }
+.stabs { flex: none; display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--edge); height: 34px; }
+.stabs[hidden], .stabs button[hidden] { display: none; }
 .stabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 6px 10px; font-size: 12.5px; color: var(--ink-mute); }
 .stabs button[aria-selected="true"] { color: var(--ink-title); font-weight: 600; border-bottom-color: var(--stop); }
+.stabs .num { color: var(--stop); font-weight: 600; }
 .stabs .tabx { margin-left: auto; font-size: 16px; padding: 4px 8px; }
-.side.open .finder { padding-top: 10px; }
-.side.open #idForm > .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-#inv { position: absolute; top: 34px; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; background: var(--surface);
+.spane { flex: 1; min-height: 0; }
+.spane[hidden] { display: none !important; }
+.finder { padding-top: 10px; overflow: hidden; }
+.finder .sellist { flex: 0 1 auto; max-height: none; min-height: 0; }
+.finder .phelp { margin: auto 0 0; font-size: 11.5px; line-height: 1.45; padding-top: 8px; }
+.side.tabbed #idForm > .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.alpane { overflow-y: auto; padding-top: 10px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
+.alpane .counters { display: flex; gap: 14px; color: var(--ink-mute); }
+.alpane .caption { margin: 0; font-size: 12px; }
+.alpane .alist .what small { display: block; margin-left: 0; margin-top: 2px; white-space: nowrap; }
+#inv { display: flex; flex-direction: column; background: var(--surface);
   border: 1px solid var(--edge); border-top: 0; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
-#inv[hidden] { display: none; }
-@media (max-width: 760px) { .side.open { min-height: min(620px, 80vh); } }
 #inv .ibody { overflow-y: auto; overscroll-behavior: contain; padding: 14px 16px; display: grid; gap: 14px; align-content: start; flex: 1; min-height: 0; }
 #inv h3 { margin: 2px 0 0; font-size: 18px; color: var(--ink-title); }
 #inv .lead { margin: 0; font-size: 13px; color: var(--ink); }
@@ -311,7 +322,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
   <div class="sec-head">
     <span class="label">Analysis</span>
-    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Stop Moltbook activity at any point. Then analyze the available content to explore detected coordinated subnetworks. With live alerts on, the monitor instead interrupts playback whenever it detects a new subnetwork, so you can view it and remove or keep its agents. The full methodology is provided after clicking Analyze.</p>
+    <p>Hit play to observe the activity and perspectives of the agents through February 9, 2026. Pause at any point, or stop Moltbook activity to analyze the content collected so far and explore the detected coordinated subnetworks. With live alerts on, the monitor instead interrupts playback whenever it detects a new subnetwork, so you can view it and remove or keep its agents. The full methodology is provided after clicking Stop.</p>
   </div>
 
   <section class="panel" aria-label="Monitor">
@@ -319,20 +330,19 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       <div class="transport">
         <button id="rewind" type="button" hidden><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M0 0h2v10H0zM10 0v10L3 5z"/></svg>Reset</button>
         <button id="play" type="button"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 0l9 5-9 5z"/></svg>Play</button>
-        <button id="pause" type="button" disabled><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h8v8H1z"/></svg>Stop</button>
+        <button id="pause" type="button" disabled><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h3v8H1zM6 1h3v8H6z"/></svg>Pause</button>
       </div>
       <div class="seg" role="group" aria-label="Playback speed">
         <button id="sp1" type="button" aria-pressed="true">1×</button>
         <button id="sp2" type="button" aria-pressed="false">2×</button>
         <button id="sp4" type="button" aria-pressed="false">4×</button>
       </div>
+      <div class="clock"><span class="label">Collecting</span><span class="when num" id="when">Jan 30, 00:00 UTC</span></div>
       <label class="tog livetog"><input type="checkbox" id="live" checked autocomplete="off"> Live alerts</label>
-      <button id="stop" type="button" disabled>Analyze</button>
-      <div class="row2"><div class="clock"><span class="label">Collecting</span><span class="when num" id="when">Jan 30, 00:00 UTC</span></div>
-        <p class="stopnote" id="stopnote"></p></div>
+      <button id="stop" type="button" disabled>Stop</button>
     </div>
     <div class="alertbar" id="alertBar" role="status"><svg class="okic" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0.5a7.5 7.5 0 1 0 0 15a7.5 7.5 0 0 0 0-15zm3.6 5.1l-4.4 5.2-2.9-2.6 1-1.1 1.8 1.6 3.4-4.1z"/></svg><svg class="warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7.5 13h-15zM7.2 6v4.2h1.6V6zm0 5.4V13h1.6v-1.6z"/></svg>
-      <span id="alertMsg"></span><button type="button" id="alertGo">View</button></div>
+      <span id="alertMsg"></span><span class="stopnote" id="stopnote"></span><button type="button" id="alertGo">View</button></div>
     <div class="monitors">
       <div class="panel" style="padding:14px">
         <div class="mon-head"><h3>Activity monitor <span class="caption" style="font-weight:400">posts and comments per hour by the 2,574 agents</span></h3>
@@ -347,26 +357,26 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
           <div class="pwrap"><canvas id="persp" tabindex="0" aria-label="Agents' estimated perspectives in three dimensions, moving over time. Drag to rotate, arrow keys rotate, plus and minus zoom."></canvas>
             <div class="tip" id="tip" role="status" hidden></div>
           </div>
-          <div class="side" id="side">
-          <div class="stabs" id="stabs" role="tablist" hidden><button type="button" role="tab" id="tabFind" aria-selected="false">Find agents</button><button type="button" role="tab" id="tabAlert" aria-selected="true">Alert</button><button type="button" class="tabx" id="tabClose" aria-label="Close the alert tab">×</button></div>
-          <aside class="finder" id="finder" aria-label="Find agents by id">
+          <div class="side" id="side"><div class="sin">
+          <div class="stabs" id="stabs" role="tablist"><button type="button" role="tab" id="tabFind" aria-selected="true">Find agents</button><button type="button" role="tab" id="tabList" aria-selected="false">Alerts <b class="num" id="nOpenTab"></b></button><button type="button" role="tab" id="tabAlert" aria-selected="false" hidden>Alert</button><button type="button" class="tabx" id="tabClose" aria-label="Close the alert tab" hidden>×</button></div>
+          <aside class="finder spane" id="finder" aria-label="Find agents by id">
             <form id="idForm" autocomplete="off"><label class="label" for="idIn">Find agents</label>
               <div class="idrow"><input id="idIn" type="text" inputmode="text" spellcheck="false" placeholder="ids, e.g. 2447, 10-20" aria-describedby="idNote"><button type="submit">Select</button></div></form>
             <p class="idnote" id="idNote"></p>
             <ul class="sellist" id="selList" aria-label="Selected agents"></ul>
+            <p class="caption phelp" id="phelp">Drag to rotate, scroll or pinch to zoom, double-click to reset, and hover a dot for details. Click dots to select them and follow their trails; shift-drag to select a group. Drag the blue handle on the activity monitor to move through time. Hollow dots: no posts in that step.</p>
           </aside>
-          <div id="inv" hidden aria-live="polite" role="tabpanel" aria-labelledby="tabAlert"></div>
+          <div class="spane alpane" id="alertPanel" hidden role="tabpanel" aria-labelledby="tabList">
+            <div class="counters"><span><b class="num" id="nOpen">0</b> open</span><span><b class="num" id="nRem">0</b> removed</span><span><b class="num" id="nKept">0</b> kept</span></div>
+            <p class="caption" id="alertNote"></p>
+            <ul class="alist" id="alertList" aria-label="Alerts"></ul>
           </div>
+          <div id="inv" class="spane" hidden aria-live="polite" role="tabpanel" aria-labelledby="tabAlert"></div>
+          </div></div>
         </div>
         <div class="chips pick" id="subPick" hidden></div>
         <p class="caption" id="pcap"></p>
-        <p class="caption" id="phelp">Drag to rotate, scroll or pinch to zoom, double-click to reset, and hover a dot for details. Click dots to select them and follow their trails; shift-drag to select a group. Drag the blue handle on the activity monitor to move through time. Hollow dots: no posts in that step.</p>
-      </div>
-      <div class="panel" style="padding:14px" id="alertPanel">
-        <div class="mon-head"><h3>Alerts</h3>
-          <div class="counters"><span><b class="num" id="nOpen">0</b> open</span><span><b class="num" id="nRem">0</b> agents removed</span><span><b class="num" id="nKept">0</b> kept</span></div></div>
-        <p class="caption" id="alertNote"></p>
-        <ul class="alist" id="alertList" aria-label="Alerts"></ul>
+        
       </div>
     </div>
   </section>
@@ -784,23 +794,24 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   function renderAlerts(hit) {
     const open = AL.status.filter((x) => x === 'open').length;
     const nAg = (d) => [...AL.of.values()].filter((j) => AL.status[j] === d).length;
-    $('nOpen').textContent = open; $('nRem').textContent = nAg('removed'); $('nKept').textContent = nAg('kept');
+    $('nOpenTab').textContent = open || ''; $('nOpen').textContent = open; $('nRem').textContent = nAg('removed'); $('nKept').textContent = nAg('kept');
     const bar = $('alertBar');
     if (open) {
       AL.note = null;
       const j = AL.status.indexOf('open'), a = ALS[j];
       $('alertMsg').innerHTML = `<b>Coordinated subnetwork detected</b> (${a.members.length} agents, p = ${a.p.toFixed(3)}). View to continue.`;
-      bar.hidden = false; bar.classList.remove('ok'); $('alertGo').style.visibility = ''; $('alertGo').onclick = () => investigate(j);
-    } else if ($('live').checked && !st.stopped) {             // no open alert: the last decision, or all clear (same height as an alert)
-      $('alertMsg').innerHTML = AL.note || '<b>System normal.</b> No coordinated activity detected.';
-      bar.hidden = false; bar.classList.add('ok'); $('alertGo').style.visibility = 'hidden';
-    } else bar.hidden = true;
+      bar.classList.remove('ok'); $('alertGo').onclick = () => investigate(j);
+    } else {                                                     // no open alert: the last decision, all clear, or the mode
+      $('alertMsg').innerHTML = st.stopped ? '<b>Collection stopped.</b>' : !$('live').checked ? '<b>Live alerts off.</b>'
+        : AL.note || '<b>System normal.</b> No coordinated activity detected.';
+      bar.classList.add('ok');
+    }
     const ul = $('alertList');
     ul.innerHTML = ALS.map((a, j) => {
       const s = AL.status[j];
       const col = s === 'open' ? css('--stop') : s === 'kept' ? css('--s3') : 'transparent';
       return `<li class="${j === AL.cur ? 'cur' : ''}"><i class="adot ${s}" style="background:${col}"></i>` +
-        `<span class="what">${a.members.length} agents moving together<small><span class="aft">after </span>step ${a.k} · p = ${a.p.toFixed(3)}</small></span>` +
+        `<span class="what">${a.members.length} coordinated agents<small><span class="aft">after </span>step ${a.k} · p = ${a.p.toFixed(3)}</small></span>` +
         `<span class="stat ${s === 'open' ? 'new' : ''}">${s}</span>` +
         `<button type="button" data-inv="${j}">${j === AL.cur ? 'Close' : 'View'}</button></li>`;
     }).join('');
@@ -850,7 +861,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         ? `<div class="btns"><button type="button" class="rmv" data-dec="removed">Remove</button><button type="button" data-dec="kept">Keep</button></div>
            <p class="caption">Remove takes the ticked agents off Moltbook from here on. Keep leaves them in and stops flagging them.</p>`
         : `<div class="btns"><span>Decision: <b>${AL.status[j]}</b></span>${j === ALS.length - 1 ? '<button type="button" data-dec="undo">Undo</button>' : ''}<button type="button" data-dec="close">Close</button></div>`}</div>`;
-    inv.querySelector('.ibody').scrollTop = 0; $('tabAlert').textContent = `Alert ${j + 1}`; sideTab('alert');
+    inv.querySelector('.ibody').scrollTop = 0; $('tabAlert').textContent = `Alert ${j + 1}`; if (SIDE.tab !== 'alert') SIDE.prev = SIDE.tab; sideTab('alert');
     inv.querySelectorAll('[data-dec]').forEach((b) => (b.onclick = () => decide(j, b.dataset.dec)));
     const pickUI = () => {                                          // button counts; note when the pick is not the whole group
       const ticked = [...AL.of.entries()].filter(([, jj]) => jj === j).map(([i]) => i);
@@ -870,15 +881,19 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     renderAlerts(); drawPersp();
     $('persp').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
   }
-  function sideTab(t) {                                          // the side panel: "Find agents", and the alert being viewed
-    const on = AL.cur >= 0, al = on && t === 'alert';
-    $('stabs').hidden = !on; $('side').classList.toggle('open', on); $('side').parentElement.classList.toggle('wide', on);
-    $('inv').hidden = !al; $('finder').hidden = al;
-    $('tabAlert').setAttribute('aria-selected', String(al)); $('tabFind').setAttribute('aria-selected', String(on && !al));
+  function sideTab(t) {                                          // side panel tabs: Find agents | Alerts | the alert being viewed
+    const live = $('live').checked, on = AL.cur >= 0;
+    if (t === 'alert' && !on) t = 'find'; if (t === 'alerts' && !live) t = 'find';
+    SIDE.tab = t;
+    $('stabs').hidden = !live; $('side').classList.toggle('tabbed', live); $('side').parentElement.parentElement.classList.toggle('wide', on && t === 'alert');
+    $('tabAlert').hidden = $('tabClose').hidden = !on;
+    $('inv').hidden = t !== 'alert'; $('finder').hidden = t !== 'find'; $('alertPanel').hidden = t !== 'alerts';
+    [['tabFind', 'find'], ['tabList', 'alerts'], ['tabAlert', 'alert']].forEach(([id, v]) => $(id).setAttribute('aria-selected', String(t === v)));
     drawPersp();
   }
-  $('tabFind').onclick = () => sideTab('find'); $('tabAlert').onclick = () => sideTab('alert'); $('tabClose').onclick = () => closeInv();
-  function closeInv() { AL.cur = -1; sideTab('find'); sel.clear(); (AL.userSel || []).forEach((i) => sel.add(i)); AL.userSel = null; renderAlerts(); drawPersp(); }
+  const SIDE = { tab: 'find' };
+  $('tabFind').onclick = () => sideTab('find'); $('tabList').onclick = () => sideTab('alerts'); $('tabAlert').onclick = () => sideTab('alert'); $('tabClose').onclick = () => closeInv();
+  function closeInv() { AL.cur = -1; sideTab(SIDE.prev || 'find'); sel.clear(); (AL.userSel || []).forEach((i) => sel.add(i)); AL.userSel = null; renderAlerts(); drawPersp(); }
   function decide(j, d) {
     if (d === 'close') { closeInv(); return; }
     if (d === 'undo') {                                           // only the latest decision, before anything later was raised
@@ -894,7 +909,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     else checkAlerts();
   }
   $('live').onchange = () => {                                   // off: the standard demo; on: playback is interrupted by detection
-    const on = $('live').checked; $('alertPanel').hidden = !on;
+    const on = $('live').checked;
     sel.clear(); AL.userSel = null; resetAlerts(); if (!st.run) $('pcap').textContent = PCAP;
     if (on) checkAlerts();                                       // a step already completed raises its alert now (collection returns to it)
     draw();
@@ -935,12 +950,12 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     const done = !!st.stopped || st.hour >= H;                    // collection over: Reset takes Play's place
     $('play').hidden = done; $('rewind').hidden = !done; $('rewind').disabled = false;
     $('pause').textContent = '';
-    $('pause').innerHTML = st.target != null ? '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h8v8H1z"/></svg>Stopping…' : '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h8v8H1z"/></svg>Stop';
+    $('pause').innerHTML = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 1h3v8H1zM6 1h3v8H6z"/></svg>' + (st.target != null ? 'Pausing…' : 'Pause');
     const stop = $('stop');
     if (st.stopped) { stop.disabled = true; $('stopnote').textContent = 'Analyzed. Use Reset to collect again.'; return; }
-    stop.disabled = st.analyzeAfter || !(st.playing || k >= 3);       // while running, Analyze stops first
+    stop.disabled = st.analyzeAfter || !(st.playing || k >= 3);       // while running, Stop ends collection first
     const when = (h) => dateOf(h, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) + ' UTC';
-    $('stopnote').textContent = AL.openK() !== null ? 'View the open alert to continue collecting.' : st.hour === 0 ? 'Hit play to start collecting.' : k < 3 ? `Analysis is available from ${when(B[3])}.`
+    $('stopnote').textContent = AL.openK() !== null ? 'View the open alert to continue collecting.' : st.hour === 0 ? 'Hit play to start collecting.' : k < 3 ? `Stop and analyze from ${when(B[3])}.`
       : `Analysis uses data through ${when(B[k])}.`;
   }
   function draw() { checkAlerts(); drawActivity(); drawPersp(); controlsUI(); }
@@ -1280,11 +1295,16 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   $('reset').onclick = () => { resetAll(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); };
   $('rewind').onclick = resetAll;
 
-  const redraw = () => { draw(); if (st.run && !$('detection').hidden) { drawCarousels(); drawScan(); carMove.set(carMove.cur); carSub.set(carSub.cur); } };
+  function fitDash() {                                           // the scatter takes what the viewport leaves, so the monitor fits one screen
+    const sec = document.querySelector('section[aria-label="Monitor"]'), pv = $('persp');
+    const v = Math.round(sec.getBoundingClientRect().height - pv.getBoundingClientRect().height + 24) + 'px';
+    if (document.documentElement.style.getPropertyValue('--chrome') !== v) document.documentElement.style.setProperty('--chrome', v);
+  }
+  const redraw = () => { fitDash(); draw(); if (st.run && !$('detection').hidden) { drawCarousels(); drawScan(); carMove.set(carMove.cur); carSub.set(carSub.cur); } };
   new ResizeObserver(redraw).observe(document.body);
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
   new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   document.fonts && document.fonts.ready.then(redraw);
-  renderAlerts(); draw();
+  sideTab('find'); renderAlerts(); fitDash(); draw();
 })();
 </script>
