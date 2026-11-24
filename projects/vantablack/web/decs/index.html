@@ -226,13 +226,20 @@ tr.stoprow td { color: var(--ink-mute); }
 @media (max-width: 560px) { .alist .what small { display: block; margin-left: 0; margin-top: 2px; white-space: nowrap; font-size: 11px; } .alist .aft { display: none; } .alist .stat { min-width: 7ch; text-align: right; } }
 .adot { width: 10px; height: 10px; border-radius: 50%; }
 .adot.removed { background: transparent; border: 1.5px dashed var(--ink-mute); }
-#inv { position: absolute; top: 10px; right: 10px; bottom: 10px; width: min(360px, calc(100% - 20px)); display: flex; flex-direction: column;
-  background: var(--surface); border: 1px solid var(--edge); border-radius: var(--radius); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); overflow: hidden; z-index: 3; }
+.side { position: relative; min-width: 0; }
+.finder[hidden] { display: none; }
+@media (min-width: 761px) { .pgrid.wide { grid-template-columns: minmax(0, 1fr) 360px; } }
+.stabs { display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--edge); height: 34px; }
+.stabs[hidden] { display: none; }
+.stabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 6px 10px; font-size: 12.5px; color: var(--ink-mute); }
+.stabs button[aria-selected="true"] { color: var(--ink-title); font-weight: 600; border-bottom-color: var(--stop); }
+.stabs .tabx { margin-left: auto; font-size: 16px; padding: 4px 8px; }
+.side.open .finder { padding-top: 10px; }
+.side.open #idForm > .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#inv { position: absolute; top: 34px; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; background: var(--surface);
+  border: 1px solid var(--edge); border-top: 0; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
 #inv[hidden] { display: none; }
-#inv .igrip { flex: none; height: 14px; display: grid; place-items: center; cursor: grab; touch-action: none; border-bottom: 1px solid var(--edge); background: var(--wash); }
-#inv .igrip.on { cursor: grabbing; }
-#inv .igrip span { width: 36px; height: 4px; border-radius: 2px; background: var(--ink-mute); opacity: .55; }
-@media (max-width: 560px) { #inv .igrip { display: none; } }
+@media (max-width: 760px) { .side.open { min-height: min(620px, 80vh); } }
 #inv .ibody { overflow-y: auto; overscroll-behavior: contain; padding: 14px 16px; display: grid; gap: 14px; align-content: start; flex: 1; min-height: 0; }
 #inv h3 { margin: 2px 0 0; font-size: 18px; color: var(--ink-title); }
 #inv .lead { margin: 0; font-size: 13px; color: var(--ink); }
@@ -278,7 +285,6 @@ tr.stoprow td { color: var(--ink-mute); }
 .decide .rmv { background: var(--stop); color: var(--stop-ink); border-color: var(--stop); font-weight: 600; }
 .decide .caption { margin: 0; font-size: 11.5px; }
 @media (max-width: 560px) { .mlist { table-layout: auto; } .mlist td.nm { max-width: 130px; } .mlist th.acts, .mlist td.n { display: none; } .mlist th.aid { width: auto; } .mlist th.asc { width: 84px; } .mlist th { white-space: normal; line-height: 1.2; } .sbar { width: 40px; } }
-@media (max-width: 560px) { #inv { top: 6px; right: 6px; bottom: 6px; width: calc(100% - 12px); } }
 footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
 
 @media (max-width: 860px) {
@@ -340,13 +346,17 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         <div class="pgrid">
           <div class="pwrap"><canvas id="persp" tabindex="0" aria-label="Agents' estimated perspectives in three dimensions, moving over time. Drag to rotate, arrow keys rotate, plus and minus zoom."></canvas>
             <div class="tip" id="tip" role="status" hidden></div>
-            <div id="inv" hidden aria-live="polite" role="dialog" aria-label="View alert"></div></div>
-          <aside class="finder" aria-label="Find agents by id">
+          </div>
+          <div class="side" id="side">
+          <div class="stabs" id="stabs" role="tablist" hidden><button type="button" role="tab" id="tabFind" aria-selected="false">Find agents</button><button type="button" role="tab" id="tabAlert" aria-selected="true">Alert</button><button type="button" class="tabx" id="tabClose" aria-label="Close the alert tab">×</button></div>
+          <aside class="finder" id="finder" aria-label="Find agents by id">
             <form id="idForm" autocomplete="off"><label class="label" for="idIn">Find agents</label>
               <div class="idrow"><input id="idIn" type="text" inputmode="text" spellcheck="false" placeholder="ids, e.g. 2447, 10-20" aria-describedby="idNote"><button type="submit">Select</button></div></form>
             <p class="idnote" id="idNote"></p>
             <ul class="sellist" id="selList" aria-label="Selected agents"></ul>
           </aside>
+          <div id="inv" hidden aria-live="polite" role="tabpanel" aria-labelledby="tabAlert"></div>
+          </div>
         </div>
         <div class="chips pick" id="subPick" hidden></div>
         <p class="caption" id="pcap"></p>
@@ -819,7 +829,6 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
       `<td class="sc"><span class="sbar"><i style="width:${Math.max(0, (sc / smax) * 100).toFixed(1)}%"></i></span><b>${sc.toFixed(1)}</b></td></tr>` +
       `<tr class="posts" hidden><td colspan="5"><ul class="plist">${posts(m.recent)}</ul></td></tr>`;
     inv.innerHTML = `
-      <div class="igrip" title="Drag to move this panel"><span></span></div>
       <div class="ibody">
         <div><span class="label">Alert ${j + 1} · after step ${a.k}</span><h3>${n} coordinated agents detected</h3></div>
         <p class="lead">Based on shared changes in their behavior (p = ${a.p.toFixed(3)}).${stem}</p>
@@ -841,8 +850,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         ? `<div class="btns"><button type="button" class="rmv" data-dec="removed">Remove</button><button type="button" data-dec="kept">Keep</button></div>
            <p class="caption">Remove takes the ticked agents off Moltbook from here on. Keep leaves them in and stops flagging them.</p>`
         : `<div class="btns"><span>Decision: <b>${AL.status[j]}</b></span>${j === ALS.length - 1 ? '<button type="button" data-dec="undo">Undo</button>' : ''}<button type="button" data-dec="close">Close</button></div>`}</div>`;
-    inv.hidden = false; inv.querySelector('.ibody').scrollTop = 0; invPlace();
-    inv.querySelector('.igrip').onpointerdown = invDrag;
+    inv.querySelector('.ibody').scrollTop = 0; $('tabAlert').textContent = `Alert ${j + 1}`; sideTab('alert');
     inv.querySelectorAll('[data-dec]').forEach((b) => (b.onclick = () => decide(j, b.dataset.dec)));
     const pickUI = () => {                                          // button counts; note when the pick is not the whole group
       const ticked = [...AL.of.entries()].filter(([, jj]) => jj === j).map(([i]) => i);
@@ -862,18 +870,15 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     renderAlerts(); drawPersp();
     $('persp').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
   }
-  function invPlace() {                                         // keep the dragged offset inside the plot
-    const inv = $('inv'), w = inv.parentElement.clientWidth, narrow = w - inv.offsetWidth < 40;
-    AL.dx = narrow ? 0 : Math.max(-(w - inv.offsetWidth - 20), Math.min(0, AL.dx || 0));
-    inv.style.transform = AL.dx ? `translateX(${AL.dx}px)` : '';
+  function sideTab(t) {                                          // the side panel: "Find agents", and the alert being viewed
+    const on = AL.cur >= 0, al = on && t === 'alert';
+    $('stabs').hidden = !on; $('side').classList.toggle('open', on); $('side').parentElement.classList.toggle('wide', on);
+    $('inv').hidden = !al; $('finder').hidden = al;
+    $('tabAlert').setAttribute('aria-selected', String(al)); $('tabFind').setAttribute('aria-selected', String(on && !al));
+    drawPersp();
   }
-  function invDrag(e) {                                          // drag the panel left or right by its top strip
-    const g = e.currentTarget, x0 = e.clientX, d0 = AL.dx || 0;
-    g.setPointerCapture(e.pointerId); g.classList.add('on'); e.preventDefault();
-    g.onpointermove = (ev) => { AL.dx = d0 + ev.clientX - x0; invPlace(); };
-    g.onpointerup = g.onpointercancel = () => { g.onpointermove = g.onpointerup = g.onpointercancel = null; g.classList.remove('on'); };
-  }
-  function closeInv() { AL.cur = -1; $('inv').hidden = true; sel.clear(); (AL.userSel || []).forEach((i) => sel.add(i)); AL.userSel = null; renderAlerts(); drawPersp(); }
+  $('tabFind').onclick = () => sideTab('find'); $('tabAlert').onclick = () => sideTab('alert'); $('tabClose').onclick = () => closeInv();
+  function closeInv() { AL.cur = -1; sideTab('find'); sel.clear(); (AL.userSel || []).forEach((i) => sel.add(i)); AL.userSel = null; renderAlerts(); drawPersp(); }
   function decide(j, d) {
     if (d === 'close') { closeInv(); return; }
     if (d === 'undo') {                                           // only the latest decision, before anything later was raised
@@ -894,7 +899,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     if (on) checkAlerts();                                       // a step already completed raises its alert now (collection returns to it)
     draw();
   };
-  function resetAlerts() { ALS.length = 0; AL.status = []; AL.of = new Map(); AL.path = ''; AL.fired = 2; AL.cur = -1; AL.resume = false; AL.note = null; AL.ver++; $('inv').hidden = true; renderAlerts(); }
+  function resetAlerts() { ALS.length = 0; AL.status = []; AL.of = new Map(); AL.path = ''; AL.fired = 2; AL.cur = -1; AL.resume = false; AL.note = null; AL.ver++; sideTab('find'); renderAlerts(); }
 
   // ---------- activity monitor as a slider: drag the blue bar (or click anywhere) to move through time
   {
@@ -1275,7 +1280,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
   $('reset').onclick = () => { resetAll(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); };
   $('rewind').onclick = resetAll;
 
-  const redraw = () => { draw(); if (!$('inv').hidden) invPlace(); if (st.run && !$('detection').hidden) { drawCarousels(); drawScan(); carMove.set(carMove.cur); carSub.set(carSub.cur); } };
+  const redraw = () => { draw(); if (st.run && !$('detection').hidden) { drawCarousels(); drawScan(); carMove.set(carMove.cur); carSub.set(carSub.cur); } };
   new ResizeObserver(redraw).observe(document.body);
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
   new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
