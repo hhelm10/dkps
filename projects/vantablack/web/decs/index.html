@@ -235,10 +235,9 @@ tr.stoprow td { color: var(--ink-mute); }
 @media (max-width: 760px) { .side { height: min(560px, 75vh); } #persp { height: min(420px, 56vh); } }
 .stabs { flex: none; display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--edge); height: 34px; }
 .stabs[hidden], .stabs button[hidden] { display: none; }
-.stabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 6px 10px; font-size: 12.5px; color: var(--ink-mute); }
+.stabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 6px 8px; white-space: nowrap; font-size: 12.5px; color: var(--ink-mute); }
 .stabs button[aria-selected="true"] { color: var(--ink-title); font-weight: 600; border-bottom-color: var(--stop); }
 .stabs .num { color: var(--stop); font-weight: 600; }
-.stabs .tabx { margin-left: auto; font-size: 16px; padding: 4px 8px; }
 .spane { flex: 1; min-height: 0; }
 .spane[hidden] { display: none !important; }
 .finder { padding-top: 10px; overflow: hidden; }
@@ -358,7 +357,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
             <div class="tip" id="tip" role="status" hidden></div>
           </div>
           <div class="side" id="side"><div class="sin">
-          <div class="stabs" id="stabs" role="tablist"><button type="button" role="tab" id="tabFind" aria-selected="true">Find agents</button><button type="button" role="tab" id="tabList" aria-selected="false">Alerts <b class="num" id="nOpenTab"></b></button><button type="button" role="tab" id="tabAlert" aria-selected="false" hidden>Alert</button><button type="button" class="tabx" id="tabClose" aria-label="Close the alert tab" hidden>×</button></div>
+          <div class="stabs" id="stabs" role="tablist"><button type="button" role="tab" id="tabFind" aria-selected="true">Find Agents</button><button type="button" role="tab" id="tabList" aria-selected="false">All Alerts</button><button type="button" role="tab" id="tabAlert" aria-selected="false">Active Alerts <b class="num" id="nOpenTab"></b></button></div>
           <aside class="finder spane" id="finder" aria-label="Find agents by id">
             <form id="idForm" autocomplete="off"><label class="label" for="idIn">Find agents</label>
               <div class="idrow"><input id="idIn" type="text" inputmode="text" spellcheck="false" placeholder="ids, e.g. 2447, 10-20" aria-describedby="idNote"><button type="submit">Select</button></div></form>
@@ -371,7 +370,8 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
             <p class="caption" id="alertNote"></p>
             <ul class="alist" id="alertList" aria-label="Alerts"></ul>
           </div>
-          <div id="inv" class="spane" hidden aria-live="polite" role="tabpanel" aria-labelledby="tabAlert"></div>
+          <div id="inv" class="spane" hidden aria-live="polite" role="tabpanel"></div>
+          <div class="spane alpane" id="noActive" hidden role="tabpanel" aria-labelledby="tabAlert"><p class="caption">No active alerts. When the monitor detects a coordinated subnetwork, collection pauses and the alert opens here.</p></div>
           </div></div>
         </div>
         <div class="chips pick" id="subPick" hidden></div>
@@ -861,7 +861,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
         ? `<div class="btns"><button type="button" class="rmv" data-dec="removed">Remove</button><button type="button" data-dec="kept">Keep</button></div>
            <p class="caption">Remove takes the ticked agents off Moltbook from here on. Keep leaves them in and stops flagging them.</p>`
         : `<div class="btns"><span>Decision: <b>${AL.status[j]}</b></span>${j === ALS.length - 1 ? '<button type="button" data-dec="undo">Undo</button>' : ''}<button type="button" data-dec="close">Close</button></div>`}</div>`;
-    inv.querySelector('.ibody').scrollTop = 0; $('tabAlert').textContent = `Alert ${j + 1}`; if (SIDE.tab !== 'alert') SIDE.prev = SIDE.tab; sideTab('alert');
+    inv.querySelector('.ibody').scrollTop = 0; if (SIDE.tab !== 'active') SIDE.prev = SIDE.tab; sideTab(open ? 'active' : 'alerts');
     inv.querySelectorAll('[data-dec]').forEach((b) => (b.onclick = () => decide(j, b.dataset.dec)));
     const pickUI = () => {                                          // button counts; note when the pick is not the whole group
       const ticked = [...AL.of.entries()].filter(([, jj]) => jj === j).map(([i]) => i);
@@ -881,19 +881,23 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     renderAlerts(); drawPersp();
     $('persp').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
   }
-  function sideTab(t) {                                          // side panel tabs: Find agents | Alerts | the alert being viewed
-    const live = $('live').checked, on = AL.cur >= 0;
-    if (t === 'alert' && !on) t = 'find'; if (t === 'alerts' && !live) t = 'find';
+  function sideTab(t) {                                          // side panel tabs: Find Agents | All Alerts | Active Alerts
+    const live = $('live').checked;
+    if (!live) t = 'find';
+    const jo = AL.status.indexOf('open');
+    if (t === 'active' && jo >= 0 && AL.cur !== jo) { investigate(jo); return; }   // the active alert opens in its tab
     SIDE.tab = t;
-    $('stabs').hidden = !live; $('side').classList.toggle('tabbed', live); $('side').parentElement.parentElement.classList.toggle('wide', on && t === 'alert');
-    $('tabAlert').hidden = $('tabClose').hidden = !on;
-    $('inv').hidden = t !== 'alert'; $('finder').hidden = t !== 'find'; $('alertPanel').hidden = t !== 'alerts';
-    [['tabFind', 'find'], ['tabList', 'alerts'], ['tabAlert', 'alert']].forEach(([id, v]) => $(id).setAttribute('aria-selected', String(t === v)));
+    const cur = AL.cur >= 0 ? AL.status[AL.cur] : null;
+    const showInv = (t === 'active' && cur === 'open') || (t === 'alerts' && cur !== null && cur !== 'open');   // decided alerts open within All Alerts
+    $('stabs').hidden = !live; $('side').classList.toggle('tabbed', live); $('side').parentElement.parentElement.classList.toggle('wide', showInv);
+    $('inv').hidden = !showInv; $('inv').setAttribute('aria-labelledby', t === 'active' ? 'tabAlert' : 'tabList');
+    $('finder').hidden = t !== 'find'; $('alertPanel').hidden = !(t === 'alerts' && !showInv); $('noActive').hidden = !(t === 'active' && !showInv);
+    [['tabFind', 'find'], ['tabList', 'alerts'], ['tabAlert', 'active']].forEach(([id, v]) => $(id).setAttribute('aria-selected', String(t === v)));
     drawPersp();
   }
   const SIDE = { tab: 'find' };
-  $('tabFind').onclick = () => sideTab('find'); $('tabList').onclick = () => sideTab('alerts'); $('tabAlert').onclick = () => sideTab('alert'); $('tabClose').onclick = () => closeInv();
-  function closeInv() { AL.cur = -1; sideTab(SIDE.prev || 'find'); sel.clear(); (AL.userSel || []).forEach((i) => sel.add(i)); AL.userSel = null; renderAlerts(); drawPersp(); }
+  $('tabFind').onclick = () => sideTab('find'); $('tabList').onclick = () => sideTab('alerts'); $('tabAlert').onclick = () => sideTab('active');
+  function closeInv() { const back = SIDE.tab === 'alerts' ? 'alerts' : SIDE.prev || 'find'; AL.cur = -1; SIDE.prev = null; sideTab(back); sel.clear(); (AL.userSel || []).forEach((i) => sel.add(i)); AL.userSel = null; renderAlerts(); drawPersp(); }
   function decide(j, d) {
     if (d === 'close') { closeInv(); return; }
     if (d === 'undo') {                                           // only the latest decision, before anything later was raised
