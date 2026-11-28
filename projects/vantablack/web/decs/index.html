@@ -230,8 +230,12 @@ tr.stoprow td { color: var(--ink-mute); }
 .adot.removed { background: transparent; border: 1.5px dashed var(--ink-mute); }
 .side { position: relative; min-width: 0; }
 .side .sin { position: absolute; inset: 0; display: flex; flex-direction: column; }
-@media (min-width: 761px) { .pgrid { grid-template-columns: minmax(0, 1fr) 300px; } }
-@media (min-width: 761px) { .pgrid.wide { grid-template-columns: minmax(0, 1fr) 360px; } }
+@media (min-width: 761px) { .pgrid { grid-template-columns: minmax(0, 1fr) 12px min(var(--sidew, 300px), calc(100% - 332px)); gap: 0; } }
+@media (min-width: 761px) { .pgrid.wide { grid-template-columns: minmax(0, 1fr) 12px min(max(var(--sidew, 300px), 360px), calc(100% - 332px)); } }
+.pgut { position: relative; cursor: col-resize; touch-action: none; outline: none; }
+.pgut::after { content: ''; position: absolute; left: 4px; top: 50%; width: 4px; height: 40px; margin-top: -20px; border-radius: 2px; background: var(--edge); transition: background .15s; }
+.pgut:hover::after, .pgut:focus-visible::after, .pgut.drag::after { background: var(--ink-mute); }
+@media (max-width: 760px) { .pgut { display: none; } }
 @media (max-width: 760px) { .side { height: min(560px, 75vh); } #persp { height: min(420px, 56vh); } }
 .stabs { flex: none; display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--edge); height: 34px; }
 .stabs[hidden], .stabs button[hidden] { display: none; }
@@ -356,6 +360,7 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
           <div class="pwrap"><canvas id="persp" tabindex="0" aria-label="Agents' estimated perspectives in three dimensions, moving over time. Drag to rotate, arrow keys rotate, plus and minus zoom."></canvas>
             <div class="tip" id="tip" role="status" hidden></div>
           </div>
+          <div class="pgut" id="pgut" role="separator" aria-orientation="vertical" aria-label="Resize the side panel (double-click to reset)" tabindex="0" title="Drag to resize; double-click to reset"></div>
           <div class="side" id="side"><div class="sin">
           <div class="stabs" id="stabs" role="tablist"><button type="button" role="tab" id="tabFind" aria-selected="true">Find Agents</button><button type="button" role="tab" id="tabList" aria-selected="false">All Alerts</button><button type="button" role="tab" id="tabAlert" aria-selected="false">Active Alerts <b class="num" id="nOpenTab"></b></button></div>
           <aside class="finder spane" id="finder" aria-label="Find agents by id">
@@ -1303,6 +1308,21 @@ footer { font-size: 13px; color: var(--ink-mute); display: grid; gap: 8px; }
     const sec = document.querySelector('section[aria-label="Monitor"]'), pv = $('persp');
     const v = Math.round(sec.getBoundingClientRect().height - pv.getBoundingClientRect().height + 24) + 'px';
     if (document.documentElement.style.getPropertyValue('--chrome') !== v) document.documentElement.style.setProperty('--chrome', v);
+  }
+  {                                                              // drag the gutter between the scatter and the side panel
+    const g = $('pgut'), grid = g.parentElement, KEY = 'decs.sidew';
+    const set = (w) => { if (w == null) { grid.style.removeProperty('--sidew'); } else { const r = grid.getBoundingClientRect(); w = Math.round(Math.max(260, Math.min(r.width - 332, w))); grid.style.setProperty('--sidew', w + 'px'); } drawPersp(); return w; };
+    try { const w0 = +localStorage.getItem(KEY); if (w0) set(w0); } catch (e) {}
+    const save = (w) => { try { w == null ? localStorage.removeItem(KEY) : localStorage.setItem(KEY, String(w)); } catch (e) {} };
+    const cur = () => $('side').getBoundingClientRect().width;
+    g.onpointerdown = (e) => {
+      if (e.button !== 0) return; e.preventDefault(); g.setPointerCapture(e.pointerId); g.classList.add('drag');
+      const right = grid.getBoundingClientRect().right;
+      g.onpointermove = (m) => set(right - m.clientX - 6);
+      g.onpointerup = g.onpointercancel = () => { g.onpointermove = g.onpointerup = g.onpointercancel = null; g.classList.remove('drag'); save(Math.round(cur())); };
+    };
+    g.ondblclick = () => { set(null); save(null); };
+    g.onkeydown = (e) => { const d = e.key === 'ArrowLeft' ? 24 : e.key === 'ArrowRight' ? -24 : 0; if (d) { e.preventDefault(); save(set(cur() + d)); } };
   }
   const redraw = () => { fitDash(); draw(); if (st.run && !$('detection').hidden) { drawCarousels(); drawScan(); carMove.set(carMove.cur); carSub.set(carSub.cur); } };
   new ResizeObserver(redraw).observe(document.body);
